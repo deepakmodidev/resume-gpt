@@ -10,7 +10,6 @@ import {
   Shield,
   Sparkles,
 } from 'lucide-react';
-// Removed framer-motion for no entry animation
 import { cn } from '@/lib/utils';
 
 const features = [
