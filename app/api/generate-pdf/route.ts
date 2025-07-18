@@ -17,28 +17,16 @@ const { ResumeContent } = require('@/components/resume/ResumeContent');
 async function getBrowser() {
   const isServerless = !!process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL;
   if (isServerless) {
-    const execPath = await chromium.executablePath();
-    console.log('Vercel/Serverless detected. Chromium executablePath:', execPath);
-    console.log('chromium.args:', chromium.args);
-    console.log('chromium.defaultViewport:', chromium.defaultViewport);
-    
-    // Add additional args for better compatibility in serverless environments
-    const additionalArgs = [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--single-process',
-      '--no-zygote',
-      '--disable-web-security',
-      '--disable-features=VizDisplayCompositor'
-    ];
-    
+    console.log('Vercel/Serverless detected.');
+
+    const executablePath = await chromium.executablePath();
+    console.log('Chromium executablePath:', executablePath);
+
     return puppeteer.launch({
-      args: [...chromium.args, ...additionalArgs],
-      executablePath: execPath,
+      args: chromium.args,
+      defaultViewport: { width: 1280, height: 720 },
+      executablePath,
       headless: true,
-      defaultViewport: chromium.defaultViewport,
     });
   } else {
     // Local development: use Puppeteer's default Chromium
