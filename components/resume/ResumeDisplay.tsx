@@ -83,7 +83,7 @@ export const ResumeDisplay = ({
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsTemplateModalOpen(true)}
-              className="text-white flex items-center gap-2 bg-primary px-4 py-2 rounded-lg hover:bg-primary/90 transition-all shadow-xs hover:shadow-md font-medium"
+              className="text-white flex items-center gap-2 bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-lg hover:bg-primary/90 transition-all shadow-xs hover:shadow-md font-medium"
             >
               <svg
                 className="w-4 h-4"
