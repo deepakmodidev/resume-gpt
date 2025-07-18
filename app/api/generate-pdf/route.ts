@@ -17,9 +17,13 @@ const { ResumeContent } = require('@/components/resume/ResumeContent');
 async function getBrowser() {
   const isServerless = !!process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL;
   if (isServerless) {
+    const execPath = await chromium.executablePath();
+    console.log('Vercel/Serverless detected. Chromium executablePath:', execPath);
+    console.log('chromium.args:', chromium.args);
+    console.log('chromium.defaultViewport:', chromium.defaultViewport);
     return puppeteer.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath(),
+      executablePath: execPath,
       headless: true,
       defaultViewport: chromium.defaultViewport,
     });
