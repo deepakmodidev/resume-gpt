@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import chromium from '@sparticuz/chromium';
-import puppeteerCore from 'puppeteer-core';
-import puppeteer from 'puppeteer'; // Used only for local development
+import puppeteer from 'puppeteer-core';
 
 const React = require('react');
 const ReactDOMServer = require('react-dom/server');
@@ -14,43 +13,14 @@ const { ResumeContent } = require('@/components/resume/ResumeContent');
 // It's generally recommended to let @sparticuz/chromium manage the executable path and version
 // unless you have a specific reason to pin it.
 
-// Function to get the appropriate browser instance based on the environment
+// Function to get the appropriate browser instance for both local and Vercel
 async function getBrowser() {
-  // Check if running on Vercel (VERCEL environment variable is set by Vercel)
-  if (process.env.VERCEL) {
-    console.log(
-      'Running on Vercel, using puppeteer-core with @sparticuz/chromium',
-    );
-    // Launch puppeteer-core with chromium executable and arguments
-    return puppeteerCore.launch({
-      args: [
-        ...chromium.args, // Recommended arguments from @sparticuz/chromium
-        '--disable-web-security',
-        '--font-render-hinting=none',
-        // Add other necessary args for serverless if needed
-        '--no-sandbox', // Required in serverless environments
-        '--disable-setuid-sandbox', // Required in serverless environments
-      ],
-      // Let @sparticuz/chromium find the executable path
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless === 'true', // Ensure boolean for Puppeteer
-    });
-  } else {
-    console.log('Running locally, using full puppeteer');
-    // Launch full puppeteer for local development
-    return puppeteer.launch({
-      // Allow custom local paths via environment variable
-      executablePath:
-        process.env.CHROME_PATH ||
-        puppeteer.executablePath() ||
-        // Default path for macOS, adjust for other OS if needed
-        // Consider using puppeteer.executablePath() here as well for a more robust local setup
-        // if you don't want to hardcode paths.
-        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Recommended args for local
-      headless: true, // Run headless locally
-    });
-  }
+  return puppeteer.launch({
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
+    headless: true,
+    defaultViewport: chromium.defaultViewport,
+  });
 }
 
 // POST handler for the API route
