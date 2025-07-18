@@ -15,12 +15,23 @@ const { ResumeContent } = require('@/components/resume/ResumeContent');
 
 // Function to get the appropriate browser instance for both local and Vercel
 async function getBrowser() {
-  return puppeteer.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(),
-    headless: true,
-    defaultViewport: chromium.defaultViewport,
-  });
+  const isServerless = !!process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL;
+  if (isServerless) {
+    return puppeteer.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+      defaultViewport: chromium.defaultViewport,
+    });
+  } else {
+    // Local development: use Puppeteer's default Chromium
+    // You must have puppeteer installed (not just puppeteer-core)
+    const localPuppeteer = require('puppeteer');
+    return localPuppeteer.launch({
+      headless: true,
+      // You can add more options if needed
+    });
+  }
 }
 
 // POST handler for the API route
