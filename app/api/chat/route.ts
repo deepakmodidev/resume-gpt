@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
 import db from '@/prisma/prisma';
+
+// Types
+interface RequestData {
+  history: unknown[];
+  resumeData: unknown;
+  chatId: string;
+  userApiKey?: string;
+}
+
+interface ParsedResponse {
+  acknowledgement: string;
+  updatedSection: Record<string, unknown>;
+}
 
 // Constants
 const SYSTEM_INSTRUCTION = `
@@ -58,7 +71,7 @@ const GENERATION_CONFIG = {
 };
 
 // Utility Functions
-function validateRequestData(data: any) {
+function validateRequestData(data: RequestData) {
   const { history, resumeData, chatId } = data;
 
   if (!history || !Array.isArray(history) || history.length === 0) {
@@ -69,7 +82,8 @@ function validateRequestData(data: any) {
     throw new Error('Missing chat ID');
   }
 
-  const latestUserMessage = history[history.length - 1]?.parts?.[0]?.text;
+  const latestMessage = history[history.length - 1] as { parts?: { text?: string }[] };
+  const latestUserMessage = latestMessage?.parts?.[0]?.text;
   if (!latestUserMessage || !resumeData) {
     throw new Error('Missing user message or resume data');
   }
@@ -77,7 +91,7 @@ function validateRequestData(data: any) {
   return { latestUserMessage };
 }
 
-function getPreDefinedResponse(message: string) {
+function getPreDefinedResponse(message: string): ParsedResponse | null {
   const trimmed = message.trim();
 
   if (trimmed.length >= 20) return null;
@@ -110,7 +124,7 @@ function getPreDefinedResponse(message: string) {
   return null;
 }
 
-function parseAIResponse(aiRawText: string) {
+function parseAIResponse(aiRawText: string): ParsedResponse {
   let cleanedText = aiRawText.replace(/```json|```/g, '').trim();
 
   // Extract JSON if response doesn't look like pure JSON
@@ -122,7 +136,7 @@ function parseAIResponse(aiRawText: string) {
   }
 
   try {
-    return JSON.parse(cleanedText);
+    return JSON.parse(cleanedText) as ParsedResponse;
   } catch {
     console.error('Failed to parse AI response:', cleanedText);
     return {
@@ -132,7 +146,14 @@ function parseAIResponse(aiRawText: string) {
   }
 }
 
-async function updateOrCreateChat(chatId: string, userId: string, latestUserMessage: string, userMsg: any, modelMsg: any, updatedResumeData: any) {
+async function updateOrCreateChat(
+  chatId: string,
+  userId: string,
+  latestUserMessage: string,
+  userMsg: unknown,
+  modelMsg: unknown,
+  updatedResumeData: unknown
+) {
   const existingChat = await db.chat.findUnique({
     where: {
       id: chatId,
@@ -146,8 +167,8 @@ async function updateOrCreateChat(chatId: string, userId: string, latestUserMess
         id: chatId,
         userId: userId,
         title: latestUserMessage.slice(0, 30) || 'New ResumeGPT Chat',
-        messages: [userMsg, modelMsg],
-        resumeData: updatedResumeData,
+        messages: [userMsg, modelMsg] as never,
+        resumeData: updatedResumeData as never,
         resumeTemplate: 'classic',
       },
     });
@@ -159,15 +180,15 @@ async function updateOrCreateChat(chatId: string, userId: string, latestUserMess
       },
       data: {
         messages: {
-          push: [userMsg, modelMsg],
+          push: [userMsg, modelMsg] as never,
         },
-        resumeData: updatedResumeData,
+        resumeData: updatedResumeData as never,
       },
     });
   }
 }
 
-function deepMerge(target: any, source: any): any {
+function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
   if (typeof target !== 'object' || typeof source !== 'object' || !target || !source) {
     return source;
   }
@@ -177,7 +198,7 @@ function deepMerge(target: any, source: any): any {
     if (Array.isArray(source[key])) {
       output[key] = source[key];
     } else if (typeof source[key] === 'object') {
-      output[key] = deepMerge(target[key] ?? {}, source[key]);
+      output[key] = deepMerge(target[key] as Record<string, unknown> ?? {}, source[key] as Record<string, unknown>);
     } else {
       output[key] = source[key];
     }

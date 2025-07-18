@@ -2,16 +2,6 @@ import React from 'react';
 import { ResumeData } from '@/lib/types';
 import { templateStyles } from '@/constants/templateStyles';
 
-// Utility function to safely render any value as string
-const safeRender = (value: any): string => {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number') return String(value);
-  if (typeof value === 'object' && value !== null) {
-    return JSON.stringify(value);
-  }
-  return String(value || '');
-};
-
 interface ResumeContentProps {
   data: ResumeData;
   isEditable?: boolean;

@@ -60,8 +60,8 @@ export function ProductDemoSection() {
                   </div>
                   <div className="flex-1 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
                     <p className="text-sm text-foreground mb-3">
-                      I've enhanced your experience section with stronger action
-                      verbs and quantified achievements. Here's what I
+                      I&apos;ve enhanced your experience section with stronger action
+                      verbs and quantified achievements. Here&apos;s what I
                       recommend:
                     </p>
                     <div className="space-y-2 text-sm">

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { checkSession } from '@/actions/session-actions';
 import { handleGoogleSignIn } from '@/actions/auth-actions';
 import { ResumePreview } from './ResumePreview';

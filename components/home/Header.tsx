@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   NotepadTextDashed,
   User,
@@ -106,9 +107,11 @@ export function Header() {
                       className="flex items-center gap-2 hover:bg-muted transition-all duration-200 rounded-lg w-full"
                     >
                       {session.user.image ? (
-                        <img
+                        <Image
                           src={session.user.image}
                           alt={session.user.name || 'User'}
+                          width={24}
+                          height={24}
                           className="w-6 h-6 rounded-full"
                         />
                       ) : (

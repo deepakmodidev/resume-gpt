@@ -1,6 +1,6 @@
 'use server';
 
-import { signIn } from '@/app/api/auth/[...nextauth]/route';
+import { signIn } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function handleGoogleSignIn() {

@@ -7,7 +7,7 @@ export interface ChatMessage {
 
 export interface InitialChatData {
   messages: ChatMessage[];
-  resumeData: any;
+  resumeData: Record<string, unknown>;
 }
 
 export type ResumeData = {

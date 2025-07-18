@@ -91,8 +91,8 @@ export function TestimonialSection() {
           </h2>
 
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of professionals who've landed their dream jobs with
-            ResumeGPT's AI-powered resume builder.
+            Join thousands of professionals who&apos;ve landed their dream jobs with
+            ResumeGPT&apos;s AI-powered resume builder.
           </p>
         </div>
 
@@ -121,7 +121,7 @@ export function TestimonialSection() {
 
                 {/* Content */}
                 <blockquote className="text-foreground/90 leading-relaxed mb-6 flex-1">
-                  "{testimonial.content}"
+                  &ldquo;{testimonial.content}&rdquo;
                 </blockquote>
 
                 {/* Profile */}
