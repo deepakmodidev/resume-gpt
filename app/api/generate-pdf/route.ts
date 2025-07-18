@@ -29,12 +29,18 @@ async function getBrowser() {
     });
   } else {
     // Local development: use Puppeteer's default Chromium
-    // You must have puppeteer installed (not just puppeteer-core)
-    const localPuppeteer = require('puppeteer');
-    return localPuppeteer.launch({
-      headless: true,
-      // You can add more options if needed
-    });
+    // puppeteer is in devDependencies for local development
+    try {
+      const localPuppeteer = require('puppeteer');
+      return localPuppeteer.launch({
+        headless: true,
+        // You can add more options if needed
+      });
+    } catch (err) {
+      // Fallback if puppeteer is not installed locally
+      console.error('Local puppeteer not found. Install with: npm install --save-dev puppeteer');
+      throw new Error('Puppeteer not found for local development. Please install puppeteer as a dev dependency.');
+    }
   }
 }
 
