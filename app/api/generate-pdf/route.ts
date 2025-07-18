@@ -21,8 +21,21 @@ async function getBrowser() {
     console.log('Vercel/Serverless detected. Chromium executablePath:', execPath);
     console.log('chromium.args:', chromium.args);
     console.log('chromium.defaultViewport:', chromium.defaultViewport);
+    
+    // Add additional args for better compatibility in serverless environments
+    const additionalArgs = [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--single-process',
+      '--no-zygote',
+      '--disable-web-security',
+      '--disable-features=VizDisplayCompositor'
+    ];
+    
     return puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, ...additionalArgs],
       executablePath: execPath,
       headless: true,
       defaultViewport: chromium.defaultViewport,
@@ -36,7 +49,7 @@ async function getBrowser() {
         headless: true,
         // You can add more options if needed
       });
-    } catch (err) {
+    } catch {
       // Fallback if puppeteer is not installed locally
       console.error('Local puppeteer not found. Install with: npm install --save-dev puppeteer');
       throw new Error('Puppeteer not found for local development. Please install puppeteer as a dev dependency.');
