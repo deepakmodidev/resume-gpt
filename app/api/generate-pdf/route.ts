@@ -5,40 +5,30 @@ import puppeteer from 'puppeteer-core';
 const React = require('react');
 const ReactDOMServer = require('react-dom/server');
 const { createElement } = React;
-// Assuming '@/components/resume/ResumeContent' is a valid path to your component
 const { ResumeContent } = require('@/components/resume/ResumeContent');
 
-// Define a default Chromium URL, though letting @sparticuz/chromium handle it is often best
-// const CHROMIUM_URL = "https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar";
-// It's generally recommended to let @sparticuz/chromium manage the executable path and version
-// unless you have a specific reason to pin it.
+// Use @sparticuz/chromium to manage the Chromium executable path and version for serverless environments.
 
 // Function to get the appropriate browser instance for both local and Vercel
 async function getBrowser() {
   const isServerless = !!process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL;
   if (isServerless) {
-    console.log('Vercel/Serverless detected.');
-
+    // Serverless (e.g., Vercel): use @sparticuz/chromium and puppeteer-core
     const executablePath = await chromium.executablePath();
-    console.log('Chromium executablePath:', executablePath);
-
     return puppeteer.launch({
       args: chromium.args,
-      defaultViewport: { width: 1280, height: 720 },
+      defaultViewport: { width: 794, height: 1123 }, // A4 size in px at 96dpi
       executablePath,
       headless: true,
     });
   } else {
     // Local development: use Puppeteer's default Chromium
-    // puppeteer is in devDependencies for local development
     try {
       const localPuppeteer = require('puppeteer');
       return localPuppeteer.launch({
         headless: true,
-        // You can add more options if needed
       });
     } catch {
-      // Fallback if puppeteer is not installed locally
       console.error('Local puppeteer not found. Install with: npm install --save-dev puppeteer');
       throw new Error('Puppeteer not found for local development. Please install puppeteer as a dev dependency.');
     }
@@ -47,7 +37,7 @@ async function getBrowser() {
 
 // POST handler for the API route
 export async function POST(request: Request) {
-  let browser = null; // Initialize browser variable for finally block
+  let browser = null; // Ensure browser can be closed in finally block
 
   try {
     const { data, template } = await request.json();
@@ -59,20 +49,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Render the React component to an HTML string
+    // Render the resume React component to an HTML string
     const resumeHtml = ReactDOMServer.renderToString(
       createElement(ResumeContent, { data, isEditable: false, template }),
     );
 
-    // Get the browser instance based on the environment
+    // Launch browser and open a new page
     browser = await getBrowser();
     const page = await browser.newPage();
 
-    // Set the content of the page.
-    // Note: Relying on a CDN for Tailwind CSS here might have limitations
-    // depending on your component's styling. Ensure styles are correctly applied.
-    // You might need to inline critical CSS or handle it differently
-    // if the CDN approach doesn't fully render your component's styles.
+    // Set the HTML content for the page. Uses CDN Tailwind for styling.
+    // If styles are missing in the PDF, consider inlining critical CSS.
     await page.setContent(
       `
       <!DOCTYPE html>
@@ -82,7 +69,6 @@ export async function POST(request: Request) {
           <title>Resume</title>
           <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
           <style>
-             /* Add any global styles or resets needed for the PDF */
              body { margin: 0; }
           </style>
         </head>
@@ -90,25 +76,24 @@ export async function POST(request: Request) {
       </html>
     `,
       {
-        // Wait until DOM is loaded and no more than 0 network connections for at least 500ms
-        // networkidle0 can sometimes be tricky in serverless; consider networkidle2 or just domcontentloaded
-        waitUntil: ['domcontentloaded', 'networkidle0'],
-        timeout: 60000, // Increased timeout to 60s for potentially longer renders
+        // Wait for DOM and network to be mostly idle for reliable rendering
+        waitUntil: ['domcontentloaded', 'networkidle2'],
+        timeout: 60000,
       },
     );
 
-    // Generate the PDF
+    // Generate the PDF from the rendered page
     const pdfBuffer = await page.pdf({
       format: 'A4',
-      printBackground: true, // Include background colors and images
+      printBackground: true, // Ensures backgrounds and images are included
       // margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
-      // // Consider adding displayHeaderFooter and headerTemplate/footerTemplate if needed
+      // To add headers/footers, use displayHeaderFooter and headerTemplate/footerTemplate
     });
 
-    // Close the browser instance
+    // Close the browser instance after PDF generation
     await browser.close();
 
-    // Return the PDF buffer as a response
+    // Return the PDF as a downloadable response
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
@@ -116,14 +101,14 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error('PDF Generation Error:', error); // Log the error for debugging on Vercel
-    // Return a JSON error response
+    // Log and return error details for debugging
+    console.error('PDF Generation Error:', error);
     return NextResponse.json(
-      { error: 'PDF generation failed', details: error.message }, // Include error message for debugging
+      { error: 'PDF generation failed', details: error.message },
       { status: 500 },
     );
   } finally {
-    // Ensure the browser is closed even if an error occurs
+    // Always close the browser if it was opened, even on error
     if (browser !== null) {
       try {
         await browser.close();
@@ -134,7 +119,6 @@ export async function POST(request: Request) {
   }
 }
 
-// Ensure the function is treated as dynamic
+// Mark the route as dynamic and specify Node.js runtime for serverless compatibility
 export const dynamic = 'force-dynamic';
-// Specify the Node.js runtime
 export const runtime = 'nodejs';
