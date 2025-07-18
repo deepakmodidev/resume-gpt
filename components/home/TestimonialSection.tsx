@@ -96,51 +96,57 @@ export function TestimonialSection() {
           </p>
         </div>
 
-        {/* Simple Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Enhanced Grid Layout with Feature Card Design */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="relative group cursor-pointer transition-all duration-300 hover:scale-[1.02]"
+              className="bg-muted/30 hover:bg-muted/50 transition-all duration-700 rounded-2xl p-2 group relative overflow-hidden border border-border/50 cursor-pointer"
             >
-              <div className="relative h-full bg-card/30 backdrop-blur-xl border border-border rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                {/* Quote icon */}
-                <div className="absolute top-4 right-4 opacity-20 group-hover:opacity-30 transition-opacity">
-                  <Quote className="h-8 w-8 text-blue-500" />
-                </div>
+              <div className="rounded-2xl bg-card backdrop-blur-xs h-full transition-all duration-700 relative overflow-hidden w-full p-6 flex flex-col justify-between min-h-[200px]">
+                {/* Animated gradient background */}
+                <div className="absolute -bottom-40 left-[50%] translate-x-[-50%] group-hover:opacity-100 opacity-0 z-1 bg-linear-to-t from-blue-500/10 to-blue-300/20 blur-[6em] rounded-xl transition-all duration-700 ease-out w-40 h-80 rotate-12" />
 
-                {/* Rating */}
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
-                </div>
-
-                {/* Content */}
-                <blockquote className="text-foreground/90 leading-relaxed mb-6 flex-1">
-                  &ldquo;{testimonial.content}&rdquo;
-                </blockquote>
-
-                {/* Profile */}
-                <div className="flex items-center gap-4 mt-auto">
-                  <div className="w-12 h-12 bg-linear-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-sm">
-                      {testimonial.image}
-                    </span>
+                {/* Content - relative z-10 for proper layering */}
+                <div className="relative z-10 flex flex-col h-full">
+                  {/* Quote icon */}
+                  <div className="absolute top-0 right-0 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
+                    <Quote className="h-12 w-12 text-foreground" />
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-foreground">
-                      {testimonial.name}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {testimonial.role} at {testimonial.company}
-                    </div>
+
+                  {/* Rating */}
+                  <div className="flex items-center gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                      />
+                    ))}
                   </div>
-                  <div className="text-blue-500">
-                    <CheckCircle className="h-5 w-5" />
+
+                  {/* Content */}
+                  <blockquote className="text-foreground/90 leading-relaxed mb-6 flex-1">
+                    &ldquo;{testimonial.content}&rdquo;
+                  </blockquote>
+
+                  {/* Profile */}
+                  <div className="flex items-center gap-4 mt-auto">
+                    <div className="w-12 h-12 bg-linear-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                      <span className="text-white font-bold text-sm">
+                        {testimonial.image}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-foreground">
+                        {testimonial.name}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {testimonial.role} at {testimonial.company}
+                      </div>
+                    </div>
+                    <div className="text-blue-500">
+                      <CheckCircle className="h-5 w-5" />
+                    </div>
                   </div>
                 </div>
               </div>
