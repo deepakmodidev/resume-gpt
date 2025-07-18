@@ -1,9 +1,20 @@
+
 'use client';
 import SafariFrame from '@/components/ui/safari-frame';
+import { useRef } from 'react';
+import { useScroll, useTransform, motion } from 'framer-motion';
+
 
 export function DemoSection() {
+    const sectionRef = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: sectionRef,
+        offset: ['start end', 'end start'],
+    });
+    const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1.1, 0.8]);
+
     return (
-        <section className="py-20 relative">
+        <section ref={sectionRef} className="py-20 relative">
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -25,10 +36,12 @@ export function DemoSection() {
                     </p>
                 </div>
                 <div className="flex justify-center">
-                    <SafariFrame
-                        videoUrl="https://res.cloudinary.com/"
-                        url="resumegpt.com"
-                    />
+                    <motion.div style={{ scale }}>
+                        <SafariFrame
+                            videoUrl="https://res.cloudinary.com/dpgx8qj3v/video/upload/v1735681234/resumegpt/demo.mp4"
+                            url="tryresumegpt.vercel.app"
+                        />
+                    </motion.div>
                 </div>
             </div>
         </section>
