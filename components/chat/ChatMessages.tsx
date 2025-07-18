@@ -71,13 +71,13 @@ const MessageBubble = memo(
         className={`flex items-center justify-center rounded-full w-8 h-8 shrink-0 ${
           message.role === 'user'
             ? 'bg-blue-100 dark:bg-blue-900'
-            : 'bg-gray-100 dark:bg-gray-800'
+            : 'bg-blue-100 dark:bg-blue-900'
         }`}
       >
         {message.role === 'user' ? (
           <User className="h-4 w-4 text-blue-600 dark:text-blue-300" />
         ) : (
-          <Bot className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+          <Bot className="h-4 w-4 text-blue-600 dark:text-blue-300" />
         )}
       </div>
       <div>

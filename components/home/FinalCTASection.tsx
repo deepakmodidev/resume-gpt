@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight , FileText, FileEditIcon} from 'lucide-react';
 import { checkSession } from '@/actions/session-actions';
 import { handleGoogleSignIn } from '@/actions/auth-actions';
 
@@ -41,6 +41,14 @@ export function FinalCTASection({ chatId }: FinalCTASectionProps) {
             <div className="rounded-2xl bg-card backdrop-blur-xs h-full transition-all duration-700 relative overflow-hidden w-full p-6 md:p-12 flex flex-col items-center justify-center">
               {/* Animated gradient background */}
               <div className="absolute -bottom-40 left-[50%] translate-x-[-50%] group-hover:opacity-100 opacity-0 z-1 bg-linear-to-t from-blue-500/10 to-blue-300/20 blur-[6em] rounded-xl transition-all duration-700 ease-out w-40 md:w-120 h-80 md:h-120 rotate-12" />
+
+              {/* Background Icon */}
+              <div className="absolute bottom-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
+                <FileEditIcon className="size-24 text-foreground" />
+              </div>
+              <div className="absolute top-4 left-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
+                <FileText className="size-24 text-foreground" />
+              </div>
 
               {/* Content */}
               <div className="relative z-10 w-full">
