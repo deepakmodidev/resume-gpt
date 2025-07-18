@@ -104,7 +104,7 @@ export function Footer() {
                 target="_blank"
                 className="text-base text-muted-foreground hover:text-blue-500 transition-colors duration-300 hover:font-medium"
               >
-                Created by Deepak Modi
+                Crafted by Deepak Modi
               </Link>
             </nav>
           </div>

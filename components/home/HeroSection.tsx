@@ -35,7 +35,7 @@ export function HeroSection({ chatId }: HeroSectionProps) {
     }
   };
   return (
-    <section className="relative pt-8 pb-8 overflow-hidden min-h-screen flex items-center">
+    <section className="relative pb-20 pt-12 overflow-hidden min-h-screen flex items-center">
       {/* Dot Pattern Background */}
       <DotPattern
         width={20}
@@ -48,12 +48,10 @@ export function HeroSection({ chatId }: HeroSectionProps) {
 
       {/* Enhanced gradient orbs */}
       <div className="absolute top-0 left-1/4 w-160 h-160 bg-linear-to-r from-blue-500/10 to-blue-600/10 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute top-20 right-1/4 w-140 h-140 bg-linear-to-r from-blue-400/10 to-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      <div className="absolute bottom-0 left-1/2 w-120 h-120 bg-linear-to-r from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
 
       <div className="w-full max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 relative">
         {/* Upper Section - Text Content */}
-        <div className="text-center space-y-6 mb-40">
+        <div className="text-center space-y-8 mb-48">
           {/* Premium Badge */}
           <div className="inline-flex items-center gap-3 bg-linear-to-r from-background/80 to-background/60 backdrop-blur-xl border border-border/50 rounded-2xl px-6 py-3 shadow-lg">
             <div className="w-2 h-2 bg-linear-to-r from-blue-400 to-blue-600 rounded-full animate-pulse"></div>
@@ -64,7 +62,7 @@ export function HeroSection({ chatId }: HeroSectionProps) {
           </div>
 
           {/* Main Headline with better spacing */}
-          <div className="space-y-2">
+          <div className="space-y-4">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-none">
               <span className="bg-linear-to-b from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent block pb-4">
                 Automate Resume Tailoring
@@ -92,7 +90,7 @@ export function HeroSection({ chatId }: HeroSectionProps) {
               onClick={handleGetStarted}
               disabled={isCheckingSession}
               size="lg"
-              className="bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold text-base md:text-xl px-6 py-3 md:px-12 md:py-6 h-auto rounded-xl md:rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 transform hover:scale-105"
+              className="bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold text-base md:text-xl px-8 py-4 md:px-12 md:py-6 h-auto rounded-xl md:rounded-2xl shadow-2xl transition-all duration-300"
             >
               {isCheckingSession ? (
                 <div className="flex items-center gap-2 md:gap-3">
@@ -111,11 +109,11 @@ export function HeroSection({ chatId }: HeroSectionProps) {
           </div>
 
           {/* Enhanced Trust indicators */}
-          <div className="space-y-2 pt-2">
+          <div className="space-y-4 pt-4">
             <p className="text-sm text-muted-foreground/80 font-medium">
               Trusted by professionals at leading companies
             </p>
-            <div className="flex items-center justify-center gap-10 opacity-70">
+            <div className="flex items-center justify-center gap-6 sm:gap-10 opacity-70">
               <div className="text-muted-foreground font-bold text-lg">
                 Google
               </div>
