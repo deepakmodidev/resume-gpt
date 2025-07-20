@@ -1,9 +1,8 @@
 
 'use client';
-import SafariFrame from '@/components/ui/safari-frame';
 import { useRef } from 'react';
 import { useScroll, useTransform, motion } from 'framer-motion';
-
+// import SafariFrame from '@/components/ui/safari-frame';
 
 export function DemoSection() {
     const sectionRef = useRef(null);
@@ -36,10 +35,21 @@ export function DemoSection() {
                     </p>
                 </div>
                 <div className="flex justify-center">
-                    <motion.div style={{ scale }}>
+                    {/* <motion.div style={{ scale }}>
                         <SafariFrame
                             videoUrl="https://res.cloudinary.com/ddotbkkt7/video/upload/cursorful-video-1753013955771_ufa6dx.mp4"
                             url="tryresumegpt.vercel.app"
+                        />
+                    </motion.div> */}
+                    <motion.div style={{ scale }}>
+                        <video
+                            src="https://res.cloudinary.com/ddotbkkt7/video/upload/cursorful-video-1753013955771_ufa6dx.mp4"
+                            controls
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="rounded-3xl shadow-xl w-full max-w-5xl border-8 border-blue-200"
                         />
                     </motion.div>
                 </div>
