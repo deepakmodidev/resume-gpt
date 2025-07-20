@@ -198,7 +198,7 @@ export default async function OpenGraphImage() {
               fontWeight: '500',
             }}
           >
-            resumegpt.vercel.app
+            tryresumegpt.vercel.app
           </div>
         </div>
       ),

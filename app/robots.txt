@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://resumegpt.vercel.app/sitemap.xml
+Sitemap: https://tryresumegpt.vercel.app/sitemap.xml
 
 # Prevent crawling of private routes
 Disallow: /api/

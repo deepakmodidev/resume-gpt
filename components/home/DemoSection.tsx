@@ -38,7 +38,7 @@ export function DemoSection() {
                 <div className="flex justify-center">
                     <motion.div style={{ scale }}>
                         <SafariFrame
-                            videoUrl="https://res.cloudinary.com/dpgx8qj3v/video/upload/v1735681234/resumegpt/demo.mp4"
+                            videoUrl="https://res.cloudinary.com/ddotbkkt7/video/upload/cursorful-video-1753013955771_ufa6dx.mp4"
                             url="tryresumegpt.vercel.app"
                         />
                     </motion.div>

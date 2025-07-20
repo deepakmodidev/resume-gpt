@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://resumegpt.vercel.app';
+  const baseUrl = 'https://tryresumegpt.vercel.app';
 
   // Base routes that should always be in sitemap
   const routes = [

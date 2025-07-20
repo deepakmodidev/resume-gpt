@@ -6,7 +6,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://resumegpt.vercel.app'),
+  metadataBase: new URL('https://tryresumegpt.vercel.app'),
   title: 'ResumeGPT - AI-Powered Resume Builder',
   description:
     'Create perfect resumes with AI. Type naturally, watch your resume build in real-time.',
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: 'ResumeGPT - AI-Powered Resume Builder',
     description:
       'Create perfect resumes with AI. Type naturally, watch your resume build in real-time.',
-    url: 'https://resumegpt.vercel.app',
+    url: 'https://tryresumegpt.vercel.app',
     siteName: 'ResumeGPT',
     images: [
       {
