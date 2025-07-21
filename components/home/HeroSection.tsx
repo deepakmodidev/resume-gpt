@@ -43,7 +43,7 @@ export function HeroSection({ chatId }: HeroSectionProps) {
         cx={1}
         cy={1}
         cr={1}
-        className="fill-blue-500/20 dark:fill-blue-400/20"
+        className="fill-blue-500/30 dark:fill-blue-400/30"
       />
 
       {/* Enhanced gradient orbs */}
