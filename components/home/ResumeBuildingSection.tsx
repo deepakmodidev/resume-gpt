@@ -147,7 +147,7 @@ export function ResumeBuildingSection() {
               <div className="relative bg-card backdrop-blur-xs border border-border rounded-2xl p-4 sm:p-6  h-full">
                 <div className="text-center mb-6">
                   <div className="w-12 h-12 bg-linear-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <span className="text-white font-bold text-lg">JS</span>
+                    <span className="text-white font-bold text-lg">SP</span>
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-2">
                     Sundar Pichai
