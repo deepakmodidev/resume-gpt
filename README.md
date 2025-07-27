@@ -1,6 +1,6 @@
 # ResumeGPT - AI-Powered Resume Builder
 
-ResumeGPT is a modern web application that helps you create, edit, and optimize professional resumes using AI-powered suggestions. It supports multiple templates, PDF export, and seamless authentication.
+ResumeGPT is a modern web application that lets you create, edit, and optimize professional resumes using natural language prompts and AI-powered suggestions. Just describe your experience or role, and ResumeGPT helps you turn it into a polished resume. It supports multiple templates, PDF export, and seamless authentication.
 
 ## Features
 
