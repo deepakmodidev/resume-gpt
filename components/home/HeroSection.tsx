@@ -66,6 +66,7 @@ export function HeroSection({ chatId }: HeroSectionProps) {
           <div className="flex justify-center items-center gap-8 py-4">
             <a href="https://www.producthunt.com/products/resumegpt?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-resumegpt-2" target="_blank" rel="noopener noreferrer">
               <img
+                // src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=998447&theme=light&t=1753679970261"
                 src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=998447&theme=neutral&t=1753680271015"
                 alt="ResumeGPT - AI-powered resume builder for fast, professional results. | Product Hunt"
                 style={{ width: '250px', height: '44px' }}
