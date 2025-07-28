@@ -52,7 +52,7 @@ export function HeroSection({ chatId }: HeroSectionProps) {
       <div className="w-full max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 relative">
         {/* Upper Section - Text Content */}
         <div className="text-center space-y-8 mb-48">
-          
+
           {/* Premium Badge */}
           {/* <div className="inline-flex items-center gap-3 bg-linear-to-r from-background/80 to-background/60 backdrop-blur-xl border border-border/50 rounded-2xl px-6 py-3 shadow-lg">
             <div className="w-2 h-2 bg-linear-to-r from-blue-400 to-blue-600 rounded-full animate-pulse"></div>
@@ -63,15 +63,32 @@ export function HeroSection({ chatId }: HeroSectionProps) {
           </div> */}
 
           {/* Product Hunt Badge */}
-          <div className="flex justify-center py-4">
+          <div className="flex justify-center items-center gap-8 py-4">
             <a href="https://www.producthunt.com/products/resumegpt?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-resumegpt-2" target="_blank" rel="noopener noreferrer">
               <img
-                // src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=998447&theme=light&t=1753679970261"
                 src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=998447&theme=neutral&t=1753680271015"
                 alt="ResumeGPT - AI-powered resume builder for fast, professional results. | Product Hunt"
                 style={{ width: '250px', height: '44px' }}
                 width={250}
                 height={54}
+              />
+            </a>
+            <a href="https://peerlist.io/deepakmodi/project/resumegpt" target="_blank" rel="noopener noreferrer">
+              <img
+                src="https://peerlist.io/images/Launch_Badge_Light.svg"
+                alt="ResumeGPT Launch on Peerlist"
+                className="block dark:hidden"
+                style={{ width: '200px', height: '44px' }}
+                width={160}
+                height={44}
+              />
+              <img
+                src="https://peerlist.io/images/Launch_Badge_Dark.svg"
+                alt="ResumeGPT Launch on Peerlist (Dark)"
+                className="hidden dark:block"
+                style={{ width: '200px', height: '44px' }}
+                width={160}
+                height={44}
               />
             </a>
           </div>
