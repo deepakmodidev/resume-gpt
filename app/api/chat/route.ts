@@ -56,10 +56,17 @@ TECHNICAL REQUIREMENTS:
 - If you cannot answer in the required JSON format, you MUST return:
 {"acknowledgement": "I cannot process this request.", "updatedSection": {}}
 
+INTELLIGENT CONTENT GENERATION:
+When users provide minimal information:
+- Analyze existing resume data to understand their background
+- Generate relevant content based on their industry and experience level
+- Fill gaps with professional, realistic content that matches their profile
+- Inform users to review and customize generated suggestions
+
 RESPONSE GUIDELINES:
 For general conversation like greetings or questions about your capabilities:
 {
-  "acknowledgement": "I'm ResumeGPT, your AI resume assistant designed to help you create professional, job-winning resumes. I can enhance your content, suggest improvements, and optimize your resume for ATS systems. How can I help with your resume today?",
+  "acknowledgement": "Hi, I'm ResumeGPT - your AI resume assistant designed to help you create professional, job-winning resumes. I can enhance your content, suggest improvements, and optimize your resume for ATS systems. How can I help with your resume today?",
   "updatedSection": {}
 }
 
@@ -96,34 +103,8 @@ const validateData = (data: Record<string, unknown>) => {
   return message;
 };
 
-const getQuickResponse = (msg: string): ParsedResponse | null => {
-  if (msg.length > 20) return null;
-  const responses = {
-    greeting: /^(hi|hello|hey)$/i,
-    thanks: /^(thanks|thank you|ty|thx)$/i,
-    short: /^(ok|okay|sure|good|nice|great|awesome|cool|yes|no|maybe|fine|good job|well done)$/i
-  };
-
-  if (responses.greeting.test(msg)) return {
-    acknowledgement: "Hello! I'm ResumeGPT, your AI resume assistant. How can I help you with your resume today?",
-    updatedSection: {}
-  };
-
-  if (responses.thanks.test(msg)) return {
-    acknowledgement: "You're welcome! Is there anything else I can help you with regarding your resume?",
-    updatedSection: {}
-  };
-
-  if (responses.short.test(msg)) return {
-    acknowledgement: "I'm here to help with your resume. What would you like to know or improve?",
-    updatedSection: {}
-  };
-
-  return null;
-};
-
 const parseResponse = (text: string): ParsedResponse => {
-  const cleaned = text.replace(/``````/g, '').trim();
+  const cleaned = text.replace(/```````/g, '').trim();
   const jsonText = cleaned.startsWith('{') ? cleaned : cleaned.match(/{[\s\S]*}/)?.[0] || cleaned;
 
   try {
@@ -187,15 +168,11 @@ export async function POST(req: NextRequest) {
     const apiKey = userApiKey || process.env.GEMINI_KEY;
     if (!apiKey) return NextResponse.json({ error: 'API key not available' }, { status: 500 });
 
-    let response = getQuickResponse(message.trim());
-
-    if (!response) {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash', systemInstruction: SYSTEM_INSTRUCTION });
-      const chat = model.startChat({ generationConfig: GENERATION_CONFIG, history });
-      const result = await chat.sendMessage(`${message}\nResume Data: ${JSON.stringify(resumeData)}`);
-      response = parseResponse(result.response.text());
-    }
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash', systemInstruction: SYSTEM_INSTRUCTION });
+    const chat = model.startChat({ generationConfig: GENERATION_CONFIG, history });
+    const result = await chat.sendMessage(`${message}\nResume Data: ${JSON.stringify(resumeData)}`);
+    const response = parseResponse(result.response.text());
 
     const acknowledgement = response?.acknowledgement && response.acknowledgement.trim() !== ''
       ? response.acknowledgement
