@@ -15,15 +15,20 @@ export const ResumeDisplay = ({
 }: ResumeDisplayProps) => {
   const [resumeData, setResumeData] = useState<ResumeData>(data);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [currentTemplate, setCurrentTemplate] = useState(() => {
-    // Load saved template from localStorage on initial render
+  // Always start with 'modern' to match SSR, then update from localStorage after mount
+  const [currentTemplate, setCurrentTemplate] = useState('modern');
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // On mount, update template from localStorage if available
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedTemplate = localStorage.getItem('resume-template');
-      return savedTemplate || 'modern';
+      if (savedTemplate && savedTemplate !== currentTemplate) {
+        setCurrentTemplate(savedTemplate);
+      }
     }
-    return 'modern';
-  });
-  const [isDownloading, setIsDownloading] = useState(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setResumeData(data);
@@ -111,11 +116,10 @@ export const ResumeDisplay = ({
           <button
             onClick={handleDownloadPDF}
             disabled={isDownloading}
-            className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${
-              isDownloading
+            className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${isDownloading
                 ? 'opacity-50 cursor-not-allowed'
                 : 'hover:from-green-600 hover:to-green-700 hover:scale-[1.02]'
-            }`}
+              }`}
           >
             {isDownloading ? (
               <LoaderPinwheelIcon className="w-4 h-4 animate-spin" />

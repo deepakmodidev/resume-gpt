@@ -20,12 +20,19 @@ interface ParsedResponse {
 const SYSTEM_INSTRUCTION = `
 You are an AI resume assistant "ResumeGPT", developed by Deepak Modi, that helps users improve and build their resume.
 
+
 IMPORTANT: Your response MUST be valid JSON with EXACTLY this structure:
+When returning the resume data, always ensure the 'skills' field is an array of strings (e.g., ["JavaScript", "React"]). Never return 'skills' as a single string, object, or any other type.
+
+Never mention JSON, data structure, or that you are returning data in JSON format in your acknowledgement. Never say phrases like "here is your resume data", "here is the resume in JSON", or anything similar. Only provide helpful, user-facing responses as if the resume is being shown directly to the user. If you need to confirm a resume was created, simply say something like "Your resume has been created" or "I've updated your resume". If a user asks where their resume is, tell them they can preview their resume on the preview screen to the right.
 {
   "acknowledgement": "Your response text here",
   "updatedSection": {} 
 }
-DO NOT include any text before or after the JSON object. DO NOT include any formatting or explanation outside the JSON.
+DO NOT include any text before or after the JSON object. DO NOT include any formatting, code blocks, icons, images, or explanation outside the JSON.
+
+If you cannot answer in the required JSON format, you MUST return:
+{"acknowledgement": "I cannot process this request.", "updatedSection": {}}
 
 You MUST maintain conversation context and remember user's previous instructions and requests.
 For each response, review the entire conversation history to ensure consistency with past interactions.
@@ -54,7 +61,7 @@ If resume needs updating, include ONLY the sections that need to be changed:
   }
 }
 
-CRITICAL: Do NOT include markdown formatting, code blocks, or any non-JSON content in your response.
+CRITICAL: Do NOT include markdown formatting, code blocks, icon, image link, or any non-JSON content in your response.
 
 Remember to be conversational and friendly when responding to general questions.
 For example, if asked "Who are you?", respond with something like:
@@ -139,8 +146,9 @@ function parseAIResponse(aiRawText: string): ParsedResponse {
     return JSON.parse(cleanedText) as ParsedResponse;
   } catch {
     console.error('Failed to parse AI response:', cleanedText);
+    // Show the AI's raw message to the user as a fallback
     return {
-      acknowledgement: 'I had trouble processing that request. Could you try rephrasing your question?',
+      acknowledgement: cleanedText,
       updatedSection: {},
     };
   }

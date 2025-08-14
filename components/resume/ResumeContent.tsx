@@ -28,6 +28,8 @@ export const ResumeContent = ({
     }
   };
 
+
+
   return (
     <div
       className={`template-${template} ${styles.container} print:shadow-none`}
@@ -67,6 +69,7 @@ export const ResumeContent = ({
           )}
         </div>
       )}
+      {/* ...existing code... */}
       {/* Summary Section */}
       {data.summary && (
         <section>
@@ -95,7 +98,7 @@ export const ResumeContent = ({
             </p>
           ) : (
             <ul className={styles.skills}>
-              {data.skills.map((skill, idx) => (
+              {(Array.isArray(data.skills) ? data.skills : []).map((skill, idx) => (
                 <li key={idx} className={styles.skillItem}>
                   {typeof skill === 'string'
                     ? skill
