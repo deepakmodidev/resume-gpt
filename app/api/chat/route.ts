@@ -4,13 +4,6 @@ import { auth } from '@/lib/auth';
 import db from '@/prisma/prisma';
 
 // Types
-interface RequestData {
-  history: unknown[];
-  resumeData: unknown;
-  chatId: string;
-  userApiKey?: string;
-}
-
 interface ParsedResponse {
   acknowledgement: string;
   updatedSection: Record<string, unknown>;
@@ -19,7 +12,6 @@ interface ParsedResponse {
 // Constants
 const SYSTEM_INSTRUCTION = `
 You are an AI resume assistant "ResumeGPT", developed by Deepak Modi, that helps users improve and build their resume.
-
 
 IMPORTANT: Your response MUST be valid JSON with EXACTLY this structure:
 When returning the resume data, always ensure the 'skills' field is an array of strings (e.g., ["JavaScript", "React"]). Never return 'skills' as a single string, object, or any other type.
@@ -78,309 +70,180 @@ const GENERATION_CONFIG = {
 };
 
 // Utility Functions
-function validateRequestData(data: RequestData) {
+const validateData = (data: Record<string, unknown>) => {
   const { history, resumeData, chatId } = data;
+  if (!Array.isArray(history) || !history.length) throw new Error('Invalid history');
+  if (!chatId) throw new Error('Missing chat ID');
+  const message = (history.at(-1) as { parts?: { text?: string }[] })?.parts?.[0]?.text;
+  if (!message || !resumeData) throw new Error('Missing message or resume data');
+  return message;
+};
 
-  if (!history || !Array.isArray(history) || history.length === 0) {
-    throw new Error('Invalid or missing history');
-  }
-
-  if (!chatId) {
-    throw new Error('Missing chat ID');
-  }
-
-  const latestMessage = history[history.length - 1] as { parts?: { text?: string }[] };
-  const latestUserMessage = latestMessage?.parts?.[0]?.text;
-  if (!latestUserMessage || !resumeData) {
-    throw new Error('Missing user message or resume data');
-  }
-
-  return { latestUserMessage };
-}
-
-function getPreDefinedResponse(message: string): ParsedResponse | null {
-  const trimmed = message.trim();
-
-  if (trimmed.length >= 20) return null;
-
-  const greeting = /^(hi|hello|hey)$/i.test(trimmed);
-  const thanks = /^(thanks|thank you|ty|thx)$/i.test(trimmed);
-  const shortResponse = /^(ok|okay|sure|good|nice|great|awesome|cool|yes|no|maybe|fine|good job|well done)$/i.test(trimmed);
-
-  if (greeting) {
-    return {
-      acknowledgement: "Hello! I'm ResumeGPT, your AI resume assistant. How can I help you with your resume today?",
-      updatedSection: {},
-    };
-  }
-
-  if (thanks) {
-    return {
-      acknowledgement: "You're welcome! Is there anything else I can help you with regarding your resume?",
-      updatedSection: {},
-    };
-  }
-
-  if (shortResponse) {
-    return {
-      acknowledgement: "I'm here to help with your resume. What would you like to know or improve?",
-      updatedSection: {},
-    };
-  }
-
+const getQuickResponse = (msg: string): ParsedResponse | null => {
+  if (msg.length > 20) return null;
+  const responses = {
+    greeting: /^(hi|hello|hey)$/i,
+    thanks: /^(thanks|thank you|ty|thx)$/i,
+    short: /^(ok|okay|sure|good|nice|great|awesome|cool|yes|no|maybe|fine|good job|well done)$/i
+  };
+  
+  if (responses.greeting.test(msg)) return {
+    acknowledgement: "Hello! I'm ResumeGPT, your AI resume assistant. How can I help you with your resume today?",
+    updatedSection: {}
+  };
+  
+  if (responses.thanks.test(msg)) return {
+    acknowledgement: "You're welcome! Is there anything else I can help you with regarding your resume?",
+    updatedSection: {}
+  };
+  
+  if (responses.short.test(msg)) return {
+    acknowledgement: "I'm here to help with your resume. What would you like to know or improve?",
+    updatedSection: {}
+  };
+  
   return null;
-}
+};
 
-function parseAIResponse(aiRawText: string): ParsedResponse {
-  let cleanedText = aiRawText.replace(/```json|```/g, '').trim();
-
-  // Extract JSON if response doesn't look like pure JSON
-  if (!cleanedText.startsWith('{') || !cleanedText.endsWith('}')) {
-    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      cleanedText = jsonMatch[0];
-    }
-  }
-
+const parseResponse = (text: string): ParsedResponse => {
+  const cleaned = text.replace(/``````/g, '').trim();
+  const jsonText = cleaned.startsWith('{') ? cleaned : cleaned.match(/{[\s\S]*}/)?.[0] || cleaned;
+  
   try {
-    return JSON.parse(cleanedText) as ParsedResponse;
+    return JSON.parse(jsonText);
   } catch {
-    console.error('Failed to parse AI response:', cleanedText);
-    // Show the AI's raw message to the user as a fallback
-    return {
-      acknowledgement: cleanedText,
-      updatedSection: {},
-    };
+    return { acknowledgement: jsonText, updatedSection: {} };
   }
-}
+};
 
-async function updateOrCreateChat(
-  chatId: string,
-  userId: string,
-  latestUserMessage: string,
-  userMsg: unknown,
-  modelMsg: unknown,
-  updatedResumeData: unknown
-) {
-  const existingChat = await db.chat.findUnique({
-    where: {
-      id: chatId,
-      userId: userId,
-    },
+const deepMerge = (target: Record<string, unknown>, source: Record<string, unknown>) => {
+  if (!target || !source || typeof target !== 'object' || typeof source !== 'object') return source;
+  
+  const result = { ...target };
+  Object.entries(source).forEach(([key, value]) => {
+    result[key] = Array.isArray(value) ? value :
+      (value && typeof value === 'object') ? deepMerge(result[key] as Record<string, unknown> ?? {}, value as Record<string, unknown>) : value;
   });
+  return result;
+};
 
-  if (!existingChat) {
-    await db.chat.create({
-      data: {
-        id: chatId,
-        userId: userId,
-        title: latestUserMessage.slice(0, 30) || 'New ResumeGPT Chat',
-        messages: [userMsg, modelMsg] as never,
-        resumeData: updatedResumeData as never,
-        resumeTemplate: 'classic',
-      },
+const upsertChat = async (chatId: string, userId: string, message: string, userMsg: unknown, modelMsg: unknown, resumeData: unknown) => {
+  const chat = await db.chat.findUnique({ where: { id: chatId, userId } });
+  
+  if (chat) {
+    await db.chat.update({
+      where: { id: chatId, userId },
+      data: { 
+        messages: { push: [userMsg, modelMsg] as never }, 
+        resumeData: resumeData as never 
+      }
     });
   } else {
-    await db.chat.update({
-      where: {
-        id: chatId,
-        userId: userId,
-      },
+    await db.chat.create({
       data: {
-        messages: {
-          push: [userMsg, modelMsg] as never,
-        },
-        resumeData: updatedResumeData as never,
-      },
+        id: chatId, userId,
+        title: message.slice(0, 30) || 'New ResumeGPT Chat',
+        messages: [userMsg, modelMsg] as never,
+        resumeData: resumeData as never,
+        resumeTemplate: 'classic'
+      }
     });
   }
-}
+};
 
-function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
-  if (typeof target !== 'object' || typeof source !== 'object' || !target || !source) {
-    return source;
-  }
+const handleError = (error: unknown, defaultStatus = 500) => {
+  const message = error instanceof Error ? error.message : 'Unknown error';
+  const status = ['Invalid history', 'Missing chat ID', 'Missing message or resume data'].includes(message) ? 400 : defaultStatus;
+  return NextResponse.json({ error: message }, { status });
+};
 
-  const output = { ...target };
-  for (const key of Object.keys(source)) {
-    if (Array.isArray(source[key])) {
-      output[key] = source[key];
-    } else if (typeof source[key] === 'object') {
-      output[key] = deepMerge(target[key] as Record<string, unknown> ?? {}, source[key] as Record<string, unknown>);
-    } else {
-      output[key] = source[key];
-    }
-  }
-  return output;
-}
-
-// Main POST Handler
+// Handlers
 export async function POST(req: NextRequest) {
   try {
-    // Parse and validate request data
-    const requestData = await req.json();
-    const { latestUserMessage } = validateRequestData(requestData);
-    const { history, resumeData, chatId, userApiKey } = requestData;
+    const data = await req.json();
+    const message = validateData(data);
+    const { history, resumeData, chatId, userApiKey } = data;
 
-    // Authenticate user
     const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Validate API key
     const apiKey = userApiKey || process.env.GEMINI_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        {
-          error: 'API key not available',
-          details: 'Please configure your Gemini API key or contact support',
-        },
-        { status: 500 },
-      );
-    }
+    if (!apiKey) return NextResponse.json({ error: 'API key not available' }, { status: 500 });
 
-    // Check for pre-defined responses (greetings, thanks, etc.)
-    const preDefinedResponse = getPreDefinedResponse(latestUserMessage);
-    let parsedResponse;
-
-    if (preDefinedResponse) {
-      parsedResponse = preDefinedResponse;
-    } else {
-      // Process with AI
+    let response = getQuickResponse(message.trim());
+    
+    if (!response) {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-2.0-flash',
-        systemInstruction: SYSTEM_INSTRUCTION,
-      });
-
-      const chatSession = model.startChat({
-        generationConfig: GENERATION_CONFIG,
-        history,
-      });
-
-      const prompt = `${latestUserMessage}
-    Remember the full conversation history when generating your response. Maintain context from previous messages.
-    Resume Data: ${JSON.stringify(resumeData)}`;
-
-      const result = await chatSession.sendMessage(prompt);
-      const aiRawText = result.response.text();
-      parsedResponse = parseAIResponse(aiRawText);
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash', systemInstruction: SYSTEM_INSTRUCTION });
+      const chat = model.startChat({ generationConfig: GENERATION_CONFIG, history });
+      const result = await chat.sendMessage(`${message}\nResume Data: ${JSON.stringify(resumeData)}`);
+      response = parseResponse(result.response.text());
     }
 
-    // Extract response data
-    const acknowledgement = parsedResponse?.acknowledgement || "I'm here to help with your resume. What would you like to know?";
-    const updatedSection = parsedResponse?.updatedSection || {};
-
-    // Validate and merge resume data
-    const validUpdatedSection = typeof updatedSection === 'object' && updatedSection !== null ? updatedSection : {};
-    const updatedResumeData = deepMerge(resumeData, validUpdatedSection);
-
-    // Create message objects
-    const userMsg = { role: 'user', parts: [{ text: latestUserMessage }] };
+    const { acknowledgement = "I'm here to help with your resume. What would you like to know?", updatedSection = {} } = response;
+    const mergedData = deepMerge(resumeData, updatedSection);
+    
+    const userMsg = { role: 'user', parts: [{ text: message }] };
     const modelMsg = { role: 'model', parts: [{ text: acknowledgement }] };
-
-    // Update database
-    await updateOrCreateChat(chatId, session.user.id, latestUserMessage, userMsg, modelMsg, updatedResumeData);
-
-    return NextResponse.json({ response: parsedResponse }, { status: 200 });
+    
+    await upsertChat(chatId, session.user.id, message, userMsg, modelMsg, mergedData);
+    return NextResponse.json({ response });
 
   } catch (error) {
-    console.error('Chat error:', error);
-
-    // Handle validation errors
-    if (error.message === 'Invalid or missing history' || error.message === 'Missing chat ID' || error.message === 'Missing user message or resume data') {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
-      { status: 500 },
-    );
+    return handleError(error);
   }
 }
 
-// GET Handler - Fetch user's chats
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
+    const chats = await db.chat.findMany({
+      where: { userId: session.user.id },
+      select: { id: true, title: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    return NextResponse.json({ chats });
+  } catch (error) {
+    return handleError(error);
   }
-
-  const chats = await db.chat.findMany({
-    where: { userId: session.user.id },
-    select: { id: true, title: true },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  return NextResponse.json({ chats });
 }
 
-// DELETE Handler - Delete a chat
 export async function DELETE(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
     const { chatId } = await req.json();
-
-    if (!chatId) {
-      return NextResponse.json({ error: 'Chat ID is required.' }, { status: 400 });
-    }
-
-    const deletedChat = await db.chat.deleteMany({
-      where: {
-        id: chatId,
-        userId: session.user.id,
-      },
-    });
-
-    if (!deletedChat.count) {
-      return NextResponse.json({ error: 'Chat not found or unauthorized' }, { status: 404 });
-    }
-
-    return NextResponse.json({ message: 'Chat deleted successfully.' }, { status: 200 });
-
+    if (!chatId) return NextResponse.json({ error: 'Chat ID required' }, { status: 400 });
+    
+    const deleted = await db.chat.deleteMany({ where: { id: chatId, userId: session.user.id } });
+    if (!deleted.count) return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
+    
+    return NextResponse.json({ message: 'Chat deleted successfully' });
   } catch (error) {
-    console.error('Delete chat error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return handleError(error);
   }
 }
 
-// PUT Handler - Update chat name
 export async function PUT(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
     const { chatId, newName } = await req.json();
-
-    if (!chatId || !newName) {
-      return NextResponse.json({ error: 'Chat ID and new name are required.' }, { status: 400 });
-    }
-
-    const updatedChat = await db.chat.updateMany({
-      where: {
-        id: chatId,
-        userId: session.user.id,
-      },
-      data: {
-        title: newName,
-      },
+    if (!chatId || !newName) return NextResponse.json({ error: 'Chat ID and name required' }, { status: 400 });
+    
+    const updated = await db.chat.updateMany({
+      where: { id: chatId, userId: session.user.id },
+      data: { title: newName }
     });
-
-    if (!updatedChat.count) {
-      return NextResponse.json({ error: 'Chat not found or unauthorized' }, { status: 404 });
-    }
-
-    return NextResponse.json({ message: 'Chat name updated successfully.' }, { status: 200 });
-
+    
+    if (!updated.count) return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
+    return NextResponse.json({ message: 'Chat updated successfully' });
   } catch (error) {
-    console.error('Update chat error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return handleError(error);
   }
 }

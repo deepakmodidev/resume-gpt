@@ -10,6 +10,12 @@ const nextConfig = {
       {
         hostname: 'lh3.googleusercontent.com',
       },
+      {
+        hostname: 'api.producthunt.com',
+      },
+      {
+        hostname: 'peerlist.io',
+      },
     ],
   },
 };

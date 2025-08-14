@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
@@ -65,35 +66,35 @@ export function HeroSection({ chatId }: HeroSectionProps) {
           {/* Product Hunt Badge */}
           <div className="flex justify-center items-center gap-8 py-4">
             <a href="https://www.producthunt.com/products/resumegpt?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-resumegpt-2" target="_blank" rel="noopener noreferrer">
-              <img
+              <Image
                 // src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=998447&theme=light&t=1753679970261"
                 src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=998447&theme=neutral&t=1753680271015"
                 alt="ResumeGPT - AI-powered resume builder for fast, professional results. | Product Hunt"
-                style={{ width: '250px', height: '44px' }}
                 width={250}
                 height={54}
+                style={{ width: '250px', height: '44px' }}
+                priority // Add this for above-the-fold content
               />
             </a>
             <a href="https://peerlist.io/deepakmodi/project/resumegpt" target="_blank" rel="noopener noreferrer">
-              <img
+              <Image
                 src="https://peerlist.io/images/Launch_Badge_Light.svg"
                 alt="ResumeGPT Launch on Peerlist"
                 className="block dark:hidden"
-                style={{ width: '200px', height: '44px' }}
-                width={160}
+                width={200}
                 height={44}
+                style={{ width: '200px', height: '44px' }}
               />
-              <img
+              <Image
                 src="https://peerlist.io/images/Launch_Badge_Dark.svg"
                 alt="ResumeGPT Launch on Peerlist (Dark)"
                 className="hidden dark:block"
-                style={{ width: '200px', height: '44px' }}
-                width={160}
+                width={200}
                 height={44}
+                style={{ width: '200px', height: '44px' }}
               />
             </a>
           </div>
-
           {/* Main Headline with better spacing */}
           <div className="space-y-4">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-none">
