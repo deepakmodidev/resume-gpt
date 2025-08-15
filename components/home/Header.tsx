@@ -65,7 +65,7 @@ export function Header() {
           </div>
 
           {/* Navigation Links - Center (Hidden on Mobile) */}
-          <nav className="hidden md:flex items-center justify-center gap-8">
+          <nav className="hidden md:flex items-center justify-center gap-12">
             <Link
               href="/"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
