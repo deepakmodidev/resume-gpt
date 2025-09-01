@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { ResumeData } from '@/lib/types';
 import { TemplateModal } from './TemplateModal';
 import { ResumeContent } from './ResumeContent';
-import { LoaderPinwheelIcon } from 'lucide-react';
+import { ATSScore } from '@/components/ats/ATSScore';
+import { LoaderPinwheelIcon, Target, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ResumeDisplayProps {
   data: ResumeData;
@@ -18,6 +22,7 @@ export const ResumeDisplay = ({
   // Always start with 'modern' to match SSR, then update from localStorage after mount
   const [currentTemplate, setCurrentTemplate] = useState('modern');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showATSAnalysis, setShowATSAnalysis] = useState(false);
 
   // On mount, update template from localStorage if available
   useEffect(() => {
@@ -81,77 +86,141 @@ export const ResumeDisplay = ({
   };
 
   return (
-    <div className="relative max-w-5xl mx-auto">
-      {/* Header moved to top */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border/40 w-full h-16 flex items-center">
-        <div className="flex justify-between items-center gap-4 px-4 w-full max-w-5xl mx-auto">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsTemplateModalOpen(true)}
-              className="text-white flex items-center gap-2 bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-lg hover:bg-primary/90 transition-all shadow-xs hover:shadow-md font-medium"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+    <div className="h-full flex flex-col">
+      <Tabs defaultValue="resume" className="h-full flex flex-col">
+        {/* Tab Navigation Header */}
+        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border/40 w-full">
+          <div className="flex justify-between items-center gap-4 px-4 py-3 max-w-5xl mx-auto">
+            {/* Tab List */}
+            <TabsList className="grid w-fit grid-cols-2">
+              <TabsTrigger value="resume" className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Resume
+              </TabsTrigger>
+              <TabsTrigger value="ats" className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                ATS Analysis
+                <Sparkles className="w-3 h-3 text-yellow-500" />
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsTemplateModalOpen(true)}
+                className="text-white flex items-center gap-2 bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-lg hover:bg-primary/90 transition-all shadow-xs hover:shadow-md font-medium"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                />
-              </svg>
-              Templates
-            </button>
-            <div className="h-6 w-px bg-border/60" />
-            <span className="text-sm text-muted-foreground font-medium">
-              {currentTemplate.charAt(0).toUpperCase() +
-                currentTemplate.slice(1)}{' '}
-              Template
-            </span>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                  />
+                </svg>
+                Templates
+              </button>
+
+              <button
+                onClick={handleDownloadPDF}
+                disabled={isDownloading}
+                className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${isDownloading
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:from-green-600 hover:to-green-700 hover:scale-[1.02]'
+                  }`}
+              >
+                {isDownloading ? (
+                  <LoaderPinwheelIcon className="w-4 h-4 animate-spin" />
+                ) : (
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                )}
+                {isDownloading ? 'Downloading...' : 'Download PDF'}
+              </button>
+            </div>
           </div>
-
-          <button
-            onClick={handleDownloadPDF}
-            disabled={isDownloading}
-            className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${isDownloading
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:from-green-600 hover:to-green-700 hover:scale-[1.02]'
-              }`}
-          >
-            {isDownloading ? (
-              <LoaderPinwheelIcon className="w-4 h-4 animate-spin" />
-            ) : (
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
-            )}
-            {isDownloading ? 'Downloading...' : 'Download PDF'}
-          </button>
         </div>
-      </div>
 
-      {/* Resume Content */}
-      <div className="px-4 pb-4">
-        <ResumeContent
-          data={resumeData}
-          isEditable={true}
-          onContentEdit={handleContentEdit}
-          template={currentTemplate}
-        />
-      </div>
+        {/* Tab Content */}
+        <div className="flex-1 overflow-auto">
+          {/* Resume Tab */}
+          <TabsContent value="resume" className="mt-0 h-full">
+            <div className="px-4 pb-4 max-w-5xl mx-auto">
+              <ResumeContent
+                data={resumeData}
+                isEditable={true}
+                onContentEdit={handleContentEdit}
+                template={currentTemplate}
+              />
+            </div>
+          </TabsContent>
+
+          {/* ATS Analysis Tab */}
+          <TabsContent value="ats" className="mt-0 h-full">
+            <div className="p-4 max-w-5xl mx-auto">
+              <Card className="mb-4">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Target className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">🚀 ATS Score Analysis</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Get AI-powered insights on how your resume performs against job requirements
+                      </p>
+                    </div>
+                  </div>
+
+                  {!showATSAnalysis ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium mb-2">Ready for ATS Analysis</p>
+                      <p className="text-sm mb-4">
+                        Your resume content is ready. Add a job description to get detailed ATS scoring and optimization suggestions.
+                      </p>
+                      <Button onClick={() => setShowATSAnalysis(true)} className="gap-2">
+                        <Sparkles className="w-4 h-4" />
+                        Start ATS Analysis
+                      </Button>
+                    </div>
+                  ) : (
+                    <ATSScore
+                      resumeContent={
+                        `${resumeData.name || ''}\n${resumeData.title || ''}\n` +
+                        `${resumeData.contact?.email || ''} ${resumeData.contact?.phone || ''}\n` +
+                        `${resumeData.summary || ''}\n` +
+                        `${resumeData.experience?.map(exp => `${exp.title} at ${exp.company}\n${exp.description}`).join('\n') || ''}\n` +
+                        `${resumeData.education?.map(edu => `${edu.degree} - ${edu.institution}`).join('\n') || ''}\n` +
+                        `${resumeData.skills?.join(', ') || ''}\n` +
+                        `${resumeData.projects?.map(proj => `${proj.name}: ${proj.description}`).join('\n') || ''}`
+                      }
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </div>
+      </Tabs>
 
       <TemplateModal
         isOpen={isTemplateModalOpen}

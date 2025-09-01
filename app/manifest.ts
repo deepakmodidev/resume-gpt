@@ -2,10 +2,10 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'ResumeGPT - AI Resume Builder',
-    short_name: 'ResumeGPT',
+    name: 'ResumeGPT Pro - RAG-Powered AI Resume Intelligence',
+    short_name: 'ResumeGPT Pro',
     description:
-      'Create perfect resumes with AI. Type naturally, watch your resume build in real-time.',
+      'Advanced GenAI resume builder with RAG pipeline, vector search, ATS analysis, and AI-powered optimization. Features semantic matching, keyword intelligence, and industry insights.',
     start_url: '/',
     display: 'standalone',
     background_color: '#2563eb', // blue-600

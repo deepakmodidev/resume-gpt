@@ -8,18 +8,26 @@ import {
   Zap,
   Users,
   Shield,
-  Sparkles,
+  Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const features = [
+  {
+    title: 'ATS Score Analyzer',
+    description:
+      'Get instant ATS compatibility scores with GenAI analysis and optimization suggestions',
+    icon: Target,
+    color: 'text-indigo-500',
+    size: 'double', // spans 2 columns (positions 1-2)
+  },
   {
     title: 'AI Resume Assistant',
     description:
       'Powered by Gemini AI for intelligent content suggestions and resume optimization',
     icon: MessageCircle,
     color: 'text-blue-500',
-    size: 'double', // spans 2 columns (positions 1-2)
+    size: 'single', // spans 1 column (position 3)
   },
   {
     title: 'Professional Templates',
@@ -27,7 +35,7 @@ const features = [
       '10+ ATS-friendly templates including Modern, Executive, and Creative designs',
     icon: Palette,
     color: 'text-purple-500',
-    size: 'single', // spans 1 column (position 3)
+    size: 'single', // spans 1 column (position 4)
   },
   {
     title: 'PDF Export',
@@ -35,14 +43,14 @@ const features = [
       'High-quality PDF generation with proper formatting and print optimization',
     icon: Download,
     color: 'text-green-500',
-    size: 'single', // spans 1 column (position 4)
+    size: 'single', // spans 1 column (position 5)
   },
   {
     title: 'Real-time Preview',
     description: 'Live editing with instant preview of your resume changes',
     icon: Zap,
     color: 'text-yellow-500',
-    size: 'double', // spans 2 columns (positions 5-6)
+    size: 'double', // spans 2 columns (positions 6-7)
   },
   {
     title: 'Chat Management',
@@ -50,21 +58,13 @@ const features = [
       'Organize resume conversations with search, rename, and delete capabilities',
     icon: Users,
     color: 'text-cyan-500',
-    size: 'single', // spans 1 column (position 7)
+    size: 'single', // spans 1 column (position 8)
   },
   {
     title: 'Secure & Private',
     description: 'Google OAuth authentication with secure session management',
     icon: Shield,
     color: 'text-red-500',
-    size: 'single', // spans 1 column (position 8)
-  },
-  {
-    title: 'ATS Optimization',
-    description:
-      'Ensure your resume passes Applicant Tracking Systems with smart formatting',
-    icon: Sparkles,
-    color: 'text-orange-500',
     size: 'single', // spans 1 column (position 9)
   },
 ];

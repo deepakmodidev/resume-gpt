@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Target } from 'lucide-react';
 import { checkSession } from '@/actions/session-actions';
 import { handleGoogleSignIn } from '@/actions/auth-actions';
 import { ResumePreview } from './ResumePreview';
@@ -118,8 +118,8 @@ export function HeroSection({ chatId }: HeroSectionProps) {
             </span>
           </p>
 
-          {/* Enhanced CTA Button */}
-          <div className="">
+          {/* Enhanced CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
             <Button
               onClick={handleGetStarted}
               disabled={isCheckingSession}
@@ -134,11 +134,25 @@ export function HeroSection({ chatId }: HeroSectionProps) {
               ) : (
                 <div className="flex items-center gap-2 md:gap-3">
                   <span className="text-sm md:text-base">
-                    Get Started for Free
+                    Build Resume
                   </span>
                   <ArrowRight className="h-4 w-4 md:h-6 md:w-6" />
                 </div>
               )}
+            </Button>
+
+            <Button
+              onClick={() => router.push('/ats-analyzer')}
+              variant="outline"
+              size="lg"
+              className="border-2 border-blue-500/30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm hover:bg-blue-50/80 dark:hover:bg-slate-800/80 font-bold text-base md:text-xl px-8 py-4 md:px-12 md:py-6 h-auto rounded-xl md:rounded-2xl shadow-lg transition-all duration-300"
+            >
+              <div className="flex items-center gap-2 md:gap-3">
+                <span className="text-sm md:text-base text-blue-600 dark:text-blue-400">
+                  Analyze ATS Score
+                </span>
+                <Target className="h-4 w-4 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
+              </div>
             </Button>
           </div>
 

@@ -65,18 +65,19 @@ export function Header() {
           </div>
 
           {/* Navigation Links - Center (Hidden on Mobile) */}
-          <nav className="hidden md:flex items-center justify-center gap-12">
+          <nav className="hidden md:flex items-center justify-center gap-8">
             <Link
-              href="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              href="/ats-analyzer"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
             >
-              Features
+              <NotepadTextDashed className="w-4 h-4" />
+              ATS Analyzer
             </Link>
             <Link
               href="/"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Pricing
+              Features
             </Link>
             <Link
               href="/"

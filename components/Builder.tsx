@@ -14,6 +14,7 @@ import { ChatMessages } from '@/components/chat/ChatMessages';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { useChat } from '@/hooks/useChat';
 import { ANIMATION_VARIANTS } from '@/constants/resume';
+import { Sparkles, X } from 'lucide-react';
 import type { Session } from 'next-auth';
 import type { JsonValue } from '@prisma/client/runtime/library';
 
@@ -46,6 +47,12 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   });
   const [inputValue, setInputValue] = useState('');
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [showGenAINotification, setShowGenAINotification] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('genai-notification-dismissed');
+    }
+    return true;
+  });
 
   const {
     messages,
@@ -100,6 +107,13 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
 
   const handleApiKeyModalClose = useCallback(() => {
     setShowApiKeyModal(false);
+  }, []);
+
+  const dismissGenAINotification = useCallback(() => {
+    setShowGenAINotification(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('genai-notification-dismissed', 'true');
+    }
   }, []);
 
   // Add keyboard shortcut for toggling sidebar (Ctrl+\)
@@ -192,6 +206,38 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
         isOpen={showApiKeyModal}
         onClose={handleApiKeyModalClose}
       />
+
+      {/* GenAI Feature Notification */}
+      <AnimatePresence>
+        {showGenAINotification && hasInteracted && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className="fixed bottom-4 right-4 z-50 max-w-sm"
+          >
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg shadow-lg border border-white/20">
+              <div className="flex items-start gap-3">
+                <div className="p-1 bg-white/20 rounded-full">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-sm mb-1">🚀 New GenAI Features!</h4>
+                  <p className="text-xs opacity-90 mb-2">
+                    Check out the new ATS Analysis tab for AI-powered resume optimization with RAG technology!
+                  </p>
+                </div>
+                <button
+                  onClick={dismissGenAINotification}
+                  className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-}
+};
