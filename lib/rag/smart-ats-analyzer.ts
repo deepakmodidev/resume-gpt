@@ -18,13 +18,13 @@ const SKILL_CATEGORIES = {
     weight: 0.35,
     patterns: [
       // Programming languages
-      /\b(javascript|typescript|python|java|c\+\+|c#|php|ruby|go|rust|swift|kotlin|scala|r|matlab|sql|html|css|bash|powershell)\b/gi,
-      // Frameworks
-      /\b(react|angular|vue|svelte|node\.?js|express|django|flask|spring|laravel|rails|next\.?js|nuxt\.?js)\b/gi,
+      /\b(javascript|js|typescript|ts|python|java|c\+\+|c#|php|ruby|go|rust|swift|kotlin|scala|r|matlab|sql|html|html5|css|css3|bash|powershell)\b/gi,
+      // Frameworks with variations
+      /\b(react|reactjs|react\.js|angular|angularjs|angular\.js|vue|vuejs|vue\.js|svelte|node\.?js|nodejs|express|expressjs|express\.js|django|flask|spring|laravel|rails|next\.?js|nextjs|nuxt\.?js|nuxtjs)\b/gi,
       // Databases  
-      /\b(mysql|postgresql|mongodb|redis|elasticsearch|sqlite|oracle|cassandra|firebase|firestore)\b/gi,
+      /\b(mysql|postgresql|postgres|mongodb|mongo|redis|elasticsearch|sqlite|oracle|cassandra|firebase|firestore)\b/gi,
       // Cloud & DevOps
-      /\b(aws|azure|gcp|docker|kubernetes|jenkins|terraform|ansible|ci\/cd|devops|serverless)\b/gi
+      /\b(aws|amazon.web.services|azure|microsoft.azure|gcp|google.cloud|docker|kubernetes|k8s|jenkins|terraform|ansible|ci\/cd|devops|serverless)\b/gi
     ]
   },
   
@@ -180,7 +180,7 @@ export class SmartATSAnalyzer {
   }
 
   /**
-   * Smart skill matching using semantic similarity
+   * Smart skill matching using semantic similarity and variations
    */
   private calculateSkillMatch(resumeSkills: any[], jobSkills: any[]): {
     matched: any[],
@@ -189,26 +189,93 @@ export class SmartATSAnalyzer {
     const matched: any[] = [];
     const missing: any[] = [];
     
+    // Create skill variations map for better matching
+    const skillVariations = {
+      'react': ['react', 'reactjs', 'react.js'],
+      'reactjs': ['react', 'reactjs', 'react.js'],
+      'javascript': ['javascript', 'js', 'ecmascript'],
+      'js': ['javascript', 'js', 'ecmascript'],
+      'typescript': ['typescript', 'ts'],
+      'ts': ['typescript', 'ts'],
+      'nodejs': ['nodejs', 'node.js', 'node'],
+      'node.js': ['nodejs', 'node.js', 'node'],
+      'angular': ['angular', 'angularjs', 'angular.js'],
+      'angularjs': ['angular', 'angularjs', 'angular.js'],
+      'vue': ['vue', 'vuejs', 'vue.js'],
+      'vuejs': ['vue', 'vuejs', 'vue.js'],
+      'mongodb': ['mongodb', 'mongo'],
+      'postgresql': ['postgresql', 'postgres', 'psql'],
+      'html': ['html', 'html5'],
+      'css': ['css', 'css3']
+    };
+    
     const resumeSkillNames = new Set(resumeSkills.map(s => s.skill.toLowerCase()));
     
     jobSkills.forEach(jobSkill => {
-      const isDirectMatch = resumeSkillNames.has(jobSkill.skill.toLowerCase());
+      let isMatched = false;
+      const jobSkillLower = jobSkill.skill.toLowerCase();
       
-      // Check for similar skills (e.g., "javascript" vs "js")
-      const isSimilarMatch = resumeSkills.some(resumeSkill => {
-        const similarity = natural.JaroWinklerDistance(
-          resumeSkill.skill.toLowerCase(),
-          jobSkill.skill.toLowerCase()
-        );
-        return similarity > 0.8; // 80% similarity threshold
-      });
-
-      if (isDirectMatch || isSimilarMatch) {
+      // Direct match
+      if (resumeSkillNames.has(jobSkillLower)) {
         matched.push({
           ...jobSkill,
-          matchType: isDirectMatch ? 'exact' : 'similar'
+          matchType: 'exact'
         });
-      } else {
+        isMatched = true;
+        return;
+      }
+      
+      // Check skill variations
+      const variations = skillVariations[jobSkillLower] || [jobSkillLower];
+      for (const variation of variations) {
+        if (resumeSkillNames.has(variation)) {
+          matched.push({
+            ...jobSkill,
+            matchType: 'variation'
+          });
+          isMatched = true;
+          break;
+        }
+      }
+      
+      // Check reverse variations (resume has "reactjs", job has "react")
+      if (!isMatched) {
+        for (const resumeSkill of resumeSkills) {
+          const resumeSkillLower = resumeSkill.skill.toLowerCase();
+          const resumeVariations = skillVariations[resumeSkillLower] || [resumeSkillLower];
+          
+          if (resumeVariations.includes(jobSkillLower)) {
+            matched.push({
+              ...jobSkill,
+              matchType: 'reverse_variation'
+            });
+            isMatched = true;
+            break;
+          }
+        }
+      }
+      
+      // Jaro-Winkler similarity for fuzzy matches
+      if (!isMatched) {
+        const isSimilarMatch = resumeSkills.some(resumeSkill => {
+          const similarity = natural.JaroWinklerDistance(
+            resumeSkill.skill.toLowerCase(),
+            jobSkillLower
+          );
+          return similarity > 0.85; // 85% similarity threshold
+        });
+
+        if (isSimilarMatch) {
+          matched.push({
+            ...jobSkill,
+            matchType: 'similar'
+          });
+          isMatched = true;
+        }
+      }
+
+      // Add to missing if no match found
+      if (!isMatched) {
         missing.push({
           ...jobSkill,
           importance: this.calculateSkillImportance(jobSkill),
@@ -247,6 +314,10 @@ export class SmartATSAnalyzer {
    * Main analysis function using smart NLP
    */
   analyze(resumeText: string, jobDescription: string): SmartATSAnalysis {
+    // Check content length penalties first
+    const resumeLength = resumeText.trim().length;
+    const resumeWords = resumeText.trim().split(/\s+/).length;
+    
     // Extract skills from both texts using NLP
     const resumeSkills = this.extractSkillsWithNLP(resumeText);
     const jobSkills = this.extractSkillsWithNLP(jobDescription);
@@ -266,8 +337,8 @@ export class SmartATSAnalyzer {
       experienceMatch: 75 // Simplified for now
     };
 
-    // Calculate overall score with weighted categories
-    const overallScore = Math.round(
+    // Calculate base overall score with weighted categories
+    let overallScore = Math.round(
       breakdown.technicalMatch * 0.35 +
       breakdown.businessMatch * 0.25 +
       breakdown.managementMatch * 0.2 +
@@ -275,8 +346,24 @@ export class SmartATSAnalyzer {
       breakdown.experienceMatch * 0.05
     );
 
+    // Apply severe content length penalties (like real ATS systems)
+    if (resumeWords < 5) {
+      overallScore = Math.min(overallScore, 15); // Extremely short content
+    } else if (resumeWords < 20) {
+      overallScore = Math.min(overallScore, 25); // Very short content
+    } else if (resumeWords < 50) {
+      overallScore = Math.min(overallScore, 40); // Short content
+    } else if (resumeLength < 200) {
+      overallScore = Math.min(overallScore, 60); // Minimal content
+    }
+
+    // Additional penalty for lack of context/details
+    if (resumeSkills.length < 3 && resumeWords < 30) {
+      overallScore = Math.min(overallScore, 20); // No real experience described
+    }
+
     // Generate recommendations
-    const recommendations = this.generateRecommendations(missing, breakdown);
+    const recommendations = this.generateRecommendations(missing, breakdown, resumeWords);
 
     return {
       overallScore,
@@ -307,9 +394,20 @@ export class SmartATSAnalyzer {
   /**
    * Generate smart recommendations based on analysis
    */
-  private generateRecommendations(missingSkills: any[], breakdown: any): string[] {
+  private generateRecommendations(missingSkills: any[], breakdown: any, resumeWords: number = 0): string[] {
     const recommendations: string[] = [];
 
+    // Content length recommendations (highest priority)
+    if (resumeWords < 5) {
+      recommendations.push("Your resume is too short. Add detailed experience, projects, and skills.");
+      return recommendations; // Return early for extremely short content
+    } else if (resumeWords < 20) {
+      recommendations.push("Expand your resume with more details about your experience and achievements.");
+    } else if (resumeWords < 50) {
+      recommendations.push("Add more comprehensive information about your projects and professional experience.");
+    }
+
+    // Skill-based recommendations
     if (breakdown.technicalMatch < 70) {
       recommendations.push("Focus on improving technical skills alignment with job requirements.");
     }
@@ -322,7 +420,8 @@ export class SmartATSAnalyzer {
       recommendations.push(`Consider adding these key skills: ${missingSkills.slice(0, 3).map(s => s.skill).join(', ')}`);
     }
 
-    if (recommendations.length === 0) {
+    // Positive feedback for good resumes
+    if (recommendations.length === 0 && resumeWords >= 50) {
       recommendations.push("Your resume shows strong alignment with the job requirements!");
     }
 
