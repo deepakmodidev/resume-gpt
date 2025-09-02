@@ -370,7 +370,7 @@ export default function ATSAnalysisPage() {
                           placeholder="Paste your resume content here..."
                           value={resumeContent}
                           onChange={(e) => setResumeContent(e.target.value)}
-                          className="min-h-[200px] resize-none"
+                          className="min-h-[100px] resize-none"
                         />
                       </div>
                     </div>
@@ -384,7 +384,7 @@ export default function ATSAnalysisPage() {
                         placeholder="Paste the full job description here..."
                         value={jobDescription}
                         onChange={(e) => setJobDescription(e.target.value)}
-                        className="min-h-[150px] resize-none"
+                        className="min-h-[100px] resize-none"
                       />
                     </div>
 
