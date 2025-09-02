@@ -93,7 +93,18 @@ const STOP_WORDS = new Set([
 
     // Common actions
     'work', 'working', 'develop', 'build', 'create', 'design', 'implement', 'maintain',
-    'manage', 'lead', 'support', 'collaborate', 'communicate'
+    'manage', 'lead', 'support', 'collaborate', 'communicate',
+
+    // Generic words that shouldn't count as skills
+    'solutions', 'proficient', 'responsible', 'motivated', 'driven', 'passionate',
+    'dedicated', 'committed', 'focused', 'results', 'oriented', 'goal', 'self',
+    'proactive', 'initiative', 'creative', 'analytical', 'strategic', 'tactical',
+    'operational', 'technical', 'practical', 'effective', 'efficient', 'productive',
+    'reliable', 'dependable', 'trustworthy', 'professional', 'capable', 'expert',
+    'specialist', 'advanced', 'superior', 'quality', 'collecting', 'analyzing',
+    'interpreting', 'responsible', 'actionable', 'predictive', 'structured',
+    'unstructured', 'prediction', 'classification', 'optimization', 'decision',
+    'making', 'insights', 'trends', 'patterns', 'performance', 'metrics'
 ]);
 
 export interface ProductionATSAnalysis {
@@ -252,10 +263,35 @@ export class ProductionATSAnalyzer {
      * Analyze semantic similarity using simplified embedding approach
      */
     private calculateSemanticSimilarity(resumeText: string, jobText: string): number {
-        const resumeEmbedding = this.generateSimpleEmbedding(this.normalizeText(resumeText));
-        const jobEmbedding = this.generateSimpleEmbedding(this.normalizeText(jobText));
-
-        return this.cosineSimilarity(resumeEmbedding, jobEmbedding) * 100;
+        // Handle edge cases for very short content
+        const resumeNorm = this.normalizeText(resumeText);
+        const jobNorm = this.normalizeText(jobText);
+        
+        if (resumeNorm.length < 10 || jobNorm.length < 10) {
+            return 0; // No meaningful similarity for very short content
+        }
+        
+        // Check for actual word overlap
+        const resumeWords = new Set(resumeNorm.split(' ').filter(w => w.length > 2));
+        const jobWords = new Set(jobNorm.split(' ').filter(w => w.length > 2));
+        
+        const overlap = [...resumeWords].filter(word => jobWords.has(word));
+        const totalUniqueWords = new Set([...resumeWords, ...jobWords]).size;
+        
+        if (totalUniqueWords === 0) return 0;
+        
+        // Base similarity on actual word overlap, not character embeddings
+        const wordOverlapScore = (overlap.length / totalUniqueWords) * 100;
+        
+        // Only use embedding similarity if there's some word overlap
+        if (overlap.length === 0) return 0;
+        
+        const resumeEmbedding = this.generateSimpleEmbedding(resumeNorm);
+        const jobEmbedding = this.generateSimpleEmbedding(jobNorm);
+        const embeddingSimilarity = this.cosineSimilarity(resumeEmbedding, jobEmbedding) * 100;
+        
+        // Combine word overlap and embedding similarity, weighted towards word overlap
+        return Math.round((wordOverlapScore * 0.7) + (embeddingSimilarity * 0.3));
     }
 
     /**
@@ -314,11 +350,68 @@ export class ProductionATSAnalyzer {
 
         const score = totalWeight > 0 ? (matchedWeight / totalWeight) * 100 : 0;
 
+        // Apply domain mismatch penalty
+        const domainPenalty = this.calculateDomainMismatch(resumeText, jobText);
+        const adjustedScore = score * (1 - domainPenalty);
+
         return {
-            score: Math.min(100, Math.max(0, score)),
+            score: Math.min(100, Math.max(0, adjustedScore)),
             matchedSkills: matchedSkills.slice(0, 20), // Limit to top 20
             missingSkills: missingSkills.slice(0, 10)  // Limit to top 10
         };
+    }
+
+    /**
+     * Calculate domain mismatch penalty
+     */
+    private calculateDomainMismatch(resumeText: string, jobText: string): number {
+        // Define domain-specific keyword groups
+        const domains = {
+            datascience: ['data', 'scientist', 'machine', 'learning', 'ml', 'ai', 'artificial', 'intelligence', 
+                         'statistics', 'statistical', 'analytics', 'pandas', 'numpy', 'scikit', 'tensorflow', 
+                         'pytorch', 'jupyter', 'notebook', 'visualization', 'tableau', 'powerbi', 'r', 'stata'],
+            webdev: ['react', 'angular', 'vue', 'javascript', 'typescript', 'node', 'express', 'html', 'css', 
+                    'frontend', 'backend', 'fullstack', 'responsive', 'bootstrap', 'tailwind', 'webpack', 'vite'],
+            mobile: ['ios', 'android', 'swift', 'kotlin', 'react-native', 'flutter', 'dart', 'xcode', 'mobile'],
+            devops: ['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'jenkins', 'ci/cd', 'terraform', 'ansible'],
+            embedded: ['embedded', 'microcontroller', 'arduino', 'raspberry', 'iot', 'sensors', 'hardware', 'c++', 'firmware']
+        };
+
+        const resumeNorm = this.normalizeText(resumeText);
+        const jobNorm = this.normalizeText(jobText);
+
+        // Find dominant domain in job description
+        let jobDomain = '';
+        let maxJobScore = 0;
+        
+        Object.entries(domains).forEach(([domain, keywords]) => {
+            const score = keywords.filter(keyword => jobNorm.includes(keyword)).length;
+            if (score > maxJobScore) {
+                maxJobScore = score;
+                jobDomain = domain;
+            }
+        });
+
+        // Find dominant domain in resume
+        let resumeDomain = '';
+        let maxResumeScore = 0;
+        
+        Object.entries(domains).forEach(([domain, keywords]) => {
+            const score = keywords.filter(keyword => resumeNorm.includes(keyword)).length;
+            if (score > maxResumeScore) {
+                maxResumeScore = score;
+                resumeDomain = domain;
+            }
+        });
+
+        // Apply penalty if domains don't match and there's a clear mismatch
+        if (jobDomain && resumeDomain && jobDomain !== resumeDomain && maxJobScore >= 3 && maxResumeScore >= 3) {
+            return 0.6; // 60% penalty for clear domain mismatch
+        } else if (jobDomain && resumeDomain && jobDomain !== resumeDomain && maxJobScore >= 2) {
+            return 0.3; // 30% penalty for moderate domain mismatch
+        }
+
+        return 0; // No penalty
     }
 
     /**
@@ -407,7 +500,16 @@ export class ProductionATSAnalyzer {
      * Analyze format quality
      */
     private analyzeFormatQuality(resumeText: string): number {
-        let score = 60; // Base score
+        // Handle extremely short content
+        if (resumeText.trim().length < 20) {
+            return 5; // Very poor format for minimal content
+        }
+        
+        if (resumeText.trim().length < 100) {
+            return 15; // Poor format for very short content
+        }
+        
+        let score = 60; // Base score for reasonable content
 
         // Check for sections
         const sections = ['summary', 'experience', 'education', 'skills', 'projects'];
@@ -506,13 +608,43 @@ export class ProductionATSAnalyzer {
         const readabilityScore = this.calculateReadabilityScore(resumeText);
 
         // Calculate overall score with industry-standard weights
-        const overallScore = Math.round(
+        let overallScore = Math.round(
             semanticMatch * 0.25 +
             skillsAnalysis.score * 0.35 +
             experienceMatch * 0.2 +
             formatQuality * 0.1 +
             keywordDensity * 0.1
         );
+
+        // Apply severe penalty for extremely short content
+        const cleanResume = resumeText.replace(/\s+/g, ' ').trim();
+        const cleanJob = jobDescription.replace(/\s+/g, ' ').trim();
+        if (cleanResume.length < 20 || cleanJob.length < 20) {
+            overallScore = Math.min(overallScore, 5); // Cap at 5% for minimal content
+        } else if (cleanResume.length < 50 && cleanJob.length < 50) {
+            overallScore = Math.min(overallScore, 15); // Cap at 15% for very short content
+        }
+
+        // Apply additional penalties for poor matches
+        const matchedSkillsCount = skillsAnalysis.matchedSkills.length;
+        const missingSkillsCount = skillsAnalysis.missingSkills.length;
+        
+        // Penalty for very few matches relative to missing skills
+        if (matchedSkillsCount < 3 && missingSkillsCount > 10) {
+            overallScore = Math.round(overallScore * 0.4); // 60% penalty
+        } else if (matchedSkillsCount < 5 && missingSkillsCount > 8) {
+            overallScore = Math.round(overallScore * 0.6); // 40% penalty
+        } else if (matchedSkillsCount < missingSkillsCount / 2) {
+            overallScore = Math.round(overallScore * 0.7); // 30% penalty
+        }
+
+        // Cap score based on skill match ratio
+        const skillMatchRatio = matchedSkillsCount / (matchedSkillsCount + missingSkillsCount);
+        if (skillMatchRatio < 0.3) {
+            overallScore = Math.min(overallScore, 45); // Cap at 45% for poor skill match
+        } else if (skillMatchRatio < 0.5) {
+            overallScore = Math.min(overallScore, 65); // Cap at 65% for moderate skill match
+        }
 
         // Generate recommendations
         const recommendations = this.generateRecommendations(
