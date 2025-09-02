@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import db from "@/prisma/prisma";
 import { ATSAnalyzer } from "@/lib/rag/ats-analyzer";
-import { VectorStoreManager } from "@/lib/rag/vector-store";
 
 interface ResumeData {
   atsAnalysis?: {
@@ -45,23 +44,6 @@ export async function POST(req: NextRequest) {
       resumeContent,
       analysis.missingKeywords.slice(0, 10), // Top 10 missing keywords
     );
-
-    // Store job description in vector database for future comparisons
-    const vectorStore = new VectorStoreManager();
-    try {
-      await vectorStore.addDocument(jobDescription, {
-        type: "job_description",
-        id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        title: "Job Description",
-        company: "Unknown",
-        industry: "general",
-        level: "unknown", // Could be extracted from job description
-        userId: isAuthenticated ? session.user.id : undefined,
-      });
-    } catch (vectorError) {
-      console.warn("Vector store operation failed:", vectorError);
-      // Continue without vector storage - don't fail the main analysis
-    }
 
     // Store analysis results in database if resumeId is provided and user is authenticated
     if (resumeId && isAuthenticated) {

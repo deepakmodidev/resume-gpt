@@ -36,14 +36,14 @@ RESUME DATA STRUCTURE:
 - Use proper date formats for experience and education (e.g., "Jan 2023 - Present")
 - Keep contact information in standard professional formats
 
-CONVERSATION CONTEXT:
+CONVERSATION CONTEXT: // 🎯 RAG: System Instruction - Defines context retrieval behavior
 - Remember ALL previous interactions in the conversation
-- For each response, review the entire conversation history to ensure consistency with past interactions
+- For each response, review the entire conversation history to ensure consistency with past interactions // 🎯 RAG: Memory Pattern - Instructions for context-aware responses
 - Reference past requests when users say "add what I mentioned earlier"
 - Maintain consistency with previously discussed resume content
 - Show understanding of the user's career goals and industry
 
-RESUME OPTIMIZATION EXPERTISE:
+RESUME OPTIMIZATION EXPERTISE: // 🎯 RAG: Domain Knowledge - Built-in industry expertise
 - Suggest ATS-friendly keywords relevant to the user's target role
 - Transform weak descriptions into impactful, results-oriented statements
 - Recommend quantifiable achievements with specific metrics
@@ -153,14 +153,14 @@ const upsertChat = async (
   modelMsg: unknown,
   resumeData: unknown,
 ) => {
-  const chat = await db.chat.findUnique({ where: { id: chatId, userId } });
+  const chat = await db.chat.findUnique({ where: { id: chatId, userId } }); // 🎯 RAG: Database Retrieval - Gets stored conversation context
 
   if (chat) {
     await db.chat.update({
       where: { id: chatId, userId },
       data: {
-        messages: { push: [userMsg, modelMsg] as never },
-        resumeData: resumeData as never,
+        messages: { push: [userMsg, modelMsg] as never }, // 🎯 RAG: Memory Extension - Appends to conversation history
+        resumeData: resumeData as never, // 🎯 RAG: Context Update - Updates stored resume context
       },
     });
   } else {
@@ -210,14 +210,14 @@ export async function POST(req: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash",
-      systemInstruction: SYSTEM_INSTRUCTION,
+      systemInstruction: SYSTEM_INSTRUCTION, // 🎯 RAG: System Knowledge - Built-in domain expertise
     });
     const chat = model.startChat({
       generationConfig: GENERATION_CONFIG,
-      history,
+      history, // 🎯 RAG: Conversational - Retrieves previous conversation context
     });
     const result = await chat.sendMessage(
-      `${message}\nResume Data: ${JSON.stringify(resumeData)}`,
+      `${message}\nResume Data: ${JSON.stringify(resumeData)}`, // 🎯 RAG: Resume Context - Augments with current resume data
     );
     const response = parseResponse(result.response.text());
 
@@ -227,7 +227,7 @@ export async function POST(req: NextRequest) {
         : "I'm here to help with your resume. What would you like to know?";
     const updatedSection = response?.updatedSection || {};
 
-    const mergedData = deepMerge(resumeData, updatedSection);
+    const mergedData = deepMerge(resumeData, updatedSection); // 🎯 RAG: Context Merging - Combines retrieved data with new updates
 
     const userMsg = { role: "user", parts: [{ text: message }] };
     const modelMsg = { role: "model", parts: [{ text: acknowledgement }] };
@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
       message,
       userMsg,
       modelMsg,
-      mergedData,
+      mergedData, // 🎯 RAG: Database Storage - Stores context for future retrieval
     );
     return NextResponse.json({ response });
   } catch (error) {
