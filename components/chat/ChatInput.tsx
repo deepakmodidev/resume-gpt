@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
-import { ArrowUpFromLine } from 'lucide-react';
+import { ArrowUpFromLine } from "lucide-react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -18,7 +18,7 @@ export const ChatInput = ({
   inputValue,
   onInputChange,
 }: ChatInputProps) => {
-  const [inputMessage, setInputMessage] = useState('');
+  const [inputMessage, setInputMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Use controlled input if inputValue and onInputChange are provided
@@ -38,7 +38,7 @@ export const ChatInput = ({
   useEffect(() => {
     if (textareaRef.current) {
       // Reset height to auto to get the correct scrollHeight
-      textareaRef.current.style.height = '80px';
+      textareaRef.current.style.height = "80px";
 
       const scrollHeight = textareaRef.current.scrollHeight;
       // Set new height (clamped between min and max)
@@ -50,12 +50,12 @@ export const ChatInput = ({
   const handleSendMessage = useCallback(() => {
     if (!currentValue.trim() || isGenerating) return;
     onSendMessage(currentValue);
-    handleValueChange('');
+    handleValueChange("");
   }, [currentValue, isGenerating, onSendMessage, handleValueChange]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
+      if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSendMessage();
       }
@@ -73,9 +73,9 @@ export const ChatInput = ({
             ref={textareaRef}
             placeholder="Paste your resume or describe what you want to improve..."
             className={[
-              'flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
-              'min-h-[80px] max-h-[300px] overflow-y-auto px-4 py-3 pr-12 bg-transparent text-foreground placeholder:text-muted-foreground border-0 resize-none focus:ring-0 rounded-xl text-sm',
-            ].join(' ')}
+              "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+              "min-h-[80px] max-h-[300px] overflow-y-auto px-4 py-3 pr-12 bg-transparent text-foreground placeholder:text-muted-foreground border-0 resize-none focus:ring-0 rounded-xl text-sm",
+            ].join(" ")}
             value={currentValue}
             onChange={(e) => handleValueChange(e.target.value)}
             onKeyDown={handleKeyDown}

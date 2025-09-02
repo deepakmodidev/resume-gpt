@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertCircle,
   CheckCircle,
@@ -16,10 +22,10 @@ import {
   BarChart3,
   Lightbulb,
   ArrowRight,
-  Sparkles
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+  Sparkles,
+} from "lucide-react";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ATSAnalysisResult {
   scores: {
@@ -45,57 +51,61 @@ interface ATSScoreProps {
   onOptimizationSuggestion?: (suggestion: string) => void;
 }
 
-export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: ATSScoreProps) {
-  const [jobDescription, setJobDescription] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [company, setCompany] = useState('');
-  const [industry, setIndustry] = useState('');
+export function ATSScore({
+  resumeContent,
+  resumeId,
+  onOptimizationSuggestion,
+}: ATSScoreProps) {
+  const [jobDescription, setJobDescription] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [company, setCompany] = useState("");
+  const [industry, setIndustry] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<ATSAnalysisResult | null>(null);
   const [showFullAnalysis, setShowFullAnalysis] = useState(false);
 
   const handleQuickAnalyze = async () => {
     if (!jobDescription.trim() || !jobTitle.trim()) {
-      toast.error('Please provide job title and description');
+      toast.error("Please provide job title and description");
       return;
     }
 
     setIsAnalyzing(true);
     try {
-      const response = await fetch('/api/ats', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/ats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           resumeContent,
           jobDescription,
           jobTitle,
           company,
           industry,
-          resumeId
-        })
+          resumeId,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Analysis failed');
+        throw new Error(data.error || "Analysis failed");
       }
 
       setResult(data.analysis);
       setShowFullAnalysis(true);
       toast.success(`ATS Score: ${data.analysis.scores.overall}%`);
     } catch (error) {
-      console.error('Analysis error:', error);
-      toast.error('Failed to analyze. Please try again.');
+      console.error("Analysis error:", error);
+      toast.error("Failed to analyze. Please try again.");
     } finally {
       setIsAnalyzing(false);
     }
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    return "text-red-600";
   };
 
   const getScoreIcon = (score: number) => {
@@ -105,9 +115,9 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'bg-green-50 border-green-200';
-    if (score >= 60) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-red-50 border-red-200';
+    if (score >= 80) return "bg-green-50 border-green-200";
+    if (score >= 60) return "bg-yellow-50 border-yellow-200";
+    return "bg-red-50 border-red-200";
   };
 
   return (
@@ -156,7 +166,9 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
             />
             <Button
               onClick={handleQuickAnalyze}
-              disabled={isAnalyzing || !jobDescription.trim() || !jobTitle.trim()}
+              disabled={
+                isAnalyzing || !jobDescription.trim() || !jobTitle.trim()
+              }
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
               {isAnalyzing ? (
@@ -191,7 +203,9 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                     <BarChart3 className="h-5 w-5" />
                     ATS Compatibility Score
                   </div>
-                  <div className={`text-2xl font-bold ${getScoreColor(result.scores.overall)}`}>
+                  <div
+                    className={`text-2xl font-bold ${getScoreColor(result.scores.overall)}`}
+                  >
                     {result.scores.overall}%
                   </div>
                 </CardTitle>
@@ -206,7 +220,9 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                           {getScoreIcon(result.scores.keyword)}
                           <span className="text-xs font-medium">Keywords</span>
                         </div>
-                        <div className={`text-lg font-bold ${getScoreColor(result.scores.keyword)}`}>
+                        <div
+                          className={`text-lg font-bold ${getScoreColor(result.scores.keyword)}`}
+                        >
                           {result.scores.keyword}%
                         </div>
                       </div>
@@ -215,7 +231,9 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                           {getScoreIcon(result.scores.semantic)}
                           <span className="text-xs font-medium">Semantic</span>
                         </div>
-                        <div className={`text-lg font-bold ${getScoreColor(result.scores.semantic)}`}>
+                        <div
+                          className={`text-lg font-bold ${getScoreColor(result.scores.semantic)}`}
+                        >
                           {result.scores.semantic}%
                         </div>
                       </div>
@@ -224,7 +242,9 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                           {getScoreIcon(result.scores.content)}
                           <span className="text-xs font-medium">Content</span>
                         </div>
-                        <div className={`text-lg font-bold ${getScoreColor(result.scores.content)}`}>
+                        <div
+                          className={`text-lg font-bold ${getScoreColor(result.scores.content)}`}
+                        >
                           {result.scores.content}%
                         </div>
                       </div>
@@ -233,7 +253,9 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                           {getScoreIcon(result.scores.format)}
                           <span className="text-xs font-medium">Format</span>
                         </div>
-                        <div className={`text-lg font-bold ${getScoreColor(result.scores.format)}`}>
+                        <div
+                          className={`text-lg font-bold ${getScoreColor(result.scores.format)}`}
+                        >
                           {result.scores.format}%
                         </div>
                       </div>
@@ -247,16 +269,20 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                           Critical Missing Keywords
                         </h5>
                         <div className="flex flex-wrap gap-1">
-                          {result.criticalMissingKeywords.slice(0, 6).map((keyword, index) => (
-                            <Badge
-                              key={index}
-                              variant="secondary"
-                              className="bg-red-100 text-red-800 text-xs cursor-pointer hover:bg-red-200"
-                              onClick={() => onOptimizationSuggestion?.(keyword)}
-                            >
-                              {keyword}
-                            </Badge>
-                          ))}
+                          {result.criticalMissingKeywords
+                            .slice(0, 6)
+                            .map((keyword, index) => (
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="bg-red-100 text-red-800 text-xs cursor-pointer hover:bg-red-200"
+                                onClick={() =>
+                                  onOptimizationSuggestion?.(keyword)
+                                }
+                              >
+                                {keyword}
+                              </Badge>
+                            ))}
                           {result.criticalMissingKeywords.length > 6 && (
                             <Badge variant="outline" className="text-xs">
                               +{result.criticalMissingKeywords.length - 6} more
@@ -269,7 +295,8 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                     {/* Quick Actions */}
                     <div className="flex items-center justify-between pt-2">
                       <div className="text-xs text-muted-foreground">
-                        Industry Fit: {result.industryFit}% • Readability: {result.readabilityScore}%
+                        Industry Fit: {result.industryFit}% • Readability:{" "}
+                        {result.readabilityScore}%
                       </div>
                       <Button
                         variant="outline"
@@ -285,27 +312,42 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                 ) : (
                   <Tabs defaultValue="overview" className="w-full">
                     <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-                      <TabsTrigger value="keywords" className="text-xs">Keywords</TabsTrigger>
-                      <TabsTrigger value="suggestions" className="text-xs">Suggestions</TabsTrigger>
-                      <TabsTrigger value="insights" className="text-xs">Insights</TabsTrigger>
+                      <TabsTrigger value="overview" className="text-xs">
+                        Overview
+                      </TabsTrigger>
+                      <TabsTrigger value="keywords" className="text-xs">
+                        Keywords
+                      </TabsTrigger>
+                      <TabsTrigger value="suggestions" className="text-xs">
+                        Suggestions
+                      </TabsTrigger>
+                      <TabsTrigger value="insights" className="text-xs">
+                        Insights
+                      </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-4 mt-4">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {Object.entries({
-                          'Overall': result.scores.overall,
-                          'Keywords': result.scores.keyword,
-                          'Semantic': result.scores.semantic,
-                          'Content': result.scores.content,
-                          'Format': result.scores.format
+                          Overall: result.scores.overall,
+                          Keywords: result.scores.keyword,
+                          Semantic: result.scores.semantic,
+                          Content: result.scores.content,
+                          Format: result.scores.format,
                         }).map(([label, score]) => (
-                          <div key={label} className="text-center p-3 bg-white/60 rounded-lg">
+                          <div
+                            key={label}
+                            className="text-center p-3 bg-white/60 rounded-lg"
+                          >
                             <div className="flex items-center justify-center gap-1 mb-2">
                               {getScoreIcon(score)}
-                              <span className="text-sm font-medium">{label}</span>
+                              <span className="text-sm font-medium">
+                                {label}
+                              </span>
                             </div>
-                            <div className={`text-xl font-bold ${getScoreColor(score)}`}>
+                            <div
+                              className={`text-xl font-bold ${getScoreColor(score)}`}
+                            >
                               {score}%
                             </div>
                             <Progress value={score} className="mt-2 h-2" />
@@ -323,7 +365,11 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                           </h5>
                           <div className="flex flex-wrap gap-1 max-h-40 overflow-y-auto">
                             {result.matchedKeywords.map((keyword, index) => (
-                              <Badge key={index} variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="bg-green-100 text-green-800 text-xs"
+                              >
                                 {keyword}
                               </Badge>
                             ))}
@@ -340,7 +386,9 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                                 key={index}
                                 variant="secondary"
                                 className="bg-red-100 text-red-800 text-xs cursor-pointer hover:bg-red-200"
-                                onClick={() => onOptimizationSuggestion?.(keyword)}
+                                onClick={() =>
+                                  onOptimizationSuggestion?.(keyword)
+                                }
                                 title="Click to add to resume"
                               >
                                 {keyword}
@@ -363,7 +411,9 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => onOptimizationSuggestion(suggestion)}
+                                onClick={() =>
+                                  onOptimizationSuggestion(suggestion)
+                                }
                                 className="text-xs h-6 px-2"
                               >
                                 Apply
@@ -377,41 +427,66 @@ export function ATSScore({ resumeContent, resumeId, onOptimizationSuggestion }: 
                     <TabsContent value="insights" className="space-y-4 mt-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-white/60 rounded-lg">
-                          <h6 className="font-medium text-sm mb-2">Performance Metrics</h6>
+                          <h6 className="font-medium text-sm mb-2">
+                            Performance Metrics
+                          </h6>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span>Industry Fit</span>
-                              <span className="font-semibold">{result.industryFit}%</span>
+                              <span className="font-semibold">
+                                {result.industryFit}%
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Readability</span>
-                              <span className="font-semibold">{result.readabilityScore}%</span>
+                              <span className="font-semibold">
+                                {result.readabilityScore}%
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Keyword Density</span>
-                              <span className="font-semibold">{result.keywordDensity}%</span>
+                              <span className="font-semibold">
+                                {result.keywordDensity}%
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Semantic Match</span>
-                              <span className="font-semibold">{result.semanticSimilarity}%</span>
+                              <span className="font-semibold">
+                                {result.semanticSimilarity}%
+                              </span>
                             </div>
                           </div>
                         </div>
 
                         <div className="p-3 bg-white/60 rounded-lg">
-                          <h6 className="font-medium text-sm mb-2">Quick Stats</h6>
+                          <h6 className="font-medium text-sm mb-2">
+                            Quick Stats
+                          </h6>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span>Total Keywords</span>
-                              <span className="font-semibold">{result.matchedKeywords.length + result.missingKeywords.length}</span>
+                              <span className="font-semibold">
+                                {result.matchedKeywords.length +
+                                  result.missingKeywords.length}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Match Rate</span>
-                              <span className="font-semibold">{((result.matchedKeywords.length / (result.matchedKeywords.length + result.missingKeywords.length)) * 100).toFixed(1)}%</span>
+                              <span className="font-semibold">
+                                {(
+                                  (result.matchedKeywords.length /
+                                    (result.matchedKeywords.length +
+                                      result.missingKeywords.length)) *
+                                  100
+                                ).toFixed(1)}
+                                %
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Critical Missing</span>
-                              <span className="font-semibold text-red-600">{result.criticalMissingKeywords.length}</span>
+                              <span className="font-semibold text-red-600">
+                                {result.criticalMissingKeywords.length}
+                              </span>
                             </div>
                           </div>
                         </div>

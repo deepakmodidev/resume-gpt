@@ -9,22 +9,22 @@ export function HomeLayout({ children }: LayoutProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebApplication',
-            name: 'ResumeGPT',
-            applicationCategory: 'Resume Builder',
-            operatingSystem: 'Web Browser',
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            name: "ResumeGPT",
+            applicationCategory: "Resume Builder",
+            operatingSystem: "Web Browser",
             offers: {
-              '@type': 'Offer',
-              price: '0',
-              priceCurrency: 'INR',
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "INR",
             },
             description:
-              'AI-powered resume builder that helps create professional resumes optimized for ATS systems.',
+              "AI-powered resume builder that helps create professional resumes optimized for ATS systems.",
             aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: '4.8',
-              ratingCount: '1250',
+              "@type": "AggregateRating",
+              ratingValue: "4.8",
+              ratingCount: "1250",
             },
           }),
         }}

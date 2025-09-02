@@ -1,23 +1,23 @@
-import { ResumeData } from '@/lib/types';
+import { ResumeData } from "@/lib/types";
 
 export const EMPTY_RESUME: ResumeData = {
-  name: '',
-  title: '',
+  name: "",
+  title: "",
   contact: {
-    email: '',
-    phone: '',
-    location: '',
-    linkedin: '',
-    github: '',
-    blogs: '',
+    email: "",
+    phone: "",
+    location: "",
+    linkedin: "",
+    github: "",
+    blogs: "",
   },
-  summary: '',
+  summary: "",
   experience: [
-    { title: '', company: '', location: '', period: '', description: '' },
+    { title: "", company: "", location: "", period: "", description: "" },
   ],
-  education: [{ degree: '', institution: '', year: '' }],
+  education: [{ degree: "", institution: "", year: "" }],
   skills: [],
-  projects: [{ name: '', description: '', techStack: [] }],
+  projects: [{ name: "", description: "", techStack: [] }],
   achievements: [],
 };
 
@@ -32,9 +32,9 @@ export const ANIMATION_VARIANTS = {
     transition: { duration: 0.3 },
   },
   resume: {
-    initial: { x: '100%' },
+    initial: { x: "100%" },
     animate: { x: 0 },
-    exit: { x: '100%' },
-    transition: { type: 'spring', stiffness: 100, damping: 20 },
+    exit: { x: "100%" },
+    transition: { type: "spring", stiffness: 100, damping: 20 },
   },
 };

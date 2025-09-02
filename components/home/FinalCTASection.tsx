@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
-import { ArrowRight , FileText, FileEditIcon} from 'lucide-react';
-import { checkSession } from '@/actions/session-actions';
-import { handleGoogleSignIn } from '@/actions/auth-actions';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { ArrowRight, FileText, FileEditIcon } from "lucide-react";
+import { checkSession } from "@/actions/session-actions";
+import { handleGoogleSignIn } from "@/actions/auth-actions";
 
 interface FinalCTASectionProps {
   chatId: string;
@@ -26,7 +26,7 @@ export function FinalCTASection({ chatId }: FinalCTASectionProps) {
         await handleGoogleSignIn();
       }
     } catch (error) {
-      console.error('Error checking session:', error);
+      console.error("Error checking session:", error);
       await handleGoogleSignIn();
     } finally {
       setIsCheckingSession(false);
@@ -63,8 +63,8 @@ export function FinalCTASection({ chatId }: FinalCTASectionProps) {
                   </h2>
                 </div>
                 <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  Join thousands of professionals who have landed their dream jobs
-                  with AI-optimized resumes.
+                  Join thousands of professionals who have landed their dream
+                  jobs with AI-optimized resumes.
                 </p>
                 <Button
                   onClick={handleStartBuilding}

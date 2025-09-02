@@ -1,4 +1,4 @@
-import { Bot, NotepadTextDashed } from 'lucide-react';
+import { Bot, NotepadTextDashed } from "lucide-react";
 
 export function ResumeBuildingSection() {
   return (
@@ -9,7 +9,7 @@ export function ResumeBuildingSection() {
             <span className="bg-linear-to-b from-foreground to-muted-foreground bg-clip-text text-transparent">
               <span className="bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
                 Intelligent
-              </span>{' '}
+              </span>{" "}
               Resume Building
             </span>
           </h2>
@@ -17,9 +17,9 @@ export function ResumeBuildingSection() {
             Experience the power of AI-driven resume creation. Our intelligent
             assistant helps you craft
             <span className="text-foreground font-medium">
-              {' '}
+              {" "}
               professional resumes
-            </span>{' '}
+            </span>{" "}
             that stand out to employers and pass ATS screening.
           </p>
         </div>
@@ -60,9 +60,9 @@ export function ResumeBuildingSection() {
                   </div>
                   <div className="flex-1 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
                     <p className="text-sm text-foreground mb-3">
-                      I&apos;ve enhanced your experience section with stronger action
-                      verbs and quantified achievements. Here&apos;s what I
-                      recommend:
+                      I&apos;ve enhanced your experience section with stronger
+                      action verbs and quantified achievements. Here&apos;s what
+                      I recommend:
                     </p>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-start gap-2">
@@ -116,11 +116,11 @@ export function ResumeBuildingSection() {
                         <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
                         <div
                           className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"
-                          style={{ animationDelay: '0.2s' }}
+                          style={{ animationDelay: "0.2s" }}
                         ></div>
                         <div
                           className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"
-                          style={{ animationDelay: '0.4s' }}
+                          style={{ animationDelay: "0.4s" }}
                         ></div>
                       </div>
                       <span className="text-xs text-muted-foreground">
@@ -193,12 +193,12 @@ export function ResumeBuildingSection() {
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {[
-                        'JavaScript',
-                        'TypeScript',
-                        'React',
-                        'Node.js',
-                        'Python',
-                        'AWS',
+                        "JavaScript",
+                        "TypeScript",
+                        "React",
+                        "Node.js",
+                        "Python",
+                        "AWS",
                       ].map((skill) => (
                         <span
                           key={skill}

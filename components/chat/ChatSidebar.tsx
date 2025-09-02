@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import type { Session } from 'next-auth';
-import { signOut } from 'next-auth/react';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import type { Session } from "next-auth";
+import { signOut } from "next-auth/react";
 import {
   Plus,
   MessageSquare,
@@ -19,24 +19,24 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   NotepadTextDashed,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import Image from 'next/image';
+} from "lucide-react";
+import { toast } from "sonner";
+import Image from "next/image";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { GeminiApiKeyModal } from '@/components/GeminiApiKeyModal';
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { GeminiApiKeyModal } from "@/components/GeminiApiKeyModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 interface ChatSidebarProps {
   session: Session;
@@ -80,16 +80,16 @@ const formatDate = (dateString: string) => {
   );
 
   if (diffDays === 0) {
-    return 'Today';
+    return "Today";
   } else if (diffDays === 1) {
-    return 'Yesterday';
+    return "Yesterday";
   } else if (diffDays < 7) {
     return `${diffDays} days ago`;
   } else {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
     });
   }
 };
@@ -97,7 +97,7 @@ const formatDate = (dateString: string) => {
 // Helper function to truncate text
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength).trim() + '...';
+  return text.slice(0, maxLength).trim() + "...";
 };
 
 const ChatListItem = ({
@@ -134,10 +134,10 @@ const ChatListItem = ({
   return (
     <div
       className={cn(
-        'flex items-center p-2 rounded-lg cursor-pointer group transition-colors',
+        "flex items-center p-2 rounded-lg cursor-pointer group transition-colors",
         isActive
-          ? 'bg-primary/10 text-primary border border-primary/20'
-          : 'hover:bg-muted/50',
+          ? "bg-primary/10 text-primary border border-primary/20"
+          : "hover:bg-muted/50",
       )}
       onClick={() => !isEditing && onSelect(chat.id)}
     >
@@ -154,9 +154,9 @@ const ChatListItem = ({
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   onSaveEdit();
-                } else if (e.key === 'Escape') {
+                } else if (e.key === "Escape") {
                   onCancelEdit();
                 }
               }}
@@ -226,9 +226,9 @@ const SidebarContent = ({
 }) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
+  const [editValue, setEditValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [hasUserApiKey, setHasUserApiKey] = useState(false);
   const router = useRouter();
@@ -239,16 +239,16 @@ const SidebarContent = ({
   }, []);
 
   const checkUserApiKey = () => {
-    const userApiKey = localStorage.getItem('gemini-api-key');
+    const userApiKey = localStorage.getItem("gemini-api-key");
     setHasUserApiKey(!!userApiKey);
   };
 
   const fetchChats = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/chat');
+      const response = await fetch("/api/chat");
       if (!response.ok) {
-        throw new Error('Failed to fetch chats');
+        throw new Error("Failed to fetch chats");
       }
       const data = await response.json();
       if (Array.isArray(data.chats)) {
@@ -261,15 +261,15 @@ const SidebarContent = ({
         setChats([]);
       }
     } catch (error) {
-      console.error('Error fetching chats:', error);
-      toast.error('Error fetching chats');
+      console.error("Error fetching chats:", error);
+      toast.error("Error fetching chats");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSignOut = () => {
-    signOut({ redirectTo: '/' });
+    signOut({ redirectTo: "/" });
   };
 
   const handleGeminiApiKey = () => {
@@ -288,16 +288,16 @@ const SidebarContent = ({
 
   const handleChatRename = async () => {
     if (!editValue.trim()) {
-      toast.error('Chat name cannot be empty');
+      toast.error("Chat name cannot be empty");
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/chat', {
-        method: 'PUT',
+      const response = await fetch("/api/chat", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           chatId: editingChatId,
@@ -307,7 +307,7 @@ const SidebarContent = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update chat title');
+        throw new Error(errorData.error || "Failed to update chat title");
       }
 
       setChats((prevChats) =>
@@ -318,47 +318,47 @@ const SidebarContent = ({
         ),
       );
 
-      toast.success('Chat name updated successfully');
+      toast.success("Chat name updated successfully");
     } catch (error) {
       console.error(error);
-      toast.error('Failed to update chat name');
+      toast.error("Failed to update chat name");
     } finally {
       setEditingChatId(null);
-      setEditValue('');
+      setEditValue("");
       setIsLoading(false);
     }
   };
 
   const cancelEditing = () => {
     setEditingChatId(null);
-    setEditValue('');
+    setEditValue("");
   };
 
   const handleChatDelete = async (chatId: string) => {
-    if (!confirm('Are you sure you want to delete this chat?')) {
+    if (!confirm("Are you sure you want to delete this chat?")) {
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/chat', {
-        method: 'DELETE',
+      const response = await fetch("/api/chat", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ chatId }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete chat');
+        throw new Error(errorData.error || "Failed to delete chat");
       }
 
       setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
-      toast.success('Chat deleted successfully');
+      toast.success("Chat deleted successfully");
     } catch (error) {
       console.error(error);
-      toast.error('Failed to delete chat');
+      toast.error("Failed to delete chat");
     } finally {
       setIsLoading(false);
     }
@@ -383,8 +383,8 @@ const SidebarContent = ({
         <div className="flex items-center justify-between mb-4">
           <div
             className={cn(
-              'transition-all duration-300 ease-in-out overflow-hidden',
-              isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100',
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
             )}
           >
             <div className="flex items-center gap-2">
@@ -403,7 +403,7 @@ const SidebarContent = ({
                 size="icon"
                 onClick={onToggleCollapse}
                 className="h-8 w-8 transition-all duration-200 hover:bg-muted"
-                title={`${isCollapsed ? 'Expand' : 'Collapse'} sidebar (Ctrl+\\)`}
+                title={`${isCollapsed ? "Expand" : "Collapse"} sidebar (Ctrl+\\)`}
               >
                 <div className="transition-transform duration-200">
                   {isCollapsed ? (
@@ -420,17 +420,17 @@ const SidebarContent = ({
         <Button
           onClick={onNewChat}
           className={cn(
-            'justify-start bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-xs hover:shadow-md transition-all duration-300 ease-in-out',
-            isCollapsed ? 'w-auto px-2' : 'w-full',
+            "justify-start bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-xs hover:shadow-md transition-all duration-300 ease-in-out",
+            isCollapsed ? "w-auto px-2" : "w-full",
           )}
           size="sm"
-          title={isCollapsed ? 'New Chat' : undefined}
+          title={isCollapsed ? "New Chat" : undefined}
         >
           <Plus className="h-4 w-4 shrink-0" />
           <span
             className={cn(
-              'transition-all duration-300 ease-in-out overflow-hidden',
-              isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100 ml-2',
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2",
             )}
           >
             New Chat
@@ -441,8 +441,8 @@ const SidebarContent = ({
       {/* Search - Hide when collapsed */}
       <div
         className={cn(
-          'border-b transition-all duration-300 ease-in-out overflow-hidden',
-          isCollapsed ? 'h-0 opacity-0' : 'h-auto opacity-100',
+          "border-b transition-all duration-300 ease-in-out overflow-hidden",
+          isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
         )}
       >
         <div className="p-4">
@@ -469,8 +469,8 @@ const SidebarContent = ({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  'w-full h-10 p-0',
-                  currentChatId === chat.id && 'bg-primary/10 text-primary',
+                  "w-full h-10 p-0",
+                  currentChatId === chat.id && "bg-primary/10 text-primary",
                 )}
                 onClick={() => handleChatSelect(chat.id)}
                 title={chat.title}
@@ -582,8 +582,8 @@ const SidebarContent = ({
         <div className="space-y-2">
           <div
             className={cn(
-              'transition-all duration-300 ease-in-out overflow-hidden',
-              isCollapsed ? 'h-0 opacity-0' : 'h-auto opacity-100',
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
             )}
           >
             <Button
@@ -594,7 +594,7 @@ const SidebarContent = ({
             >
               <Settings className="h-4 w-4" />
               <span>
-                {hasUserApiKey ? 'Update Gemini API Key' : 'Add Gemini API Key'}
+                {hasUserApiKey ? "Update Gemini API Key" : "Add Gemini API Key"}
               </span>
               {hasUserApiKey && (
                 <div
@@ -607,8 +607,8 @@ const SidebarContent = ({
 
           <div
             className={cn(
-              'transition-all duration-300 ease-in-out overflow-hidden',
-              isCollapsed ? 'h-0 opacity-0' : 'h-auto opacity-100',
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
             )}
           >
             <div className="shrink-0 bg-border h-px w-full" />
@@ -616,14 +616,14 @@ const SidebarContent = ({
 
           <div
             className={cn(
-              'flex items-center p-2 transition-all duration-300 ease-in-out',
-              isCollapsed ? 'justify-center' : 'justify-between w-full',
+              "flex items-center p-2 transition-all duration-300 ease-in-out",
+              isCollapsed ? "justify-center" : "justify-between w-full",
             )}
           >
             <div className="flex items-center">
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                 <Image
-                  src={session?.user.image || '/default-avatar.png'}
+                  src={session?.user.image || "/default-avatar.png"}
                   height={24}
                   width={24}
                   className="w-6 h-6 rounded-full object-cover"
@@ -632,23 +632,23 @@ const SidebarContent = ({
               </div>
               <div
                 className={cn(
-                  'flex flex-col items-start text-left transition-all duration-300 ease-in-out overflow-hidden',
-                  isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100',
+                  "flex flex-col items-start text-left transition-all duration-300 ease-in-out overflow-hidden",
+                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
                 )}
               >
                 <p className="ml-2 text-sm font-medium whitespace-nowrap">
-                  {truncateText(session?.user.name || '', 15)}
+                  {truncateText(session?.user.name || "", 15)}
                 </p>
                 <p className="ml-2 text-xs text-muted-foreground whitespace-nowrap">
-                  {truncateText(session?.user.email || '', 15)}
+                  {truncateText(session?.user.email || "", 15)}
                 </p>
               </div>
             </div>
 
             <div
               className={cn(
-                'transition-all duration-300 ease-in-out overflow-hidden',
-                isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100',
+                "transition-all duration-300 ease-in-out overflow-hidden",
+                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
               )}
             >
               <Button
@@ -665,8 +665,8 @@ const SidebarContent = ({
 
           <div
             className={cn(
-              'transition-all duration-300 ease-in-out overflow-hidden',
-              isCollapsed ? 'h-0 opacity-0' : 'h-auto opacity-100',
+              "transition-all duration-300 ease-in-out overflow-hidden",
+              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
             )}
           >
             <div className="shrink-0 bg-border h-px w-full" />
@@ -674,15 +674,15 @@ const SidebarContent = ({
 
           <div
             className={cn(
-              'flex items-center transition-all duration-300 ease-in-out',
-              isCollapsed ? 'justify-center' : 'justify-start',
+              "flex items-center transition-all duration-300 ease-in-out",
+              isCollapsed ? "justify-center" : "justify-start",
             )}
           >
             <ThemeToggle />
             <span
               className={cn(
-                'text-sm text-muted-foreground transition-all duration-300 ease-in-out overflow-hidden',
-                isCollapsed ? 'w-0 opacity-0' : 'ml-2 w-auto opacity-100',
+                "text-sm text-muted-foreground transition-all duration-300 ease-in-out overflow-hidden",
+                isCollapsed ? "w-0 opacity-0" : "ml-2 w-auto opacity-100",
               )}
             >
               Theme
@@ -715,8 +715,8 @@ export const ChatSidebar = ({
       setIsMobile(window.innerWidth < 768);
     };
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   if (isMobile) {
@@ -760,14 +760,14 @@ export const ChatSidebar = ({
   return (
     <div
       className={cn(
-        'hidden md:flex h-full border-r bg-card transition-all duration-300 ease-in-out overflow-hidden',
-        isCollapsed ? 'w-16' : 'w-64',
+        "hidden md:flex h-full border-r bg-card transition-all duration-300 ease-in-out overflow-hidden",
+        isCollapsed ? "w-16" : "w-64",
       )}
     >
       <div
         className={cn(
-          'transition-all duration-300 ease-in-out',
-          isCollapsed ? 'w-16' : 'w-64',
+          "transition-all duration-300 ease-in-out",
+          isCollapsed ? "w-16" : "w-64",
         )}
       >
         <SidebarContent

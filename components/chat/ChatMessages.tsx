@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useRef, useEffect, memo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { User, Bot, Loader2 } from 'lucide-react';
-import { ChatMessage } from '@/lib/types';
-import { ANIMATION_VARIANTS } from '@/constants/resume';
+import { useRef, useEffect, memo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { User, Bot, Loader2 } from "lucide-react";
+import { ChatMessage } from "@/lib/types";
+import { ANIMATION_VARIANTS } from "@/constants/resume";
 
 const WelcomeOverlay = memo(
   ({
@@ -35,9 +35,9 @@ const WelcomeOverlay = memo(
           className="flex flex-wrap justify-center gap-3 mt-12"
         >
           {[
-            'Build a Resume for Backend Developer',
-            'Build a resume for an AI/ML Engineer',
-            'Build a resume for a Full Stack Engineer',
+            "Build a Resume for Backend Developer",
+            "Build a resume for an AI/ML Engineer",
+            "Build a resume for a Full Stack Engineer",
           ].map((prompt, index) => (
             <button
               key={index}
@@ -54,7 +54,7 @@ const WelcomeOverlay = memo(
   ),
 );
 
-WelcomeOverlay.displayName = 'WelcomeOverlay';
+WelcomeOverlay.displayName = "WelcomeOverlay";
 
 const MessageBubble = memo(
   ({ message, index }: { message: ChatMessage; index: number }) => (
@@ -62,19 +62,19 @@ const MessageBubble = memo(
       key={index}
       {...ANIMATION_VARIANTS.message}
       className={`w-full max-w-[85%] flex items-start gap-3 ${
-        message.role === 'user'
-          ? 'ml-auto flex-row-reverse text-right'
-          : 'mr-auto flex-row text-left'
+        message.role === "user"
+          ? "ml-auto flex-row-reverse text-right"
+          : "mr-auto flex-row text-left"
       }`}
     >
       <div
         className={`flex items-center justify-center rounded-full w-8 h-8 shrink-0 ${
-          message.role === 'user'
-            ? 'bg-blue-100 dark:bg-blue-900'
-            : 'bg-blue-100 dark:bg-blue-900'
+          message.role === "user"
+            ? "bg-blue-100 dark:bg-blue-900"
+            : "bg-blue-100 dark:bg-blue-900"
         }`}
       >
-        {message.role === 'user' ? (
+        {message.role === "user" ? (
           <User className="h-4 w-4 text-blue-600 dark:text-blue-300" />
         ) : (
           <Bot className="h-4 w-4 text-blue-600 dark:text-blue-300" />
@@ -85,9 +85,9 @@ const MessageBubble = memo(
           <div
             key={i}
             className={`whitespace-pre-wrap text-sm backdrop-blur-md p-4 rounded-2xl shadow-xs ${
-              message.role === 'user'
-                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100'
-                : 'bg-card text-card-foreground border border-border'
+              message.role === "user"
+                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100"
+                : "bg-card text-card-foreground border border-border"
             }`}
           >
             {part.text}
@@ -98,7 +98,7 @@ const MessageBubble = memo(
   ),
 );
 
-MessageBubble.displayName = 'MessageBubble';
+MessageBubble.displayName = "MessageBubble";
 
 const LoadingMessage = memo(() => (
   <motion.div
@@ -113,7 +113,7 @@ const LoadingMessage = memo(() => (
   </motion.div>
 ));
 
-LoadingMessage.displayName = 'LoadingMessage';
+LoadingMessage.displayName = "LoadingMessage";
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
@@ -132,7 +132,7 @@ export const ChatMessages = ({
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
 
     return () => clearTimeout(timeoutId);

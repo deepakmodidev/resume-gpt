@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import db from '@/prisma/prisma';
-import { ATSAnalyzer } from '@/lib/rag/ats-analyzer';
-import { VectorStoreManager } from '@/lib/rag/vector-store';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import db from "@/prisma/prisma";
+import { ATSAnalyzer } from "@/lib/rag/ats-analyzer";
+import { VectorStoreManager } from "@/lib/rag/vector-store";
 
 interface ResumeData {
   atsAnalysis?: {
@@ -21,17 +21,13 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     const isAuthenticated = !!session?.user?.id;
 
-    const {
-      resumeContent,
-      jobDescription,
-      resumeId
-    } = await req.json();
+    const { resumeContent, jobDescription, resumeId } = await req.json();
 
     // Validate input
     if (!resumeContent || !jobDescription) {
       return NextResponse.json(
-        { error: 'Missing required fields: resumeContent, jobDescription' },
-        { status: 400 }
+        { error: "Missing required fields: resumeContent, jobDescription" },
+        { status: 400 },
       );
     }
 
@@ -41,29 +37,29 @@ export async function POST(req: NextRequest) {
     // Perform ATS analysis
     const analysis = await analyzer.analyzeResumeVsJob(
       resumeContent,
-      jobDescription
+      jobDescription,
     );
 
     // Get keyword placement suggestions
     const keywordSuggestions = analyzer.getKeywordSuggestions(
       resumeContent,
-      analysis.missingKeywords.slice(0, 10) // Top 10 missing keywords
+      analysis.missingKeywords.slice(0, 10), // Top 10 missing keywords
     );
 
     // Store job description in vector database for future comparisons
     const vectorStore = new VectorStoreManager();
     try {
       await vectorStore.addDocument(jobDescription, {
-        type: 'job_description',
+        type: "job_description",
         id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        title: 'Job Description',
-        company: 'Unknown',
-        industry: 'general',
-        level: 'unknown', // Could be extracted from job description
-        userId: isAuthenticated ? session.user.id : undefined
+        title: "Job Description",
+        company: "Unknown",
+        industry: "general",
+        level: "unknown", // Could be extracted from job description
+        userId: isAuthenticated ? session.user.id : undefined,
       });
     } catch (vectorError) {
-      console.warn('Vector store operation failed:', vectorError);
+      console.warn("Vector store operation failed:", vectorError);
       // Continue without vector storage - don't fail the main analysis
     }
 
@@ -71,45 +67,53 @@ export async function POST(req: NextRequest) {
     if (resumeId && isAuthenticated) {
       try {
         // Ensure atsAnalysis is fully serializable (no class instances)
-        const atsAnalysis = JSON.parse(JSON.stringify({
-          scores: analysis.scores,
-          matchedKeywords: analysis.matchedKeywords,
-          missingKeywords: analysis.missingKeywords,
-          suggestions: analysis.suggestions,
-          analyzedAt: new Date().toISOString()
-        }));
+        const atsAnalysis = JSON.parse(
+          JSON.stringify({
+            scores: analysis.scores,
+            matchedKeywords: analysis.matchedKeywords,
+            missingKeywords: analysis.missingKeywords,
+            suggestions: analysis.suggestions,
+            analyzedAt: new Date().toISOString(),
+          }),
+        );
         await db.chat.update({
           where: {
             id: resumeId,
-            userId: session.user.id
+            userId: session.user.id,
           },
           data: {
             resumeData: {
-              ...((await db.chat.findUnique({ where: { id: resumeId } }))?.resumeData as ResumeData) || {},
-              atsAnalysis
-            }
-          }
+              ...(((await db.chat.findUnique({ where: { id: resumeId } }))
+                ?.resumeData as ResumeData) || {}),
+              atsAnalysis,
+            },
+          },
         });
       } catch (dbError) {
-        console.warn('Database update failed:', dbError);
+        console.warn("Database update failed:", dbError);
         // Continue without DB storage - don't fail the main analysis
       }
     }
 
     // Calculate insights
     const insights = {
-      totalKeywords: analysis.matchedKeywords.length + analysis.missingKeywords.length,
+      totalKeywords:
+        analysis.matchedKeywords.length + analysis.missingKeywords.length,
       matchPercentage: analysis.scores.keyword,
       topMissingKeywords: analysis.criticalMissingKeywords.slice(0, 5),
       strengthAreas: analysis.strengthAreas,
       improvementAreas: analysis.improvementAreas,
       quickWins: keywordSuggestions
-        .filter(suggestion => suggestion.section === 'Skills')
+        .filter((suggestion) => suggestion.section === "Skills")
         .slice(0, 3)
-        .map(s => s.keyword),
+        .map((s) => s.keyword),
       industryAlignment: analysis.industryFit,
-      competitiveAdvantage: analysis.scores.overall > 75 ? 'High' :
-        analysis.scores.overall > 60 ? 'Medium' : 'Low'
+      competitiveAdvantage:
+        analysis.scores.overall > 75
+          ? "High"
+          : analysis.scores.overall > 60
+            ? "Medium"
+            : "Low",
     };
 
     return NextResponse.json({
@@ -123,31 +127,34 @@ export async function POST(req: NextRequest) {
         industryFit: analysis.industryFit,
         readabilityScore: analysis.readabilityScore,
         semanticSimilarity: analysis.semanticSimilarity,
-        keywordDensity: analysis.keywordDensity
+        keywordDensity: analysis.keywordDensity,
       },
       insights,
       keywordSuggestions,
       metadata: {
         analyzedAt: new Date().toISOString(),
-        processingTime: 'Real-time analysis completed'
-      }
+        processingTime: "Real-time analysis completed",
+      },
     });
-
   } catch (error) {
-    console.error('ATS Analysis error:', error);
+    console.error("ATS Analysis error:", error);
 
     // Return more specific error information
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    const statusCode = errorMessage.includes('Unauthorized') ? 401 :
-      errorMessage.includes('Missing') ? 400 : 500;
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    const statusCode = errorMessage.includes("Unauthorized")
+      ? 401
+      : errorMessage.includes("Missing")
+        ? 400
+        : 500;
 
     return NextResponse.json(
       {
-        error: 'ATS analysis failed',
+        error: "ATS analysis failed",
         details: errorMessage,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      { status: statusCode }
+      { status: statusCode },
     );
   }
 }
@@ -162,13 +169,13 @@ export async function GET(req: NextRequest) {
         analyses: [],
         total: 0,
         hasMore: false,
-        message: 'Login required to view analysis history'
+        message: "Login required to view analysis history",
       });
     }
 
     const { searchParams } = new URL(req.url);
-    const resumeId = searchParams.get('resumeId');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const resumeId = searchParams.get("resumeId");
+    const limit = parseInt(searchParams.get("limit") || "10");
 
     let analyses = [];
 
@@ -177,25 +184,27 @@ export async function GET(req: NextRequest) {
       const chat = await db.chat.findUnique({
         where: {
           id: resumeId,
-          userId: session.user.id
+          userId: session.user.id,
         },
         select: {
           id: true,
           title: true,
           resumeData: true,
-          updatedAt: true
-        }
+          updatedAt: true,
+        },
       });
 
       if (chat && chat.resumeData) {
         const resumeData = chat.resumeData as ResumeData;
         if (resumeData.atsAnalysis) {
-          analyses = [{
-            id: chat.id,
-            resumeTitle: chat.title,
-            analysis: resumeData.atsAnalysis,
-            analyzedAt: resumeData.atsAnalysis.analyzedAt || chat.updatedAt
-          }];
+          analyses = [
+            {
+              id: chat.id,
+              resumeTitle: chat.title,
+              analysis: resumeData.atsAnalysis,
+              analyzedAt: resumeData.atsAnalysis.analyzedAt || chat.updatedAt,
+            },
+          ];
         }
       }
     } else {
@@ -206,24 +215,24 @@ export async function GET(req: NextRequest) {
           id: true,
           title: true,
           resumeData: true,
-          updatedAt: true
+          updatedAt: true,
         },
-        orderBy: { updatedAt: 'desc' },
-        take: limit
+        orderBy: { updatedAt: "desc" },
+        take: limit,
       });
 
       analyses = recentChats
-        .filter(chat => {
+        .filter((chat) => {
           const resumeData = chat.resumeData as ResumeData;
           return resumeData?.atsAnalysis;
         })
-        .map(chat => {
+        .map((chat) => {
           const resumeData = chat.resumeData as ResumeData;
           return {
             id: chat.id,
             resumeTitle: chat.title,
             analysis: resumeData.atsAnalysis,
-            analyzedAt: resumeData.atsAnalysis.analyzedAt || chat.updatedAt
+            analyzedAt: resumeData.atsAnalysis.analyzedAt || chat.updatedAt,
           };
         });
     }
@@ -231,14 +240,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       analyses,
       total: analyses.length,
-      hasMore: analyses.length === limit
+      hasMore: analyses.length === limit,
     });
-
   } catch (error) {
-    console.error('Get ATS analyses error:', error);
+    console.error("Get ATS analyses error:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch analyses' },
-      { status: 500 }
+      { error: "Failed to fetch analyses" },
+      { status: 500 },
     );
   }
 }

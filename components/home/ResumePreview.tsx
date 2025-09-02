@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   CheckCircle,
@@ -17,9 +17,9 @@ import {
   Globe,
   Shield,
   Star,
-} from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export function ResumePreview() {
   const { scrollY } = useScroll();
@@ -90,7 +90,7 @@ export function ResumePreview() {
                 <div className="space-y-4 md:space-y-6">
                   <div className="border-l-2 border-blue-500/30 pl-3 md:pl-4">
                     <h5 className="font-semibold text-sm md:text-base mb-1">
-                      Software Developer{' '}
+                      Software Developer{" "}
                     </h5>
                     <p className="text-xs md:text-sm text-muted-foreground mb-2">
                       Notesneo • July 2025 - Present

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { X, Key, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import { X, Key, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ApiKeyNotificationProps {
   onManageKey?: () => void;
@@ -16,7 +16,7 @@ export const ApiKeyNotification = ({
 
   useEffect(() => {
     const checkApiKey = () => {
-      const userApiKey = localStorage.getItem('gemini-api-key');
+      const userApiKey = localStorage.getItem("gemini-api-key");
 
       setHasApiKey(!!userApiKey);
 
@@ -33,8 +33,8 @@ export const ApiKeyNotification = ({
       checkApiKey();
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const handleDismiss = () => {

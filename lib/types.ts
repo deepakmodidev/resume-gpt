@@ -1,7 +1,7 @@
 // libs/types.ts
 
 export interface ChatMessage {
-  role: 'user' | 'model';
+  role: "user" | "model";
   parts: Array<{ text: string }>;
 }
 

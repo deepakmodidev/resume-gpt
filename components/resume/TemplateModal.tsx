@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import React from 'react';
+import Image from "next/image";
+import React from "react";
 
 interface TemplateModalProps {
   isOpen: boolean;
@@ -9,27 +9,27 @@ interface TemplateModalProps {
 }
 
 const templates = [
-  { id: 'modern', name: 'Modern', preview: '/templates/modern.webp' },
-  { id: 'minimal', name: 'Minimal', preview: '/templates/minimal.webp' },
-  { id: 'classic', name: 'Classic', preview: '/templates/classic.webp' },
+  { id: "modern", name: "Modern", preview: "/templates/modern.webp" },
+  { id: "minimal", name: "Minimal", preview: "/templates/minimal.webp" },
+  { id: "classic", name: "Classic", preview: "/templates/classic.webp" },
   {
-    id: 'professional',
-    name: 'Professional',
-    preview: '/templates/professional.webp',
+    id: "professional",
+    name: "Professional",
+    preview: "/templates/professional.webp",
   },
-  { id: 'executive', name: 'Executive', preview: '/templates/executive.webp' },
-  { id: 'corporate', name: 'Corporate', preview: '/templates/corporate.webp' },
-  { id: 'techie', name: 'Techie', preview: '/templates/techie.webp' },
-  { id: 'elegant', name: 'Elegant', preview: '/templates/elegant.webp' },
-  { id: 'creative', name: 'Creative', preview: '/templates/creative.webp' },
-  { id: 'artistic', name: 'Artistic', preview: '/templates/artistic.webp' },
+  { id: "executive", name: "Executive", preview: "/templates/executive.webp" },
+  { id: "corporate", name: "Corporate", preview: "/templates/corporate.webp" },
+  { id: "techie", name: "Techie", preview: "/templates/techie.webp" },
+  { id: "elegant", name: "Elegant", preview: "/templates/elegant.webp" },
+  { id: "creative", name: "Creative", preview: "/templates/creative.webp" },
+  { id: "artistic", name: "Artistic", preview: "/templates/artistic.webp" },
 ];
 
 export const TemplateModal = ({
   isOpen,
   onClose,
   onSelectTemplate,
-  currentTemplate = 'modern',
+  currentTemplate = "modern",
 }: TemplateModalProps) => {
   if (!isOpen) return null;
   return (
@@ -57,7 +57,7 @@ export const TemplateModal = ({
               />
             </svg>
           </button>
-        </div>{' '}
+        </div>{" "}
         <div className="p-6 overflow-x-auto">
           <div className="flex gap-6 pb-4">
             {templates.map((template, index) => (
@@ -65,8 +65,8 @@ export const TemplateModal = ({
                 key={template.id}
                 className={`shrink-0 border rounded-lg p-4 cursor-pointer hover:border-primary hover:shadow-lg transition-all duration-200 bg-card relative ${
                   currentTemplate === template.id
-                    ? 'border-primary shadow-lg ring-2 ring-primary/20'
-                    : 'border-border'
+                    ? "border-primary shadow-lg ring-2 ring-primary/20"
+                    : "border-border"
                 }`}
                 onClick={() => {
                   onSelectTemplate(template.id);
@@ -77,11 +77,11 @@ export const TemplateModal = ({
                   <span
                     className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-semibold ${
                       currentTemplate === template.id
-                        ? 'bg-primary text-white'
-                        : 'bg-muted text-white'
+                        ? "bg-primary text-white"
+                        : "bg-muted text-white"
                     }`}
                   >
-                    {currentTemplate === template.id ? '✓' : index + 1}
+                    {currentTemplate === template.id ? "✓" : index + 1}
                   </span>
                 </div>
                 <Image
@@ -94,8 +94,8 @@ export const TemplateModal = ({
                 <p
                   className={`text-center font-medium w-64 ${
                     currentTemplate === template.id
-                      ? 'text-primary font-semibold'
-                      : 'text-card-foreground'
+                      ? "text-primary font-semibold"
+                      : "text-card-foreground"
                   }`}
                 >
                   {template.name}

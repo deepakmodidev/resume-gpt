@@ -1,17 +1,18 @@
-import { NextResponse } from 'next/server';
-import chromium from '@sparticuz/chromium';
-import puppeteer from 'puppeteer-core';
+import { NextResponse } from "next/server";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
-const React = require('react');
-const ReactDOMServer = require('react-dom/server');
+const React = require("react");
+const ReactDOMServer = require("react-dom/server");
 const { createElement } = React;
-const { ResumeContent } = require('@/components/resume/ResumeContent');
+const { ResumeContent } = require("@/components/resume/ResumeContent");
 
 // Use @sparticuz/chromium to manage the Chromium executable path and version for serverless environments.
 
 // Function to get the appropriate browser instance for both local and Vercel
 async function getBrowser() {
-  const isServerless = !!process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL;
+  const isServerless =
+    !!process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL;
   if (isServerless) {
     // Serverless (e.g., Vercel): use @sparticuz/chromium and puppeteer-core
     const executablePath = await chromium.executablePath();
@@ -24,13 +25,17 @@ async function getBrowser() {
   } else {
     // Local development: use Puppeteer's default Chromium
     try {
-      const localPuppeteer = require('puppeteer');
+      const localPuppeteer = require("puppeteer");
       return localPuppeteer.launch({
         headless: true,
       });
     } catch {
-      console.error('Local puppeteer not found. Install with: npm install --save-dev puppeteer');
-      throw new Error('Puppeteer not found for local development. Please install puppeteer as a dev dependency.');
+      console.error(
+        "Local puppeteer not found. Install with: npm install --save-dev puppeteer",
+      );
+      throw new Error(
+        "Puppeteer not found for local development. Please install puppeteer as a dev dependency.",
+      );
     }
   }
 }
@@ -44,7 +49,7 @@ export async function POST(request: Request) {
 
     if (!data) {
       return NextResponse.json(
-        { error: 'Resume data is required' },
+        { error: "Resume data is required" },
         { status: 400 },
       );
     }
@@ -77,14 +82,14 @@ export async function POST(request: Request) {
     `,
       {
         // Wait for DOM and network to be mostly idle for reliable rendering
-        waitUntil: ['domcontentloaded', 'networkidle2'],
+        waitUntil: ["domcontentloaded", "networkidle2"],
         timeout: 60000,
       },
     );
 
     // Generate the PDF from the rendered page
     const pdfBuffer = await page.pdf({
-      format: 'A4',
+      format: "A4",
       printBackground: true, // Ensures backgrounds and images are included
       // margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
       // To add headers/footers, use displayHeaderFooter and headerTemplate/footerTemplate
@@ -96,15 +101,15 @@ export async function POST(request: Request) {
     // Return the PDF as a downloadable response
     return new NextResponse(pdfBuffer, {
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename=resume.pdf',
+        "Content-Type": "application/pdf",
+        "Content-Disposition": "attachment; filename=resume.pdf",
       },
     });
   } catch (error) {
     // Log and return error details for debugging
-    console.error('PDF Generation Error:', error);
+    console.error("PDF Generation Error:", error);
     return NextResponse.json(
-      { error: 'PDF generation failed', details: error.message },
+      { error: "PDF generation failed", details: error.message },
       { status: 500 },
     );
   } finally {
@@ -113,12 +118,12 @@ export async function POST(request: Request) {
       try {
         await browser.close();
       } catch (closeError) {
-        console.error('Error closing browser:', closeError);
+        console.error("Error closing browser:", closeError);
       }
     }
   }
 }
 
 // Mark the route as dynamic and specify Node.js runtime for serverless compatibility
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";

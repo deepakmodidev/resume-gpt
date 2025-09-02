@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import Image from "next/image";
 import {
   NotepadTextDashed,
   User,
   LogOut,
   Plus,
   MessageSquare,
-} from 'lucide-react';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { handleGoogleSignIn } from '@/actions/auth-actions';
-import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { v4 as uuidv4 } from 'uuid';
+} from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { handleGoogleSignIn } from "@/actions/auth-actions";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 export function Header() {
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -34,7 +34,7 @@ export function Header() {
       setIsSigningIn(true);
       await handleGoogleSignIn();
     } catch (error) {
-      console.error('Sign in failed:', error);
+      console.error("Sign in failed:", error);
     } finally {
       setIsSigningIn(false);
     }
@@ -46,7 +46,7 @@ export function Header() {
   };
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOut({ callbackUrl: "/" });
   };
   return (
     <header className="relative z-50 border-b border-border backdrop-blur-xs">
@@ -91,7 +91,7 @@ export function Header() {
           <div className="flex items-center justify-end gap-3">
             {/* Auth Button - Fixed Width Container */}
             <div className="w-[100px] sm:w-[120px] flex justify-end">
-              {status === 'loading' ? (
+              {status === "loading" ? (
                 <Button
                   variant="outline"
                   disabled
@@ -100,7 +100,7 @@ export function Header() {
                   <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
                   <span className="hidden sm:inline">Loading...</span>
                 </Button>
-              ) : status === 'authenticated' && session?.user ? (
+              ) : status === "authenticated" && session?.user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -110,7 +110,7 @@ export function Header() {
                       {session.user.image ? (
                         <Image
                           src={session.user.image}
-                          alt={session.user.name || 'User'}
+                          alt={session.user.name || "User"}
                           width={24}
                           height={24}
                           className="w-6 h-6 rounded-full"
@@ -119,7 +119,7 @@ export function Header() {
                         <User className="h-4 w-4" />
                       )}
                       <span className="hidden sm:inline pb-1 font-medium truncate">
-                        {session.user.name?.split(' ')[0] || 'User'}
+                        {session.user.name?.split(" ")[0] || "User"}
                       </span>
                     </Button>
                   </DropdownMenuTrigger>

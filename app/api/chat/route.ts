@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { auth } from '@/lib/auth';
-import db from '@/prisma/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { auth } from "@/lib/auth";
+import db from "@/prisma/prisma";
 
 // Types
 interface ParsedResponse {
@@ -96,16 +96,21 @@ const GENERATION_CONFIG = {
 // Utility Functions
 const validateData = (data: Record<string, unknown>) => {
   const { history, resumeData, chatId } = data;
-  if (!Array.isArray(history) || !history.length) throw new Error('Invalid history');
-  if (!chatId) throw new Error('Missing chat ID');
-  const message = (history.at(-1) as { parts?: { text?: string }[] })?.parts?.[0]?.text;
-  if (!message || !resumeData) throw new Error('Missing message or resume data');
+  if (!Array.isArray(history) || !history.length)
+    throw new Error("Invalid history");
+  if (!chatId) throw new Error("Missing chat ID");
+  const message = (history.at(-1) as { parts?: { text?: string }[] })
+    ?.parts?.[0]?.text;
+  if (!message || !resumeData)
+    throw new Error("Missing message or resume data");
   return message;
 };
 
 const parseResponse = (text: string): ParsedResponse => {
-  const cleaned = text.replace(/```````/g, '').trim();
-  const jsonText = cleaned.startsWith('{') ? cleaned : cleaned.match(/{[\s\S]*}/)?.[0] || cleaned;
+  const cleaned = text.replace(/```````/g, "").trim();
+  const jsonText = cleaned.startsWith("{")
+    ? cleaned
+    : cleaned.match(/{[\s\S]*}/)?.[0] || cleaned;
 
   try {
     return JSON.parse(jsonText);
@@ -114,18 +119,40 @@ const parseResponse = (text: string): ParsedResponse => {
   }
 };
 
-const deepMerge = (target: Record<string, unknown>, source: Record<string, unknown>) => {
-  if (!target || !source || typeof target !== 'object' || typeof source !== 'object') return source;
+const deepMerge = (
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+) => {
+  if (
+    !target ||
+    !source ||
+    typeof target !== "object" ||
+    typeof source !== "object"
+  )
+    return source;
 
   const result = { ...target };
   Object.entries(source).forEach(([key, value]) => {
-    result[key] = Array.isArray(value) ? value :
-      (value && typeof value === 'object') ? deepMerge(result[key] as Record<string, unknown> ?? {}, value as Record<string, unknown>) : value;
+    result[key] = Array.isArray(value)
+      ? value
+      : value && typeof value === "object"
+        ? deepMerge(
+            (result[key] as Record<string, unknown>) ?? {},
+            value as Record<string, unknown>,
+          )
+        : value;
   });
   return result;
 };
 
-const upsertChat = async (chatId: string, userId: string, message: string, userMsg: unknown, modelMsg: unknown, resumeData: unknown) => {
+const upsertChat = async (
+  chatId: string,
+  userId: string,
+  message: string,
+  userMsg: unknown,
+  modelMsg: unknown,
+  resumeData: unknown,
+) => {
   const chat = await db.chat.findUnique({ where: { id: chatId, userId } });
 
   if (chat) {
@@ -133,25 +160,32 @@ const upsertChat = async (chatId: string, userId: string, message: string, userM
       where: { id: chatId, userId },
       data: {
         messages: { push: [userMsg, modelMsg] as never },
-        resumeData: resumeData as never
-      }
+        resumeData: resumeData as never,
+      },
     });
   } else {
     await db.chat.create({
       data: {
-        id: chatId, userId,
-        title: message.slice(0, 30) || 'New ResumeGPT Chat',
+        id: chatId,
+        userId,
+        title: message.slice(0, 30) || "New ResumeGPT Chat",
         messages: [userMsg, modelMsg] as never,
         resumeData: resumeData as never,
-        resumeTemplate: 'classic'
-      }
+        resumeTemplate: "classic",
+      },
     });
   }
 };
 
 const handleError = (error: unknown, defaultStatus = 500) => {
-  const message = error instanceof Error ? error.message : 'Unknown error';
-  const status = ['Invalid history', 'Missing chat ID', 'Missing message or resume data'].includes(message) ? 400 : defaultStatus;
+  const message = error instanceof Error ? error.message : "Unknown error";
+  const status = [
+    "Invalid history",
+    "Missing chat ID",
+    "Missing message or resume data",
+  ].includes(message)
+    ? 400
+    : defaultStatus;
   return NextResponse.json({ error: message }, { status });
 };
 
@@ -163,30 +197,50 @@ export async function POST(req: NextRequest) {
     const { history, resumeData, chatId, userApiKey } = data;
 
     const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const apiKey = userApiKey || process.env.GEMINI_KEY;
-    if (!apiKey) return NextResponse.json({ error: 'API key not available' }, { status: 500 });
+    if (!apiKey)
+      return NextResponse.json(
+        { error: "API key not available" },
+        { status: 500 },
+      );
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash', systemInstruction: SYSTEM_INSTRUCTION });
-    const chat = model.startChat({ generationConfig: GENERATION_CONFIG, history });
-    const result = await chat.sendMessage(`${message}\nResume Data: ${JSON.stringify(resumeData)}`);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      systemInstruction: SYSTEM_INSTRUCTION,
+    });
+    const chat = model.startChat({
+      generationConfig: GENERATION_CONFIG,
+      history,
+    });
+    const result = await chat.sendMessage(
+      `${message}\nResume Data: ${JSON.stringify(resumeData)}`,
+    );
     const response = parseResponse(result.response.text());
 
-    const acknowledgement = response?.acknowledgement && response.acknowledgement.trim() !== ''
-      ? response.acknowledgement
-      : "I'm here to help with your resume. What would you like to know?";
+    const acknowledgement =
+      response?.acknowledgement && response.acknowledgement.trim() !== ""
+        ? response.acknowledgement
+        : "I'm here to help with your resume. What would you like to know?";
     const updatedSection = response?.updatedSection || {};
 
     const mergedData = deepMerge(resumeData, updatedSection);
 
-    const userMsg = { role: 'user', parts: [{ text: message }] };
-    const modelMsg = { role: 'model', parts: [{ text: acknowledgement }] };
+    const userMsg = { role: "user", parts: [{ text: message }] };
+    const modelMsg = { role: "model", parts: [{ text: acknowledgement }] };
 
-    await upsertChat(chatId, session.user.id, message, userMsg, modelMsg, mergedData);
+    await upsertChat(
+      chatId,
+      session.user.id,
+      message,
+      userMsg,
+      modelMsg,
+      mergedData,
+    );
     return NextResponse.json({ response });
-
   } catch (error) {
     return handleError(error);
   }
@@ -195,12 +249,13 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   try {
     const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const chats = await db.chat.findMany({
       where: { userId: session.user.id },
       select: { id: true, title: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json({ chats });
@@ -212,15 +267,20 @@ export async function GET() {
 export async function DELETE(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { chatId } = await req.json();
-    if (!chatId) return NextResponse.json({ error: 'Chat ID required' }, { status: 400 });
+    if (!chatId)
+      return NextResponse.json({ error: "Chat ID required" }, { status: 400 });
 
-    const deleted = await db.chat.deleteMany({ where: { id: chatId, userId: session.user.id } });
-    if (!deleted.count) return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
+    const deleted = await db.chat.deleteMany({
+      where: { id: chatId, userId: session.user.id },
+    });
+    if (!deleted.count)
+      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
 
-    return NextResponse.json({ message: 'Chat deleted successfully' });
+    return NextResponse.json({ message: "Chat deleted successfully" });
   } catch (error) {
     return handleError(error);
   }
@@ -229,18 +289,24 @@ export async function DELETE(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { chatId, newName } = await req.json();
-    if (!chatId || !newName) return NextResponse.json({ error: 'Chat ID and name required' }, { status: 400 });
+    if (!chatId || !newName)
+      return NextResponse.json(
+        { error: "Chat ID and name required" },
+        { status: 400 },
+      );
 
     const updated = await db.chat.updateMany({
       where: { id: chatId, userId: session.user.id },
-      data: { title: newName }
+      data: { title: newName },
     });
 
-    if (!updated.count) return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
-    return NextResponse.json({ message: 'Chat updated successfully' });
+    if (!updated.count)
+      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
+    return NextResponse.json({ message: "Chat updated successfully" });
   } catch (error) {
     return handleError(error);
   }

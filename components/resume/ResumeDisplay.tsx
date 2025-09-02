@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { ResumeData } from '@/lib/types';
-import { TemplateModal } from './TemplateModal';
-import { ResumeContent } from './ResumeContent';
-import { ATSScore } from '@/components/ats/ATSScore';
-import { LoaderPinwheelIcon, Target, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useEffect, useState } from "react";
+import { ResumeData } from "@/lib/types";
+import { TemplateModal } from "./TemplateModal";
+import { ResumeContent } from "./ResumeContent";
+import { ATSScore } from "@/components/ats/ATSScore";
+import { LoaderPinwheelIcon, Target, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ResumeDisplayProps {
   data: ResumeData;
@@ -20,14 +20,14 @@ export const ResumeDisplay = ({
   const [resumeData, setResumeData] = useState<ResumeData>(data);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   // Always start with 'modern' to match SSR, then update from localStorage after mount
-  const [currentTemplate, setCurrentTemplate] = useState('modern');
+  const [currentTemplate, setCurrentTemplate] = useState("modern");
   const [isDownloading, setIsDownloading] = useState(false);
   const [showATSAnalysis, setShowATSAnalysis] = useState(false);
 
   // On mount, update template from localStorage if available
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedTemplate = localStorage.getItem('resume-template');
+    if (typeof window !== "undefined") {
+      const savedTemplate = localStorage.getItem("resume-template");
       if (savedTemplate && savedTemplate !== currentTemplate) {
         setCurrentTemplate(savedTemplate);
       }
@@ -39,7 +39,7 @@ export const ResumeDisplay = ({
     setResumeData(data);
   }, [data]);
 
-  const handleContentEdit = (key: 'name' | 'title', value: string) => {
+  const handleContentEdit = (key: "name" | "title", value: string) => {
     handleDataChange((draft) => {
       draft[key] = value;
     });
@@ -48,18 +48,18 @@ export const ResumeDisplay = ({
   const handleTemplateSelect = (template: string) => {
     setCurrentTemplate(template);
     // Save selected template to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('resume-template', template);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("resume-template", template);
     }
   };
 
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
     try {
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
+      const response = await fetch("/api/generate-pdf", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ data: resumeData, template: currentTemplate }),
       });
@@ -70,16 +70,16 @@ export const ResumeDisplay = ({
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'resume.pdf';
+      a.download = "resume.pdf";
       document.body.appendChild(a); // Required for Firefox
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading PDF:', error);
-      alert('Failed to download PDF. Please try again.');
+      console.error("Error downloading PDF:", error);
+      alert("Failed to download PDF. Please try again.");
     } finally {
       setIsDownloading(false);
     }
@@ -94,8 +94,18 @@ export const ResumeDisplay = ({
             {/* Tab List */}
             <TabsList className="grid w-fit grid-cols-2">
               <TabsTrigger value="resume" className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
                 Resume
               </TabsTrigger>
@@ -131,10 +141,11 @@ export const ResumeDisplay = ({
               <button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
-                className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${isDownloading
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:from-green-600 hover:to-green-700 hover:scale-[1.02]'
-                  }`}
+                className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${
+                  isDownloading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
+                }`}
               >
                 {isDownloading ? (
                   <LoaderPinwheelIcon className="w-4 h-4 animate-spin" />
@@ -153,7 +164,7 @@ export const ResumeDisplay = ({
                     />
                   </svg>
                 )}
-                {isDownloading ? 'Downloading...' : 'Download PDF'}
+                {isDownloading ? "Downloading..." : "Download PDF"}
               </button>
             </div>
           </div>
@@ -183,9 +194,12 @@ export const ResumeDisplay = ({
                       <Target className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold">🚀 ATS Score Analysis</h3>
+                      <h3 className="text-lg font-semibold">
+                        🚀 ATS Score Analysis
+                      </h3>
                       <p className="text-sm text-muted-foreground">
-                        Get AI-powered insights on how your resume performs against job requirements
+                        Get AI-powered insights on how your resume performs
+                        against job requirements
                       </p>
                     </div>
                   </div>
@@ -193,11 +207,17 @@ export const ResumeDisplay = ({
                   {!showATSAnalysis ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p className="text-lg font-medium mb-2">Ready for ATS Analysis</p>
-                      <p className="text-sm mb-4">
-                        Your resume content is ready. Add a job description to get detailed ATS scoring and optimization suggestions.
+                      <p className="text-lg font-medium mb-2">
+                        Ready for ATS Analysis
                       </p>
-                      <Button onClick={() => setShowATSAnalysis(true)} className="gap-2">
+                      <p className="text-sm mb-4">
+                        Your resume content is ready. Add a job description to
+                        get detailed ATS scoring and optimization suggestions.
+                      </p>
+                      <Button
+                        onClick={() => setShowATSAnalysis(true)}
+                        className="gap-2"
+                      >
                         <Sparkles className="w-4 h-4" />
                         Start ATS Analysis
                       </Button>
@@ -205,13 +225,13 @@ export const ResumeDisplay = ({
                   ) : (
                     <ATSScore
                       resumeContent={
-                        `${resumeData.name || ''}\n${resumeData.title || ''}\n` +
-                        `${resumeData.contact?.email || ''} ${resumeData.contact?.phone || ''}\n` +
-                        `${resumeData.summary || ''}\n` +
-                        `${resumeData.experience?.map(exp => `${exp.title} at ${exp.company}\n${exp.description}`).join('\n') || ''}\n` +
-                        `${resumeData.education?.map(edu => `${edu.degree} - ${edu.institution}`).join('\n') || ''}\n` +
-                        `${resumeData.skills?.join(', ') || ''}\n` +
-                        `${resumeData.projects?.map(proj => `${proj.name}: ${proj.description}`).join('\n') || ''}`
+                        `${resumeData.name || ""}\n${resumeData.title || ""}\n` +
+                        `${resumeData.contact?.email || ""} ${resumeData.contact?.phone || ""}\n` +
+                        `${resumeData.summary || ""}\n` +
+                        `${resumeData.experience?.map((exp) => `${exp.title} at ${exp.company}\n${exp.description}`).join("\n") || ""}\n` +
+                        `${resumeData.education?.map((edu) => `${edu.degree} - ${edu.institution}`).join("\n") || ""}\n` +
+                        `${resumeData.skills?.join(", ") || ""}\n` +
+                        `${resumeData.projects?.map((proj) => `${proj.name}: ${proj.description}`).join("\n") || ""}`
                       }
                     />
                   )}

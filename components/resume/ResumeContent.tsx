@@ -1,11 +1,11 @@
-import React from 'react';
-import { ResumeData } from '@/lib/types';
-import { templateStyles } from '@/constants/templateStyles';
+import React from "react";
+import { ResumeData } from "@/lib/types";
+import { templateStyles } from "@/constants/templateStyles";
 
 interface ResumeContentProps {
   data: ResumeData;
   isEditable?: boolean;
-  onContentEdit?: (key: 'name' | 'title', value: string) => void;
+  onContentEdit?: (key: "name" | "title", value: string) => void;
   template?: string;
 }
 
@@ -13,14 +13,14 @@ export const ResumeContent = ({
   data,
   isEditable = false,
   onContentEdit,
-  template = 'modern',
+  template = "modern",
 }: ResumeContentProps) => {
   const styles =
     templateStyles[template as keyof typeof templateStyles] ||
     templateStyles.modern;
 
   const handleEdit = (
-    key: 'name' | 'title',
+    key: "name" | "title",
     e: React.FocusEvent<HTMLElement>,
   ) => {
     if (onContentEdit) {
@@ -28,14 +28,12 @@ export const ResumeContent = ({
     }
   };
 
-
-
   return (
     <div
       className={`template-${template} ${styles.container} print:shadow-none`}
     >
       {/* Header Section */}
-      {(data.name || '') && (
+      {(data.name || "") && (
         <div className={styles.nameContainer}>
           {data.name && (
             <h1 className={styles.name}>
@@ -43,7 +41,7 @@ export const ResumeContent = ({
                 <span
                   contentEditable
                   suppressContentEditableWarning
-                  onBlur={(e) => handleEdit('name', e)}
+                  onBlur={(e) => handleEdit("name", e)}
                 >
                   {data.name}
                 </span>
@@ -58,7 +56,7 @@ export const ResumeContent = ({
                 <span
                   contentEditable
                   suppressContentEditableWarning
-                  onBlur={(e) => handleEdit('title', e)}
+                  onBlur={(e) => handleEdit("title", e)}
                 >
                   {data.title}
                 </span>
@@ -75,12 +73,11 @@ export const ResumeContent = ({
         <section>
           <h2 className={styles.sectionHeader}>Summary</h2>
           <p className={`${styles.text} leading-relaxed whitespace-pre-line`}>
-            {typeof data.summary === 'string'
+            {typeof data.summary === "string"
               ? data.summary
-              : typeof data.summary === 'object' && data.summary
+              : typeof data.summary === "object" && data.summary
                 ? JSON.stringify(data.summary)
-                : String(data.summary || '')
-            }
+                : String(data.summary || "")}
           </p>
         </section>
       )}
@@ -89,25 +86,27 @@ export const ResumeContent = ({
       {data.skills?.length > 0 && (
         <section>
           <h2 className={styles.sectionHeader}>Skills</h2>
-          {template === 'classic' ? (
+          {template === "classic" ? (
             <p className={styles.skills}>
               {data.skills
-                .map(skill => typeof skill === 'string' ? skill : String(skill))
-                .join(' • ')
-              }
+                .map((skill) =>
+                  typeof skill === "string" ? skill : String(skill),
+                )
+                .join(" • ")}
             </p>
           ) : (
             <ul className={styles.skills}>
-              {(Array.isArray(data.skills) ? data.skills : []).map((skill, idx) => (
-                <li key={idx} className={styles.skillItem}>
-                  {typeof skill === 'string'
-                    ? skill
-                    : typeof skill === 'object' && skill
-                      ? JSON.stringify(skill)
-                      : String(skill || '')
-                  }
-                </li>
-              ))}
+              {(Array.isArray(data.skills) ? data.skills : []).map(
+                (skill, idx) => (
+                  <li key={idx} className={styles.skillItem}>
+                    {typeof skill === "string"
+                      ? skill
+                      : typeof skill === "object" && skill
+                        ? JSON.stringify(skill)
+                        : String(skill || "")}
+                  </li>
+                ),
+              )}
             </ul>
           )}
         </section>
@@ -125,22 +124,22 @@ export const ResumeContent = ({
                     <h3 className={styles.projectTitle}>{project.name}</h3>
                     {project.techStack?.length > 0 && (
                       <p className={styles.projectTech}>
-                        {template === 'creative'
-                          ? `// ${project.techStack?.join(' / ')}`
-                          : template === 'techie'
-                            ? `[${project.techStack?.join(', ')}]`
-                            : template === 'artistic'
-                              ? `✨ ${project.techStack?.join(' • ')}`
-                              : project.techStack?.join(', ')}
+                        {template === "creative"
+                          ? `// ${project.techStack?.join(" / ")}`
+                          : template === "techie"
+                            ? `[${project.techStack?.join(", ")}]`
+                            : template === "artistic"
+                              ? `✨ ${project.techStack?.join(" • ")}`
+                              : project.techStack?.join(", ")}
                       </p>
                     )}
                     <p className={`${styles.text} whitespace-pre-line`}>
-                      {typeof project.description === 'string'
+                      {typeof project.description === "string"
                         ? project.description
-                        : typeof project.description === 'object' && project.description
+                        : typeof project.description === "object" &&
+                            project.description
                           ? JSON.stringify(project.description)
-                          : String(project.description || '')
-                      }
+                          : String(project.description || "")}
                     </p>
                   </div>
                 ),
@@ -160,23 +159,22 @@ export const ResumeContent = ({
                   <div key={idx}>
                     <h3 className={styles.expTitle}>{exp.title}</h3>
                     <p className={styles.expDetails}>
-                      {template === 'professional'
+                      {template === "professional"
                         ? `${exp.company} | ${exp.location} | ${exp.period}`
-                        : template === 'creative'
+                        : template === "creative"
                           ? `${exp.company} // ${exp.location} // ${exp.period}`
-                          : template === 'techie'
+                          : template === "techie"
                             ? `${exp.company} :: ${exp.location} :: ${exp.period}`
-                            : template === 'artistic'
+                            : template === "artistic"
                               ? `${exp.company} ✦ ${exp.location} ✦ ${exp.period}`
                               : `${exp.company} - ${exp.location} (${exp.period})`}
                     </p>
                     <p className={`${styles.text} whitespace-pre-line`}>
-                      {typeof exp.description === 'string'
+                      {typeof exp.description === "string"
                         ? exp.description
-                        : typeof exp.description === 'object' && exp.description
+                        : typeof exp.description === "object" && exp.description
                           ? JSON.stringify(exp.description)
-                          : String(exp.description || '')
-                      }
+                          : String(exp.description || "")}
                     </p>
                   </div>
                 ),
@@ -197,18 +195,18 @@ export const ResumeContent = ({
                     <h3 className={styles.eduTitle}>{edu.degree}</h3>
                     <p
                       className={
-                        template === 'professional'
+                        template === "professional"
                           ? styles.expDetails
-                          : 'text-sm text-gray-500'
+                          : "text-sm text-gray-500"
                       }
                     >
-                      {template === 'professional'
+                      {template === "professional"
                         ? `${edu.institution} | ${edu.year}`
-                        : template === 'creative'
+                        : template === "creative"
                           ? `${edu.institution} // ${edu.year}`
-                          : template === 'techie'
+                          : template === "techie"
                             ? `${edu.institution} :: ${edu.year}`
-                            : template === 'artistic'
+                            : template === "artistic"
                               ? `${edu.institution} ✦ ${edu.year}`
                               : `${edu.institution} (${edu.year})`}
                     </p>
@@ -225,17 +223,17 @@ export const ResumeContent = ({
           <h2 className={styles.sectionHeader}>Achievements</h2>
           <ul
             className={
-              template === 'professional'
+              template === "professional"
                 ? `${styles.text} list-none`
-                : template === 'creative'
+                : template === "creative"
                   ? `${styles.text} list-none`
-                  : template === 'techie'
+                  : template === "techie"
                     ? `${styles.text} list-none`
-                    : template === 'artistic'
+                    : template === "artistic"
                       ? `${styles.text} list-none`
-                      : template === 'executive'
+                      : template === "executive"
                         ? `${styles.text} list-none`
-                        : template === 'corporate'
+                        : template === "corporate"
                           ? `${styles.text} list-none`
                           : `${styles.text} list-disc list-inside`
             }
@@ -244,27 +242,26 @@ export const ResumeContent = ({
               <li
                 key={idx}
                 className={
-                  template === 'professional'
-                    ? 'border-l-2 border-gray-400 pl-2'
-                    : template === 'creative'
-                      ? 'bg-white bg-opacity-30 p-1 rounded'
-                      : template === 'techie'
+                  template === "professional"
+                    ? "border-l-2 border-gray-400 pl-2"
+                    : template === "creative"
+                      ? "bg-white bg-opacity-30 p-1 rounded"
+                      : template === "techie"
                         ? "before:content-['>>'] before:text-green-500 before:mr-2"
-                        : template === 'artistic'
-                          ? 'bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200'
-                          : template === 'executive'
-                            ? 'bg-gray-100 p-1 border-l-2 border-gray-800'
-                            : template === 'corporate'
-                              ? 'bg-blue-100 p-1 border-l-2 border-blue-900'
-                              : ''
+                        : template === "artistic"
+                          ? "bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200"
+                          : template === "executive"
+                            ? "bg-gray-100 p-1 border-l-2 border-gray-800"
+                            : template === "corporate"
+                              ? "bg-blue-100 p-1 border-l-2 border-blue-900"
+                              : ""
                 }
               >
-                {typeof ach === 'string'
+                {typeof ach === "string"
                   ? ach
-                  : typeof ach === 'object' && ach
+                  : typeof ach === "object" && ach
                     ? JSON.stringify(ach)
-                    : String(ach || '')
-                }
+                    : String(ach || "")}
               </li>
             ))}
           </ul>
@@ -279,11 +276,11 @@ export const ResumeContent = ({
             {data.contact.email && (
               <div
                 className={
-                  template === 'creative'
-                    ? 'bg-white bg-opacity-30 p-1 rounded'
-                    : template === 'artistic'
-                      ? 'bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200'
-                      : ''
+                  template === "creative"
+                    ? "bg-white bg-opacity-30 p-1 rounded"
+                    : template === "artistic"
+                      ? "bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200"
+                      : ""
                 }
               >
                 <strong>Email:</strong> {data.contact.email}
@@ -292,11 +289,11 @@ export const ResumeContent = ({
             {data.contact.phone && (
               <div
                 className={
-                  template === 'creative'
-                    ? 'bg-white bg-opacity-30 p-1 rounded'
-                    : template === 'artistic'
-                      ? 'bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200'
-                      : ''
+                  template === "creative"
+                    ? "bg-white bg-opacity-30 p-1 rounded"
+                    : template === "artistic"
+                      ? "bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200"
+                      : ""
                 }
               >
                 <strong>Phone:</strong> {data.contact.phone}
@@ -305,11 +302,11 @@ export const ResumeContent = ({
             {data.contact.github && (
               <div
                 className={
-                  template === 'creative'
-                    ? 'bg-white bg-opacity-30 p-1 rounded'
-                    : template === 'artistic'
-                      ? 'bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200'
-                      : ''
+                  template === "creative"
+                    ? "bg-white bg-opacity-30 p-1 rounded"
+                    : template === "artistic"
+                      ? "bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200"
+                      : ""
                 }
               >
                 <strong>GitHub:</strong> {data.contact.github}
@@ -318,11 +315,11 @@ export const ResumeContent = ({
             {data.contact.linkedin && (
               <div
                 className={
-                  template === 'creative'
-                    ? 'bg-white bg-opacity-30 p-1 rounded'
-                    : template === 'artistic'
-                      ? 'bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200'
-                      : ''
+                  template === "creative"
+                    ? "bg-white bg-opacity-30 p-1 rounded"
+                    : template === "artistic"
+                      ? "bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200"
+                      : ""
                 }
               >
                 <strong>LinkedIn:</strong> {data.contact.linkedin}
@@ -331,11 +328,11 @@ export const ResumeContent = ({
             {data.contact.blogs && (
               <div
                 className={
-                  template === 'creative'
-                    ? 'bg-white bg-opacity-30 p-1 rounded'
-                    : template === 'artistic'
-                      ? 'bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200'
-                      : ''
+                  template === "creative"
+                    ? "bg-white bg-opacity-30 p-1 rounded"
+                    : template === "artistic"
+                      ? "bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200"
+                      : ""
                 }
               >
                 <strong>Blogs:</strong> {data.contact.blogs}
@@ -344,11 +341,11 @@ export const ResumeContent = ({
             {data.contact.location && (
               <div
                 className={
-                  template === 'creative'
-                    ? 'bg-white bg-opacity-30 p-1 rounded'
-                    : template === 'artistic'
-                      ? 'bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200'
-                      : ''
+                  template === "creative"
+                    ? "bg-white bg-opacity-30 p-1 rounded"
+                    : template === "artistic"
+                      ? "bg-linear-to-r from-pink-100 to-purple-100 p-1 rounded border border-purple-200"
+                      : ""
                 }
               >
                 <strong>Location:</strong> {data.contact.location}

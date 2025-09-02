@@ -1,13 +1,13 @@
-'use client';
-import React from 'react';
-import Link from 'next/link';
+"use client";
+import React from "react";
+import Link from "next/link";
 import {
   NotepadTextDashed,
   Twitter,
   Linkedin,
   Github,
   Mail,
-} from 'lucide-react';
+} from "lucide-react";
 
 export function Footer() {
   return (

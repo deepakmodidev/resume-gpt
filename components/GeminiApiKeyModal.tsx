@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Key, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState, useEffect } from "react";
+import { Eye, EyeOff, Key, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 import {
   Dialog,
@@ -11,8 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
-import { toast } from 'sonner';
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface GeminiApiKeyModalProps {
   isOpen: boolean;
@@ -23,7 +23,7 @@ export const GeminiApiKeyModal = ({
   isOpen,
   onClose,
 }: GeminiApiKeyModalProps) => {
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [hasStoredKey, setHasStoredKey] = useState(false);
@@ -31,7 +31,7 @@ export const GeminiApiKeyModal = ({
   useEffect(() => {
     if (isOpen) {
       // Check if user already has a stored API key
-      const storedKey = localStorage.getItem('gemini-api-key');
+      const storedKey = localStorage.getItem("gemini-api-key");
       if (storedKey) {
         setHasStoredKey(true);
         setApiKey(storedKey);
@@ -41,29 +41,29 @@ export const GeminiApiKeyModal = ({
 
   const validateApiKey = async (key: string) => {
     try {
-      const response = await fetch('/api/validate-gemini-key', {
-        method: 'POST',
+      const response = await fetch("/api/validate-gemini-key", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ apiKey: key }),
       });
 
       return response.ok;
     } catch (error) {
-      console.error('Error validating API key:', error);
+      console.error("Error validating API key:", error);
       return false;
     }
   };
 
   const handleSave = async () => {
     if (!apiKey.trim()) {
-      toast.error('Please enter an API key');
+      toast.error("Please enter an API key");
       return;
     }
 
-    if (!apiKey.startsWith('AIza')) {
-      toast.error('Invalid Gemini API key format');
+    if (!apiKey.startsWith("AIza")) {
+      toast.error("Invalid Gemini API key format");
       return;
     }
 
@@ -73,25 +73,25 @@ export const GeminiApiKeyModal = ({
       const isValid = await validateApiKey(apiKey);
 
       if (isValid) {
-        localStorage.setItem('gemini-api-key', apiKey);
+        localStorage.setItem("gemini-api-key", apiKey);
         setHasStoredKey(true);
-        toast.success('API key saved successfully!');
+        toast.success("API key saved successfully!");
         onClose();
       } else {
-        toast.error('Invalid API key. Please check your key and try again.');
+        toast.error("Invalid API key. Please check your key and try again.");
       }
     } catch {
-      toast.error('Failed to validate API key. Please try again.');
+      toast.error("Failed to validate API key. Please try again.");
     } finally {
       setIsValidating(false);
     }
   };
 
   const handleRemove = () => {
-    localStorage.removeItem('gemini-api-key');
-    setApiKey('');
+    localStorage.removeItem("gemini-api-key");
+    setApiKey("");
     setHasStoredKey(false);
-    toast.success('API key removed successfully!');
+    toast.success("API key removed successfully!");
   };
 
   return (
@@ -130,7 +130,7 @@ export const GeminiApiKeyModal = ({
             <div className="relative">
               <Input
                 id="apiKey"
-                type={showKey ? 'text' : 'password'}
+                type={showKey ? "text" : "password"}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="AIza..."
@@ -160,10 +160,10 @@ export const GeminiApiKeyModal = ({
               className="flex-1"
             >
               {isValidating
-                ? 'Validating...'
+                ? "Validating..."
                 : hasStoredKey
-                  ? 'Update Key'
-                  : 'Save Key'}
+                  ? "Update Key"
+                  : "Save Key"}
             </Button>
 
             {hasStoredKey && (
@@ -184,7 +184,7 @@ export const GeminiApiKeyModal = ({
             </p>
             <ol className="list-decimal list-inside space-y-1 ml-2">
               <li>
-                Visit{' '}
+                Visit{" "}
                 <a
                   href="https://aistudio.google.com/app/apikey"
                   target="_blank"

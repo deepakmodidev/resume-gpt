@@ -1,7 +1,7 @@
-import { auth } from '@/lib/auth';
-import { Builder } from '@/components/Builder'; // Import the named export instead of default
-import db from '@/prisma/prisma';
-import { redirect } from 'next/navigation';
+import { auth } from "@/lib/auth";
+import { Builder } from "@/components/Builder"; // Import the named export instead of default
+import db from "@/prisma/prisma";
+import { redirect } from "next/navigation";
 
 export default async function page({
   params,
@@ -13,7 +13,7 @@ export default async function page({
 
   // It's good practice to double-check auth even if layout does
   if (!session?.user?.id) {
-    redirect('/');
+    redirect("/");
   }
 
   // --- Fetch ONLY the specific chat data here ---
@@ -33,7 +33,7 @@ export default async function page({
 
   // Ensure we have a valid ID to pass to the Builder
   const validParams = {
-    id: id || '', // Ensure id is never undefined
+    id: id || "", // Ensure id is never undefined
   };
 
   return (

@@ -5,6 +5,7 @@ ResumeGPT is a modern web application that lets you create, edit, and optimize p
 ## Features
 
 ### Resume Builder
+
 - AI-powered resume content suggestions (Gemini)
 - Multiple professional resume templates
 - Live editing and preview
@@ -14,12 +15,13 @@ ResumeGPT is a modern web application that lets you create, edit, and optimize p
 - Responsive and modern UI
 
 ### Production-Grade ATS Analyzer
+
 - **Industry-Standard Algorithms**: Uses the same weighted scoring algorithms as major ATS systems (Workday, Greenhouse, Lever)
 - **Intelligent Keyword Matching**: Advanced semantic similarity analysis with TF-IDF extraction
 - **Smart Filtering**: Automatically filters out common job posting words (not treating "job", "title", "remote" as missing skills)
-- **Weighted Skill Categories**: 
+- **Weighted Skill Categories**:
   - Programming Languages (25%)
-  - Frameworks (20%) 
+  - Frameworks (20%)
   - Databases (15%)
   - Cloud/DevOps (15%)
   - APIs (10%)
@@ -81,6 +83,7 @@ ResumeGPT is a modern web application that lets you create, edit, and optimize p
 ## Usage
 
 ### Resume Builder
+
 - Sign in with Google to create and manage your resumes
 - Use AI chat to generate resume content
 - Choose from multiple templates to customize your resume
@@ -89,6 +92,7 @@ ResumeGPT is a modern web application that lets you create, edit, and optimize p
 - Download your resume as a PDF
 
 ### ATS Analyzer
+
 - Navigate to `/ats-analyzer` to access the ATS optimization tool
 - Upload your resume (PDF format supported) or paste content directly
 - Paste the job description you're targeting
@@ -105,18 +109,21 @@ ResumeGPT is a modern web application that lets you create, edit, and optimize p
 Our production-grade ATS analyzer implements the same algorithms used by major enterprise ATS systems:
 
 ### Scoring Algorithm
+
 - **Weighted Categories**: Each skill category has industry-standard weights reflecting hiring priorities
 - **Semantic Similarity**: Uses cosine similarity with simplified embeddings for intelligent keyword matching
 - **TF-IDF Analysis**: Term frequency-inverse document frequency for keyword importance ranking
 - **Stop Words Filtering**: 100+ common job posting terms filtered out to prevent false negatives
 
 ### Key Features
+
 - **No False Positives**: Won't flag common words like "job", "title", "startup", "remote" as missing skills
 - **Skill Variations**: Recognizes abbreviations and variations (e.g., "JS" = "JavaScript", "AI" = "Artificial Intelligence")
 - **Experience Extraction**: Automatically parses years of experience and role progression
 - **Industry Standards**: Based on analysis of how systems like Workday, Greenhouse, and Lever actually score resumes
 
 ### Accuracy
+
 - Achieves 85-95% correlation with actual ATS scoring systems
 - Eliminates common issues that cause artificially low scores in basic keyword matchers
 - Provides actionable, relevant suggestions rather than generic keyword stuffing

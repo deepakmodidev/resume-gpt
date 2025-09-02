@@ -1,6 +1,6 @@
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
-import { ThemeProvider } from '@/components/ui/theme-provider';
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 export default async function BuilderLayout({
   children,
@@ -11,7 +11,7 @@ export default async function BuilderLayout({
 
   // Redirect if not authenticated
   if (!session?.user?.id) {
-    redirect('/');
+    redirect("/");
   }
 
   return (

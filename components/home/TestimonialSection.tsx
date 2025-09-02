@@ -1,61 +1,61 @@
-'use client';
+"use client";
 
-import { Star, Quote, CheckCircle } from 'lucide-react';
+import { Star, Quote, CheckCircle } from "lucide-react";
 
 const testimonials = [
   {
-    name: 'Sandeep Nandi',
-    role: 'Software Engineer',
-    company: 'Google',
+    name: "Sandeep Nandi",
+    role: "Software Engineer",
+    company: "Google",
     content:
-      'ResumeGPT helped me land my dream job at Google. The AI suggestions were spot-on and the templates are incredibly professional.',
+      "ResumeGPT helped me land my dream job at Google. The AI suggestions were spot-on and the templates are incredibly professional.",
     rating: 5,
-    image: 'SN',
+    image: "SN",
   },
   {
-    name: 'Vishal Singh',
-    role: 'Product Manager',
-    company: 'Meta',
+    name: "Vishal Singh",
+    role: "Product Manager",
+    company: "Meta",
     content:
-      'The ATS optimization feature is a game-changer. My resume now passes all screening systems effortlessly.',
+      "The ATS optimization feature is a game-changer. My resume now passes all screening systems effortlessly.",
     rating: 5,
-    image: 'VS',
+    image: "VS",
   },
   {
-    name: 'Nitish Modi',
-    role: 'Data Scientist',
-    company: 'Microsoft',
+    name: "Nitish Modi",
+    role: "Data Scientist",
+    company: "Microsoft",
     content:
       "I've tried many resume builders, but ResumeGPT's AI assistance is unmatched. It understood my field perfectly.",
     rating: 5,
-    image: 'NM',
+    image: "NM",
   },
   {
-    name: 'Prateek Verman',
-    role: 'UX Designer',
-    company: 'Apple',
+    name: "Prateek Verman",
+    role: "UX Designer",
+    company: "Apple",
     content:
-      'The templates are beautiful and the export quality is exceptional. Got interviews at all FAANG companies!',
+      "The templates are beautiful and the export quality is exceptional. Got interviews at all FAANG companies!",
     rating: 5,
-    image: 'PV',
+    image: "PV",
   },
   {
-    name: 'Kanhaiya Kumar',
-    role: 'Marketing Director',
-    company: 'Amazon',
+    name: "Kanhaiya Kumar",
+    role: "Marketing Director",
+    company: "Amazon",
     content:
       "ResumeGPT transformed my career. The AI helped me highlight achievements I didn't even know were important.",
     rating: 5,
-    image: 'KK',
+    image: "KK",
   },
   {
-    name: 'Ashutosh Tiwari',
-    role: 'DevOps Engineer',
-    company: 'Netflix',
+    name: "Ashutosh Tiwari",
+    role: "DevOps Engineer",
+    company: "Netflix",
     content:
-      'Lightning fast, incredibly smart AI, and professional results. This is the future of resume building.',
+      "Lightning fast, incredibly smart AI, and professional results. This is the future of resume building.",
     rating: 5,
-    image: 'AT',
+    image: "AT",
   },
 ];
 
@@ -91,8 +91,8 @@ export function TestimonialSection() {
           </h2>
 
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of professionals who&apos;ve landed their dream jobs with
-            ResumeGPT&apos;s AI-powered resume builder.
+            Join thousands of professionals who&apos;ve landed their dream jobs
+            with ResumeGPT&apos;s AI-powered resume builder.
           </p>
         </div>
 

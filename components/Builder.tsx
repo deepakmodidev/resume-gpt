@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { useCallback, useState, useEffect } from 'react';
-import { redirect } from 'next/navigation';
-import { useRouter } from 'next/navigation';
-import { v4 as uuidv4 } from 'uuid';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ResumeDisplay } from '@/components/resume/ResumeDisplay';
-import { ChatSidebar } from '@/components/chat/ChatSidebar';
-import { ApiKeyNotification } from '@/components/ApiKeyNotification';
-import { GeminiApiKeyModal } from '@/components/GeminiApiKeyModal';
-import { ChatMessages } from '@/components/chat/ChatMessages';
-import { ChatInput } from '@/components/chat/ChatInput';
-import { useChat } from '@/hooks/useChat';
-import { ANIMATION_VARIANTS } from '@/constants/resume';
-import { Sparkles, X } from 'lucide-react';
-import type { Session } from 'next-auth';
-import type { JsonValue } from '@prisma/client/runtime/library';
+import { useCallback, useState, useEffect } from "react";
+import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
+import { motion, AnimatePresence } from "framer-motion";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ResumeDisplay } from "@/components/resume/ResumeDisplay";
+import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { ApiKeyNotification } from "@/components/ApiKeyNotification";
+import { GeminiApiKeyModal } from "@/components/GeminiApiKeyModal";
+import { ChatMessages } from "@/components/chat/ChatMessages";
+import { ChatInput } from "@/components/chat/ChatInput";
+import { useChat } from "@/hooks/useChat";
+import { ANIMATION_VARIANTS } from "@/constants/resume";
+import { Sparkles, X } from "lucide-react";
+import type { Session } from "next-auth";
+import type { JsonValue } from "@prisma/client/runtime/library";
 
 export interface BuilderProps {
   session: Session;
@@ -31,7 +31,7 @@ export interface BuilderProps {
 }
 
 export function Builder({ session, params, initialChatData }: BuilderProps) {
-  if (!session) redirect('/');
+  if (!session) redirect("/");
 
   const { id: paramsId } = params;
   const [fallbackId] = useState(() => uuidv4()); // Generate a fallback ID if params.id is missing
@@ -39,17 +39,17 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
 
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('sidebar-collapsed');
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("sidebar-collapsed");
       return stored ? JSON.parse(stored) : false;
     }
     return false;
   });
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [showGenAINotification, setShowGenAINotification] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !localStorage.getItem('genai-notification-dismissed');
+    if (typeof window !== "undefined") {
+      return !localStorage.getItem("genai-notification-dismissed");
     }
     return true;
   });
@@ -79,12 +79,12 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   const handleSendMessage = useCallback(
     (message: string) => {
       if (!id) {
-        console.error('Missing ID in Builder component');
+        console.error("Missing ID in Builder component");
         return;
       }
 
       sendMessage(message, id);
-      setInputValue(''); // Clear input after sending
+      setInputValue(""); // Clear input after sending
     },
     [sendMessage, id],
   );
@@ -96,7 +96,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   const toggleSidebarCollapse = useCallback(() => {
     setIsSidebarCollapsed((prev) => {
       const newState = !prev;
-      localStorage.setItem('sidebar-collapsed', JSON.stringify(newState));
+      localStorage.setItem("sidebar-collapsed", JSON.stringify(newState));
       return newState;
     });
   }, []);
@@ -111,22 +111,22 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
 
   const dismissGenAINotification = useCallback(() => {
     setShowGenAINotification(false);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('genai-notification-dismissed', 'true');
+    if (typeof window !== "undefined") {
+      localStorage.setItem("genai-notification-dismissed", "true");
     }
   }, []);
 
   // Add keyboard shortcut for toggling sidebar (Ctrl+\)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === '\\') {
+      if (e.ctrlKey && e.key === "\\") {
         e.preventDefault();
         toggleSidebarCollapse();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [toggleSidebarCollapse]);
 
   return (
@@ -158,7 +158,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
         {/* Chat and Resume Layout */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           <div
-            className={`flex flex-col h-full min-h-0 transition-all duration-300 ${hasInteracted ? 'md:w-2/5' : 'md:w-full'}`}
+            className={`flex flex-col h-full min-h-0 transition-all duration-300 ${hasInteracted ? "md:w-2/5" : "md:w-full"}`}
           >
             <ChatMessages
               messages={messages}
@@ -222,9 +222,12 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-sm mb-1">🚀 New GenAI Features!</h4>
+                  <h4 className="font-semibold text-sm mb-1">
+                    🚀 New GenAI Features!
+                  </h4>
                   <p className="text-xs opacity-90 mb-2">
-                    Check out the new ATS Analysis tab for AI-powered resume optimization with RAG technology!
+                    Check out the new ATS Analysis tab for AI-powered resume
+                    optimization with RAG technology!
                   </p>
                 </div>
                 <button
@@ -240,4 +243,4 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       </AnimatePresence>
     </div>
   );
-};
+}
