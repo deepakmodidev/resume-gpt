@@ -5,7 +5,7 @@
  * 🎯 RAG: Knowledge-Based Retrieval with NLP Enhancement
  */
 
-// @ts-ignore
+/* eslint-disable @typescript-eslint/no-require-imports */
 const nlp = require('compromise'); // 🎯 RAG: NLP Retrieval - Natural language processing for context extraction
 const natural = require('natural'); // 🎯 RAG: ML Enhancement - Machine learning for semantic analysis
 
@@ -87,6 +87,15 @@ const STOP_WORDS = new Set([
   'but', 'for', 'with', 'will', 'be', 'to', 'of', 'in', 'on', 'at', 'by'
 ]);
 
+interface SkillMatch {
+  skill: string;
+  category: string;
+  confidence: number;
+  matchType?: string;
+  importance?: number;
+  suggestion?: string;
+}
+
 export interface SmartATSAnalysis {
   overallScore: number;
   breakdown: {
@@ -122,7 +131,8 @@ export class SmartATSAnalyzer {
     const skills: Array<{skill: string, category: string, confidence: number}> = [];
     const doc = nlp(text); // 🎯 RAG: NLP Entity Extraction - Compromise.js identifies entities
     
-    // Extract entities that could be skills
+    // Extract entities that could be skills (for future enhancement)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const entities = doc.match('#Technology').out('array') // 🎯 RAG: Technology Recognition - Auto-identifies tech terms
       .concat(doc.match('#Organization').out('array'))
       .concat(doc.match('#Product').out('array'));
@@ -185,12 +195,12 @@ export class SmartATSAnalyzer {
    * Smart skill matching using semantic similarity and variations
    * 🎯 RAG: Semantic Skill Matching - Context-aware skill comparison
    */
-  private calculateSkillMatch(resumeSkills: any[], jobSkills: any[]): {
-    matched: any[],
-    missing: any[]
+  private calculateSkillMatch(resumeSkills: SkillMatch[], jobSkills: SkillMatch[]): {
+    matched: SkillMatch[],
+    missing: SkillMatch[]
   } {
-    const matched: any[] = [];
-    const missing: any[] = [];
+    const matched: SkillMatch[] = [];
+    const missing: SkillMatch[] = [];
     
     // Create skill variations map for better matching
     const skillVariations = { // 🎯 RAG: Skill Knowledge Base - Maps different skill representations
@@ -294,7 +304,7 @@ export class SmartATSAnalyzer {
    * Calculate skill importance based on category weight and frequency
    * 🎯 RAG: Weighted Importance Scoring - Uses domain knowledge for skill prioritization
    */
-  private calculateSkillImportance(skill: any): number {
+  private calculateSkillImportance(skill: SkillMatch): number {
     const categoryWeight = SKILL_CATEGORIES[skill.category]?.weight || 0.1;
     return Math.round(categoryWeight * skill.confidence * 100);
   }
@@ -303,7 +313,7 @@ export class SmartATSAnalyzer {
    * Generate contextual suggestions for missing skills
    * 🎯 RAG: Context-Aware Recommendations - Generates personalized advice
    */
-  private generateSkillSuggestion(skill: any): string {
+  private generateSkillSuggestion(skill: SkillMatch): string {
     const suggestions = { // 🎯 RAG: Suggestion Knowledge Base - Category-specific advice patterns
       TECHNICAL: `Add "${skill.skill}" to your technical skills section. Include specific projects or experience.`,
       BUSINESS: `Highlight "${skill.skill}" experience in your professional summary or achievements.`,
@@ -329,6 +339,7 @@ export class SmartATSAnalyzer {
     const jobSkills = this.extractSkillsWithNLP(jobDescription);
 
     // Extract important terms using TF-IDF
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const jobTerms = this.extractImportantTerms(jobDescription);
     
     // Calculate skill matches
@@ -380,7 +391,12 @@ export class SmartATSAnalyzer {
         confidence: skill.confidence,
         relevance: skill.importance || 70
       })),
-      missingSkills: missing.slice(0, 10), // Top 10 most important
+      missingSkills: missing.slice(0, 10).map(skill => ({
+        skill: skill.skill,
+        category: skill.category,
+        importance: skill.importance || this.calculateSkillImportance(skill),
+        suggestion: skill.suggestion || this.generateSkillSuggestion(skill)
+      })), // Top 10 most important
       recommendations,
       skillGaps: missing.map(skill => skill.skill).slice(0, 5)
     };
@@ -389,7 +405,7 @@ export class SmartATSAnalyzer {
   /**
    * Calculate match percentage for a specific category
    */
-  private calculateCategoryMatch(category: string, matched: any[], allJobSkills: any[]): number {
+  private calculateCategoryMatch(category: string, matched: SkillMatch[], allJobSkills: SkillMatch[]): number {
     const categoryMatched = matched.filter(skill => skill.category === category);
     const categoryRequired = allJobSkills.filter(skill => skill.category === category);
     
@@ -400,7 +416,7 @@ export class SmartATSAnalyzer {
   /**
    * Generate smart recommendations based on analysis
    */
-  private generateRecommendations(missingSkills: any[], breakdown: any, resumeWords: number = 0): string[] {
+  private generateRecommendations(missingSkills: SkillMatch[], breakdown: Record<string, number>, resumeWords: number = 0): string[] {
     const recommendations: string[] = [];
 
     // Content length recommendations (highest priority)
