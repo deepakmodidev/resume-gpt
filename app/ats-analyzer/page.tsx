@@ -251,7 +251,7 @@ export default function ATSAnalysisPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950">
+    <div className="min-h-screen ">
       <Header />
 
       {/* Background Pattern */}
@@ -261,7 +261,7 @@ export default function ATSAnalysisPage() {
         cx={1}
         cy={1}
         cr={1}
-        className="fill-blue-500/20 dark:fill-blue-400/20"
+        className="fill-blue-500/30 dark:fill-blue-400/30"
       />
 
       <div className="relative z-10 pt-24 pb-20">
