@@ -318,8 +318,8 @@ export default function ATSAnalysisPage() {
                 <Card className="h-full backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 border-slate-200/60 dark:border-slate-700/60">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-blue-600" />
-                      Upload & Analyze
+                      <FileText className="w-5 h-5 text-blue-500" />
+                      Upload and Analyze
                     </CardTitle>
                     <CardDescription>
                       Provide your resume and target job details for
@@ -396,14 +396,13 @@ export default function ATSAnalysisPage() {
                         !resumeContent.trim() ||
                         !jobDescription.trim()
                       }
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                      className="w-full bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
                       size="lg"
                     >
                       {isAnalyzing ? (
                         "Analyzing..."
                       ) : (
                         <>
-                          <Target className="w-4 h-4 mr-2" />
                           Analyze ATS Compatibility
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </>
@@ -425,7 +424,7 @@ export default function ATSAnalysisPage() {
                   <Card className="h-full backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 border-slate-200/60 dark:border-slate-700/60">
                     <CardContent className="flex flex-col items-center justify-center h-full text-center p-8">
                       <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
-                        <BarChart3 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                        <BarChart3 className="w-8 h-8 text-blue-500" />
                       </div>
                       <h3 className="text-lg font-semibold mb-2">
                         Ready for Analysis

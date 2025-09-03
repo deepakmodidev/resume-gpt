@@ -22,7 +22,7 @@ import {
   BarChart3,
   Lightbulb,
   ArrowRight,
-  Sparkles,
+  ArrowUpRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -103,73 +103,58 @@ export function ATSScore({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
-    return "text-red-600";
+    if (score >= 80) return "text-green-600 dark:text-green-400";
+    if (score >= 60) return "text-yellow-600 dark:text-yellow-400";
+    return "text-red-600 dark:text-red-400";
   };
 
   const getScoreIcon = (score: number) => {
-    if (score >= 80) return <CheckCircle className="h-4 w-4 text-green-600" />;
-    if (score >= 60) return <Target className="h-4 w-4 text-yellow-600" />;
-    return <AlertCircle className="h-4 w-4 text-red-600" />;
+    if (score >= 80) return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
+    if (score >= 60) return <Target className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
+    return <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />;
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return "bg-green-50 border-green-200";
-    if (score >= 60) return "bg-yellow-50 border-yellow-200";
-    return "bg-red-50 border-red-200";
+    if (score >= 80) return "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800";
+    if (score >= 60) return "bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-800";
+    return "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800";
   };
 
   return (
     <div className="space-y-4">
       {/* Compact Analysis Input */}
-      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+      <Card className="border-blue-500">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Brain className="h-5 w-5 text-blue-600" />
+            <Brain className="h-5 w-5 text-blue-500" />
             RAG-Powered ATS Analysis
           </CardTitle>
           <CardDescription>
             Get instant AI-powered compatibility score with any job description
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <CardContent className="space-y-4">
+          <Textarea
+            placeholder="Paste job description here for instant ATS compatibility analysis..."
+            value={jobDescription}
+            onChange={(e) => setJobDescription(e.target.value)}
+            rows={6}
+            className="resize-none text-sm"
+          />
+
+          <div className="flex items-center gap-4">
             <Input
               placeholder="Job Title (e.g., Senior Software Engineer)"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
               className="text-sm"
             />
-            <Input
-              placeholder="Company (Optional)"
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              className="text-sm"
-            />
-          </div>
-
-          <Textarea
-            placeholder="Paste job description here for instant ATS compatibility analysis..."
-            value={jobDescription}
-            onChange={(e) => setJobDescription(e.target.value)}
-            rows={4}
-            className="resize-none text-sm"
-          />
-
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Industry (Optional)"
-              value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
-              className="text-sm flex-1"
-            />
             <Button
               onClick={handleQuickAnalyze}
               disabled={
                 isAnalyzing || !jobDescription.trim() || !jobTitle.trim()
               }
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
             >
               {isAnalyzing ? (
                 <div className="flex items-center gap-2">
@@ -178,8 +163,8 @@ export function ATSScore({
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" />
                   Analyze ATS
+                  <ArrowUpRight className="h-4 w-4" />
                 </div>
               )}
             </Button>
@@ -263,8 +248,8 @@ export function ATSScore({
 
                     {/* Top Missing Keywords */}
                     {result.criticalMissingKeywords.length > 0 && (
-                      <div className="p-3 bg-white/60 rounded-lg">
-                        <h5 className="text-sm font-medium text-red-700 mb-2 flex items-center gap-1">
+                      <div className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+                        <h5 className="text-sm font-medium text-red-700 dark:text-red-400 mb-2 flex items-center gap-1">
                           <AlertCircle className="h-4 w-4" />
                           Critical Missing Keywords
                         </h5>
@@ -275,7 +260,7 @@ export function ATSScore({
                               <Badge
                                 key={index}
                                 variant="secondary"
-                                className="bg-red-100 text-red-800 text-xs cursor-pointer hover:bg-red-200"
+                                className="bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 text-xs cursor-pointer hover:bg-red-200 dark:hover:bg-red-900/70"
                                 onClick={() =>
                                   onOptimizationSuggestion?.(keyword)
                                 }
@@ -337,7 +322,7 @@ export function ATSScore({
                         }).map(([label, score]) => (
                           <div
                             key={label}
-                            className="text-center p-3 bg-white/60 rounded-lg"
+                            className="text-center p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg"
                           >
                             <div className="flex items-center justify-center gap-1 mb-2">
                               {getScoreIcon(score)}
@@ -359,7 +344,7 @@ export function ATSScore({
                     <TabsContent value="keywords" className="space-y-4 mt-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <h5 className="font-medium text-green-700 mb-2 flex items-center gap-1">
+                          <h5 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center gap-1">
                             <CheckCircle className="h-4 w-4" />
                             Matched ({result.matchedKeywords.length})
                           </h5>
@@ -368,7 +353,7 @@ export function ATSScore({
                               <Badge
                                 key={index}
                                 variant="secondary"
-                                className="bg-green-100 text-green-800 text-xs"
+                                className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 text-xs"
                               >
                                 {keyword}
                               </Badge>
@@ -376,7 +361,7 @@ export function ATSScore({
                           </div>
                         </div>
                         <div>
-                          <h5 className="font-medium text-red-700 mb-2 flex items-center gap-1">
+                          <h5 className="font-medium text-red-700 dark:text-red-400 mb-2 flex items-center gap-1">
                             <AlertCircle className="h-4 w-4" />
                             Missing ({result.missingKeywords.length})
                           </h5>
@@ -385,7 +370,7 @@ export function ATSScore({
                               <Badge
                                 key={index}
                                 variant="secondary"
-                                className="bg-red-100 text-red-800 text-xs cursor-pointer hover:bg-red-200"
+                                className="bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 text-xs cursor-pointer hover:bg-red-200 dark:hover:bg-red-900/70"
                                 onClick={() =>
                                   onOptimizationSuggestion?.(keyword)
                                 }
@@ -401,9 +386,9 @@ export function ATSScore({
 
                     <TabsContent value="suggestions" className="space-y-3 mt-4">
                       {result.suggestions.map((suggestion, index) => (
-                        <div key={index} className="p-3 bg-white/60 rounded-lg">
+                        <div key={index} className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                           <div className="flex items-start gap-3">
-                            <div className="bg-blue-100 text-blue-600 rounded-full p-1">
+                            <div className="bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300 rounded-full p-1">
                               <Lightbulb className="h-3 w-3" />
                             </div>
                             <p className="text-sm flex-1">{suggestion}</p>
@@ -426,7 +411,7 @@ export function ATSScore({
 
                     <TabsContent value="insights" className="space-y-4 mt-4">
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 bg-white/60 rounded-lg">
+                        <div className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                           <h6 className="font-medium text-sm mb-2">
                             Performance Metrics
                           </h6>
@@ -458,7 +443,7 @@ export function ATSScore({
                           </div>
                         </div>
 
-                        <div className="p-3 bg-white/60 rounded-lg">
+                        <div className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
                           <h6 className="font-medium text-sm mb-2">
                             Quick Stats
                           </h6>
@@ -484,7 +469,7 @@ export function ATSScore({
                             </div>
                             <div className="flex justify-between">
                               <span>Critical Missing</span>
-                              <span className="font-semibold text-red-600">
+                              <span className="font-semibold text-red-600 dark:text-red-400">
                                 {result.criticalMissingKeywords.length}
                               </span>
                             </div>

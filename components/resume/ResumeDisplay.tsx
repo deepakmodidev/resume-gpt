@@ -22,7 +22,6 @@ export const ResumeDisplay = ({
   // Always start with 'modern' to match SSR, then update from localStorage after mount
   const [currentTemplate, setCurrentTemplate] = useState("modern");
   const [isDownloading, setIsDownloading] = useState(false);
-  const [showATSAnalysis, setShowATSAnalysis] = useState(false);
 
   // On mount, update template from localStorage if available
   useEffect(() => {
@@ -112,7 +111,6 @@ export const ResumeDisplay = ({
               <TabsTrigger value="ats" className="flex items-center gap-2">
                 <Target className="w-4 h-4" />
                 ATS Analysis
-                <Sparkles className="w-3 h-3 text-yellow-500" />
               </TabsTrigger>
             </TabsList>
 
@@ -141,11 +139,10 @@ export const ResumeDisplay = ({
               <button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
-                className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${
-                  isDownloading
+                className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${isDownloading
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
-                }`}
+                  }`}
               >
                 {isDownloading ? (
                   <LoaderPinwheelIcon className="w-4 h-4 animate-spin" />
@@ -195,7 +192,7 @@ export const ResumeDisplay = ({
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold">
-                        🚀 ATS Score Analysis
+                        ATS Score Analysis
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         Get AI-powered insights on how your resume performs
@@ -204,37 +201,17 @@ export const ResumeDisplay = ({
                     </div>
                   </div>
 
-                  {!showATSAnalysis ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p className="text-lg font-medium mb-2">
-                        Ready for ATS Analysis
-                      </p>
-                      <p className="text-sm mb-4">
-                        Your resume content is ready. Add a job description to
-                        get detailed ATS scoring and optimization suggestions.
-                      </p>
-                      <Button
-                        onClick={() => setShowATSAnalysis(true)}
-                        className="gap-2"
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        Start ATS Analysis
-                      </Button>
-                    </div>
-                  ) : (
-                    <ATSScore
-                      resumeContent={
-                        `${resumeData.name || ""}\n${resumeData.title || ""}\n` +
-                        `${resumeData.contact?.email || ""} ${resumeData.contact?.phone || ""}\n` +
-                        `${resumeData.summary || ""}\n` +
-                        `${resumeData.experience?.map((exp) => `${exp.title} at ${exp.company}\n${exp.description}`).join("\n") || ""}\n` +
-                        `${resumeData.education?.map((edu) => `${edu.degree} - ${edu.institution}`).join("\n") || ""}\n` +
-                        `${resumeData.skills?.join(", ") || ""}\n` +
-                        `${resumeData.projects?.map((proj) => `${proj.name}: ${proj.description}`).join("\n") || ""}`
-                      }
-                    />
-                  )}
+                  <ATSScore
+                    resumeContent={
+                      `${resumeData.name || ""}\n${resumeData.title || ""}\n` +
+                      `${resumeData.contact?.email || ""} ${resumeData.contact?.phone || ""}\n` +
+                      `${resumeData.summary || ""}\n` +
+                      `${resumeData.experience?.map((exp) => `${exp.title} at ${exp.company}\n${exp.description}`).join("\n") || ""}\n` +
+                      `${resumeData.education?.map((edu) => `${edu.degree} - ${edu.institution}`).join("\n") || ""}\n` +
+                      `${resumeData.skills?.join(", ") || ""}\n` +
+                      `${resumeData.projects?.map((proj) => `${proj.name}: ${proj.description}`).join("\n") || ""}`
+                    }
+                  />
                 </CardContent>
               </Card>
             </div>
