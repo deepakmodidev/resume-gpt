@@ -156,7 +156,6 @@ export function HeroSection({ chatId }: HeroSectionProps) {
                 <span className="text-sm md:text-base text-blue-600 dark:text-blue-400">
                   Analyze ATS Score
                 </span>
-                <Target className="h-4 w-4 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
               </div>
             </Button>
           </div>
