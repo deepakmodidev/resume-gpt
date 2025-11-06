@@ -103,8 +103,7 @@ export const GeminiApiKeyModal = ({
             Gemini API Key
           </DialogTitle>
           <DialogDescription>
-            Add your own Gemini API key to use your quota instead of the shared
-            one.
+            Add your own Gemini API key to use your quota instead of the shared one.
           </DialogDescription>
         </DialogHeader>
 
@@ -127,7 +126,7 @@ export const GeminiApiKeyModal = ({
             >
               Gemini API Key
             </label>
-            <div className="relative">
+            <div className="relative mt-2">
               <Input
                 id="apiKey"
                 type={showKey ? "text" : "password"}

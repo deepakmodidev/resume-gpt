@@ -70,7 +70,6 @@ export function Header() {
               href="/ats-analyzer"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
             >
-              <NotepadTextDashed className="w-4 h-4" />
               ATS Analyzer
             </Link>
             <Link
