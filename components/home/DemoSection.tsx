@@ -36,20 +36,20 @@ export function DemoSection() {
 
           {/* GenAI Feature Highlights */}
           <div className="flex flex-wrap justify-center gap-3 mt-8">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              🎯 RAG Pipeline Analysis
+            <div className="bg-secondary/50 border border-border px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+              RAG Pipeline Analysis
             </div>
-            <div className="bg-gradient-to-r from-green-500 to-teal-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              🔍 Vector Database Search
+            <div className="bg-secondary/50 border border-border px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+              Vector Database Search
             </div>
-            <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              📊 Semantic Similarity
+            <div className="bg-secondary/50 border border-border px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+              Semantic Similarity
             </div>
-            <div className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              🤖 Gemini AI Integration
+            <div className="bg-secondary/50 border border-border px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+              Gemini AI Integration
             </div>
-            <div className="bg-gradient-to-r from-indigo-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              ⚡ Real-time ATS Scoring
+            <div className="bg-secondary/50 border border-border px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+              Real-time ATS Scoring
             </div>
           </div>
         </div>
