@@ -73,6 +73,12 @@ export function Header() {
               ATS Analyzer
             </Link>
             <Link
+              href="/cover-letter"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+            >
+              Cover Letter
+            </Link>
+            <Link
               href="/"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >

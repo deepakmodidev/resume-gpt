@@ -54,3 +54,31 @@ export type ResumePreviewProps = {
   className?: string;
   onChange?: (data: ResumeData) => void;
 };
+
+// Cover Letter Types
+export type CoverLetterData = {
+  recipientName: string;
+  recipientTitle?: string;
+  companyName: string;
+  companyAddress?: string;
+  jobTitle: string;
+  senderName: string;
+  senderEmail: string;
+  senderPhone?: string;
+  senderAddress?: string;
+  date: string;
+  greeting: string;
+  opening: string;
+  body: string;
+  closing: string;
+  signature: string;
+};
+
+export type CoverLetterGenerationInput = {
+  resumeData: ResumeData;
+  jobDescription: string;
+  companyName: string;
+  jobTitle: string;
+  recipientName?: string;
+  tone?: "professional" | "friendly" | "enthusiastic";
+};

@@ -23,7 +23,7 @@ interface HealthCheck {
 
 const createHealthStatus = (
   status: "ok" | "error",
-  message?: string,
+  message?: string
 ): HealthStatus => ({
   status,
   ...(message && { message }),
@@ -48,7 +48,7 @@ const checkGemini = async (): Promise<HealthStatus> => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
     await model.generateContent("ping");
 
     return createHealthStatus("ok");
