@@ -4,32 +4,34 @@ import { auth } from "@/lib/auth";
 
 const SYSTEM_INSTRUCTION = `
 You are an expert technical interviewer conducting a screening interview.
-The candidate has provided their resume and a target job description.
 
-YOUR GOAL:
-Conduct a professional, friendly, but rigorous interview. Assess the candidate's fit for the specific job description provided.
+CRITICAL RULES:
+1. **ULTRA SHORT**: Maximum 2 sentences per response. This is for VOICE interview.
+2. **ONE QUESTION ONLY**: Ask one simple question, then STOP.
+3. **NO MARKDOWN**: Plain text only. No asterisks, bullets, or formatting.
+4. **CONVERSATIONAL**: Speak naturally like a real person on a phone call.
+5. **FAST PACED**: Keep the interview moving quickly.
 
-RULES FOR INTERACTION:
-1.  **Conversational Tone**: Speak naturally, like a human on a video call. Avoid robotic phrasing.
-2.  **Short Responses**: Keep your responses concise (1-3 sentences suitable for speech synthesis). Do not monologue.
-3.  **One Question at a Time**: Ask only ONE question per turn. Wait for the candidate's answer.
-4.  **No Markdown**: Output PLAIN TEXT only. Do not use asterisks, bullet points, or bold text. These break text-to-speech.
-5.  **Stay in Character**: Never break character. You are the recruiter/hiring manager at the company.
-6.  **Follow-up**: If the candidate gives a vague answer, ask for specific examples (STAR method).
+INTERVIEW STYLE:
+- Welcome briefly, then ask them to introduce themselves
+- Ask about their experience related to the job
+- Ask one technical or behavioral question at a time
+- Keep responses under 20 words when possible
 
-INTERVIEW FLOW:
-1.  Start by welcoming the candidate and asking them to introduce themselves briefly.
-2.  Move to questions about their resume experience relevant to the job.
-3.  Ask technical/behavioral questions based on the job requirements.
-4.  Wrap up the interview politely.
+EXAMPLE RESPONSES:
+✅ "Great! Tell me about your experience with React."
+✅ "Interesting. Can you describe a challenging project you worked on?"
+✅ "Thanks for sharing. What interests you about this role?"
 
-If the user says "End interview" or "Stop", provide a brief encouraging wrap-up and feedback.
+❌ "That's wonderful to hear! I'm really impressed by your background. Now, I'd like to ask you several questions about..."
+
+Remember: SHORT and FAST. This is a voice interview, not an essay.
 `;
 
 const GENERATION_CONFIG = {
   temperature: 0.7,
   topP: 0.8,
-  maxOutputTokens: 500, // Short responses
+  maxOutputTokens: 150, // Very short responses for faster speech
 };
 
 export async function POST(req: NextRequest) {
@@ -37,10 +39,10 @@ export async function POST(req: NextRequest) {
     const { messages, resumeText, jobDescription, userApiKey } =
       await req.json();
 
+    // Interview is public - no auth required
+    // Optional: Check session for logged-in users
     const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const userId = session?.user?.id;
 
     const apiKey = userApiKey || process.env.GEMINI_KEY;
     if (!apiKey) {
@@ -50,16 +52,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!messages || messages.length === 0) {
+      return NextResponse.json(
+        { error: "No messages provided" },
+        { status: 400 }
+      );
+    }
+
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash", // Fast model for voice interaction
+      model: "gemini-3-flash-preview", // Latest and fastest
       systemInstruction: SYSTEM_INSTRUCTION,
     });
 
-    // Construct history with context
-    // We inject the resume and JD into the first message or system context logic conceptually
-    // But since Gemini supports history, we'll prepend context to the first user message if history is empty
-    let chatHistory = messages || [];
+    // Build chat history - Filter out AI welcome message if it's the only message
+    let chatHistory = messages.slice(0, -1); // All except the last message
+    
+    // Gemini requires first message to be from user, not model
+    // If chat history starts with model message (welcome), skip it
+    if (chatHistory.length > 0 && chatHistory[0].role === "model") {
+      chatHistory = chatHistory.slice(1);
+    }
 
     // Start Chat
     const chat = model.startChat({
@@ -70,39 +83,86 @@ export async function POST(req: NextRequest) {
       })),
     });
 
-    // Prepare the message
-    // If it's the very first message (start of interview), we might need to trigger the welcome manually
-    // or expected the client to send a "Ready" signal.
-    // Let's assume the client sends the latest user input.
-
-    // For the very first turn, the client might send "Start interview".
-    // We attach context then.
-
+    // Get current message
     let currentMessage = messages[messages.length - 1].content;
 
-    if (messages.length === 1) {
-      // First message: Attach Resume and JD Context
+    // Only attach context on first user message (when resumeText is provided)
+    if (resumeText && jobDescription) {
+      // Extract candidate name from resume
+      const extractName = (text: string): string | null => {
+        const lines = text.split('\n').filter(line => line.trim());
+        if (lines.length === 0) return null;
+
+        const firstLine = lines[0].trim();
+        if (firstLine.length > 2 && firstLine.length < 50 && !/[@#$%^&*()_+=\[\]{}|\\:;"'<>,.?\/]/.test(firstLine)) {
+          const cleanName = firstLine.replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s*/i, '').trim();
+          const words = cleanName.split(/\s+/);
+          if (words.length >= 2 && words.length <= 4) {
+            return words.slice(0, 2).join(' ');
+          }
+        }
+        return null;
+      };
+
+      const candidateName = extractName(resumeText);
+      const nameContext = candidateName ? `\nCANDIDATE NAME: ${candidateName}` : '';
+
       currentMessage = `
 [CONTEXT START]
 RESUME CONTENT:
 ${resumeText}
 
 JOB DESCRIPTION:
-${jobDescription}
+${jobDescription || "No specific job description provided. Conduct a general interview based on the candidate's resume."}${nameContext}
 [CONTEXT END]
 
+IMPORTANT: Address the candidate by their first name naturally during the interview to create a personal connection.
+
 ${currentMessage}
-        `;
+      `;
     }
 
-    const result = await chat.sendMessage(currentMessage);
-    const response = result.response.text();
+    // Use streaming for faster responses
+    const result = await chat.sendMessageStream(currentMessage);
+    
+    // Create a streaming response
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of result.stream) {
+            const text = chunk.text();
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+          }
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
 
-    return NextResponse.json({ response });
-  } catch (error) {
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+  } catch (error: any) {
     console.error("Interview API Error:", error);
+
+    let errorMessage = "Failed to generate response";
+    if (error.message?.includes("API key")) {
+      errorMessage = "Invalid API key";
+    } else if (error.message?.includes("quota")) {
+      errorMessage = "API quota exceeded";
+    } else if (error.message?.includes("network")) {
+      errorMessage = "Network error";
+    }
+
     return NextResponse.json(
-      { error: "Failed to generate response" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

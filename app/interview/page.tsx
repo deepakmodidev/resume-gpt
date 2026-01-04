@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { InterviewSetup } from "@/components/interview/InterviewSetup";
 import { InterviewSession } from "@/components/interview/InterviewSession";
+import { BrowserCompatibilityCheck } from "@/components/interview/BrowserCompatibilityCheck";
 import { Header } from "@/components/home/Header";
 
 export default function InterviewPage() {
+    const [hasCheckedCompatibility, setHasCheckedCompatibility] = useState(false);
     const [hasStarted, setHasStarted] = useState(false);
     const [resumeData, setResumeData] = useState({ text: "", jd: "" });
 
@@ -19,6 +21,16 @@ export default function InterviewPage() {
         setResumeData({ text: "", jd: "" });
     };
 
+    // Show compatibility check first
+    if (!hasCheckedCompatibility) {
+        return (
+            <BrowserCompatibilityCheck 
+                onContinue={() => setHasCheckedCompatibility(true)} 
+            />
+        );
+    }
+
+    // Show interview session
     if (hasStarted) {
         return (
             <InterviewSession
@@ -29,6 +41,7 @@ export default function InterviewPage() {
         );
     }
 
+    // Show setup
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Header />

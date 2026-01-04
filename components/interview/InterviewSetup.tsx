@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Label } from "@/components/ui/label";
 import { Mic, ArrowRight, FileText, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { CartesiaApiKeyModal } from "@/components/CartesiaApiKeyModal";
 
 interface InterviewSetupProps {
     onStart: (resume: string, jd: string) => void;
@@ -206,14 +207,33 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
                             />
                         </div>
 
-                        <Button
-                            className="w-full text-lg font-semibold gap-2 shadow-lg hover:shadow-blue-500/20 transition-all transform active:scale-[0.98]"
-                            size="lg"
-                            onClick={() => onStart(resumeText, jdText)}
-                            disabled={!resumeText.trim()}
-                        >
-                            Start Interview <ArrowRight className="h-5 w-5" />
-                        </Button>
+                        <div className="space-y-3">
+                            <Button
+                                className="w-full text-lg font-semibold gap-2 shadow-lg hover:shadow-blue-500/20 transition-all transform active:scale-[0.98]"
+                                size="lg"
+                                onClick={() => onStart(resumeText, jdText)}
+                                disabled={!resumeText.trim()}
+                            >
+                                Start Interview <ArrowRight className="h-5 w-5" />
+                            </Button>
+
+                            {/* Cartesia Fast Voice Option */}
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-xs text-muted-foreground">Want 10x faster voice?</span>
+                                <CartesiaApiKeyModal />
+                            </div>
+                        </div>
+
+                        {/* Quick Tips */}
+                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
+                            <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">💡 Quick Tips:</p>
+                            <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1 ml-4 list-disc">
+                                <li>Speak clearly and naturally</li>
+                                <li>Click the mic button to stop speaking</li>
+                                <li>The AI will respond automatically</li>
+                                <li>Use a quiet environment for best results</li>
+                            </ul>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

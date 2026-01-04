@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { AudioVisualizer } from "./AudioVisualizer";
 import { useSpeech } from "@/hooks/useSpeech";
+import { useCartesiaTTS } from "@/hooks/useCartesiaTTS";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Square, MessageSquare, X } from "lucide-react";
+import { Mic, MicOff, Square, MessageSquare, X, Download, Clock } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface Message {
     role: "user" | "model";
@@ -33,38 +35,85 @@ export const InterviewSession = ({ resumeText, jobDescription, onEnd }: Intervie
     const [status, setStatus] = useState<"idle" | "listening" | "processing" | "speaking">("idle");
     const [showTranscript, setShowTranscript] = useState(false);
     const [showEndDialog, setShowEndDialog] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
+    const [hasInitialized, setHasInitialized] = useState(false);
+    const [startTime] = useState(Date.now());
+    const [elapsedTime, setElapsedTime] = useState(0);
 
-    // Combine custom hook with local logic
-    const { isListening, isSpeaking, transcript, volume, startListening, stopListening, speak, cancelSpeech } = useSpeech({
+    // Speech Recognition (for listening)
+    const { 
+        isListening, 
+        transcript, 
+        volume, 
+        isSupported,
+        error: speechError,
+        startListening, 
+        stopListening, 
+        getFinalTranscript 
+    } = useSpeech({
         onSpeechStart: () => setStatus("listening"),
+        onSpeechEnd: (text) => {
+            // Auto-send when speech ends
+            if (text.trim()) {
+                handleSendResponse(text);
+            }
+        },
         onError: (e) => {
             console.error("Speech Error", e);
             setStatus("idle");
         }
     });
 
-    // Effect to handle transcript updates and silence detection
-    // Since Web Speech API functionality varies, we'll use a manual "Done" button or timeout for now to be safe.
-    // Actually, let's use a "Stop & Send" button for the user control.
+    // Cartesia TTS (for speaking) - Ultra-fast!
+    const { 
+        speak: cartesiaSpeak, 
+        stop: cartesiaStop, 
+        isSpeaking: cartesiaIsSpeaking,
+        isInitialized: cartesiaInitialized,
+        error: cartesiaError 
+    } = useCartesiaTTS({
+        onStart: () => {
+            console.log("🔊 Cartesia started speaking");
+        },
+        onEnd: () => {
+            console.log("✅ Cartesia finished speaking");
+            setStatus("idle");
+            // Auto-start listening after AI speaks
+            setTimeout(() => startListening(), 1000);
+        },
+        onError: (error) => console.error("Cartesia error:", error),
+    });
 
-    const handleSendResponse = async (text: string) => {
+    // Use Cartesia if available, fallback to browser TTS
+    const speak = cartesiaInitialized ? cartesiaSpeak : () => { console.warn("Cartesia not initialized"); };
+    const isSpeaking = cartesiaIsSpeaking;
+    const cancelSpeech = cartesiaStop;
+
+    const handleSendResponse = useCallback(async (text: string) => {
         if (!text.trim()) return;
 
         setStatus("processing");
+        setApiError(null);
         const newMessages = [...messages, { role: "user" as const, content: text }];
         setMessages(newMessages);
 
         try {
+            const userApiKey = localStorage.getItem("gemini-api-key");
+            
             const response = await fetch("/api/interview/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     messages: newMessages,
-                    resumeText,
-                    jobDescription,
-                    userApiKey: localStorage.getItem("gemini-api-key"),
+                    resumeText: messages.length === 0 ? resumeText : undefined,
+                    jobDescription: messages.length === 0 ? jobDescription : undefined,
+                    userApiKey,
                 }),
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
             if (data.error) throw new Error(data.error);
@@ -75,53 +124,182 @@ export const InterviewSession = ({ resumeText, jobDescription, onEnd }: Intervie
 
             speak(aiText, () => {
                 setStatus("idle");
-                // Optionally auto-start listening again?
-                // startListening(); // Uncomment for continuous mode
+                // Auto-start listening for continuous conversation
+                setTimeout(() => {
+                    if (status !== "speaking") {
+                        startListening();
+                    }
+                }, 500);
             });
 
         } catch (error) {
             console.error("Interview Error:", error);
+            const errorMessage = error instanceof Error ? error.message : "Failed to get response. Please try again.";
+            setApiError(errorMessage);
             setStatus("idle");
+            
+            // Add error message to chat
+            setMessages([...newMessages, { 
+                role: "model", 
+                content: `I apologize, but I encountered an error: ${errorMessage}. Please try speaking again.` 
+            }]);
         }
-    };
+    }, [messages, resumeText, jobDescription, speak, startListening, status]);
 
-    const toggleMic = () => {
+    const toggleMic = useCallback(() => {
         if (status === "listening") {
+            console.log("🛑 Stopping listening, transcript:", transcript);
             stopListening();
-            // Wait a tiny bit for final transcript update? 
-            // Actually, useSpeech updates transcript state. 
-            // We'll pass the current transcript to send.
-            handleSendResponse(transcript);
+            // Use current transcript state
+            if (transcript && transcript.trim()) {
+                console.log("📤 Sending transcript:", transcript);
+                handleSendResponse(transcript);
+            } else {
+                console.log("⚠️ No transcript to send");
+                setStatus("idle");
+                toast.error("No speech detected. Please try speaking again.");
+            }
         } else {
             if (status === "speaking") {
+                console.log("⏹️ Canceling speech");
                 cancelSpeech();
             }
+            console.log("▶️ Starting listening");
             startListening();
             setStatus("listening");
         }
-    };
+    }, [status, stopListening, transcript, handleSendResponse, cancelSpeech, startListening]);
 
-    // Initial Welcome
+    // Timer for elapsed time
     useEffect(() => {
-        // Only run once on mount
-        if (messages.length === 0) {
-            const welcome = "Hello! I'm Sarah, your interviewer. I've reviewed your resume. Could you please start by introducing yourself?";
+        const interval = setInterval(() => {
+            setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [startTime]);
+
+    // Extract candidate name from resume
+    const extractName = useCallback((text: string): string | null => {
+        // Try to extract name from common patterns
+        const lines = text.split('\n').filter(line => line.trim());
+        if (lines.length === 0) return null;
+        
+        // First non-empty line is often the name
+        const firstLine = lines[0].trim();
+        
+        // Check if it looks like a name (not too long, no special chars)
+        if (firstLine.length > 2 && firstLine.length < 50 && !/[@#$%^&*()_+=\[\]{}|\\:;"'<>,.?\/]/.test(firstLine)) {
+            // Remove common titles
+            const cleanName = firstLine
+                .replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s*/i, '')
+                .trim();
+            
+            // Check if it has at least 2 words (first and last name)
+            const words = cleanName.split(/\s+/);
+            if (words.length >= 2 && words.length <= 4) {
+                return words.slice(0, 2).join(' '); // Return first two words
+            }
+        }
+        
+        return null;
+    }, []);
+
+    // Initial Welcome - Fixed with proper dependencies
+    useEffect(() => {
+        if (!hasInitialized && messages.length === 0) {
+            setHasInitialized(true);
+            
+            const candidateName = extractName(resumeText);
+            const greeting = candidateName 
+                ? `Hi ${candidateName}! I'm Sarah.` 
+                : "Hi! I'm Sarah.";
+            
+            const welcome = `${greeting} Let's start. Please introduce yourself briefly.`;
+            
+            console.log("👋 Welcome message:", welcome);
             setMessages([{ role: "model", content: welcome }]);
             setStatus("speaking");
-            speak(welcome, () => setStatus("idle"));
+            
+            // Try to speak, but continue even if it fails
+            speak(welcome, () => {
+                console.log("✅ Welcome complete, starting to listen");
+                setStatus("idle");
+                // Auto-start listening after welcome
+                setTimeout(() => {
+                    console.log("🎤 Auto-starting microphone");
+                    startListening();
+                }, 1500);
+            });
         }
-    }, []);
+    }, [hasInitialized, messages.length, speak, startListening, resumeText, extractName]);
+
+    // Export transcript function
+    const exportTranscript = useCallback(() => {
+        const transcript = messages
+            .map((msg) => `${msg.role === "user" ? "You" : "Interviewer"}: ${msg.content}`)
+            .join("\n\n");
+
+        const blob = new Blob([transcript], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `interview-transcript-${new Date().toISOString().split("T")[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success("Transcript downloaded!");
+    }, [messages]);
+
+    // Format time helper
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, "0")}`;
+    };
 
     return (
         <div className="flex flex-col h-screen bg-black text-white relative overflow-hidden">
+            {/* Browser Compatibility Warning */}
+            {!isSupported && (
+                <div className="absolute top-0 left-0 right-0 bg-red-600 text-white p-4 z-50 text-center">
+                    <p className="font-semibold">⚠️ Browser Not Supported</p>
+                    <p className="text-sm mt-1">Speech recognition is not available in your browser. Please use Chrome, Edge, or Safari for the best experience.</p>
+                </div>
+            )}
+
+            {/* Error Banner */}
+            {(speechError || apiError) && (
+                <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-yellow-500/90 backdrop-blur-sm text-white px-6 py-3 rounded-lg z-50 max-w-md text-center shadow-lg">
+                    <p className="text-sm font-medium">{speechError || apiError}</p>
+                    {speechError && speechError.includes("Text-to-speech") && (
+                        <p className="text-xs mt-1 opacity-90">The interview will continue. Read the AI responses on screen.</p>
+                    )}
+                </div>
+            )}
+
             {/* Header Controls */}
             <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10">
-                <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => setShowEndDialog(true)}>
-                    <X className="mr-2 h-5 w-5" /> End Interview
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => setShowTranscript(!showTranscript)}>
-                    <MessageSquare className={`h-5 w-5 ${showTranscript ? "text-cyan-400" : "text-white/70"}`} />
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => setShowEndDialog(true)}>
+                        <X className="mr-2 h-5 w-5" /> End Interview
+                    </Button>
+                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                        <Clock className="h-4 w-4 text-white/70" />
+                        <span className="text-sm font-mono text-white/90">{formatTime(elapsedTime)}</span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    {messages.length > 0 && (
+                        <Button variant="ghost" size="icon" onClick={exportTranscript} title="Download Transcript">
+                            <Download className="h-5 w-5 text-white/70 hover:text-white" />
+                        </Button>
+                    )}
+                    <Button variant="ghost" size="icon" onClick={() => setShowTranscript(!showTranscript)} title="Toggle Transcript">
+                        <MessageSquare className={`h-5 w-5 ${showTranscript ? "text-cyan-400" : "text-white/70"}`} />
+                    </Button>
+                </div>
             </div>
 
             {/* End Confirmation Dialog */}
@@ -148,8 +326,30 @@ export const InterviewSession = ({ resumeText, jobDescription, onEnd }: Intervie
             <div className="flex-1 flex flex-col items-center justify-center relative">
                 <AudioVisualizer mode={status} volume={volume} />
 
-                {/* Live Transcript Overlay */}
+                {/* Status Indicator */}
+                <div className="absolute top-24 text-center">
+                    <p className="text-sm uppercase tracking-wider text-white/60 font-semibold">
+                        {status === "idle" && "Ready to listen"}
+                        {status === "listening" && "🎤 Listening..."}
+                        {status === "processing" && "⚙️ Processing..."}
+                        {status === "speaking" && "🗣️ Speaking..."}
+                    </p>
+                </div>
+
+                {/* Live Transcript Overlay - You Speaking */}
                 <AnimatePresence>
+                    {status === "listening" && !transcript && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute bottom-32 max-w-2xl text-center px-6"
+                        >
+                            <p className="text-lg text-white/60 italic">
+                                Speak now... (Click mic button when done)
+                            </p>
+                        </motion.div>
+                    )}
                     {(status === "listening" || status === "processing") && transcript && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -157,7 +357,10 @@ export const InterviewSession = ({ resumeText, jobDescription, onEnd }: Intervie
                             exit={{ opacity: 0 }}
                             className="absolute bottom-32 max-w-2xl text-center px-6"
                         >
-                            <p className="text-xl md:text-2xl font-light text-white/90 leading-relaxed">
+                            <div className="inline-block bg-green-500/20 backdrop-blur-sm rounded-lg px-4 py-2 mb-2">
+                                <p className="text-sm font-semibold text-green-400 uppercase tracking-wider">You:</p>
+                            </div>
+                            <p className="text-xl md:text-2xl font-light text-white/90 leading-relaxed mt-2">
                                 "{transcript}"
                             </p>
                         </motion.div>
@@ -172,7 +375,10 @@ export const InterviewSession = ({ resumeText, jobDescription, onEnd }: Intervie
                             animate={{ opacity: 1 }}
                             className="absolute bottom-32 max-w-2xl text-center px-6"
                         >
-                            <p className="text-lg md:text-xl font-medium text-cyan-200/90 leading-relaxed">
+                            <div className="inline-block bg-blue-500/20 backdrop-blur-sm rounded-lg px-4 py-2 mb-2">
+                                <p className="text-sm font-semibold text-blue-400 uppercase tracking-wider">AI Interviewer:</p>
+                            </div>
+                            <p className="text-lg md:text-xl font-medium text-cyan-200/90 leading-relaxed mt-2">
                                 {messages[messages.length - 1].role === 'model' ? messages[messages.length - 1].content : "..."}
                             </p>
                         </motion.div>
@@ -224,7 +430,10 @@ export const InterviewSession = ({ resumeText, jobDescription, onEnd }: Intervie
                         <ScrollArea className="h-full p-4">
                             <div className="space-y-4">
                                 {messages.map((msg, i) => (
-                                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                        <span className={`text-xs font-semibold mb-1 px-2 ${msg.role === 'user' ? 'text-cyan-400' : 'text-blue-400'}`}>
+                                            {msg.role === 'user' ? 'You' : 'AI Interviewer'}
+                                        </span>
                                         <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user'
                                             ? 'bg-cyan-600 text-white'
                                             : 'bg-gray-800 text-gray-200'
@@ -234,7 +443,10 @@ export const InterviewSession = ({ resumeText, jobDescription, onEnd }: Intervie
                                     </div>
                                 ))}
                                 {status === "listening" && transcript && (
-                                    <div className="flex justify-end">
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-xs font-semibold mb-1 px-2 text-cyan-400">
+                                            You (speaking...)
+                                        </span>
                                         <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm bg-cyan-600/50 text-white/50 animate-pulse">
                                             {transcript}...
                                         </div>
