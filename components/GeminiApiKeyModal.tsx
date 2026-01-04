@@ -179,6 +179,9 @@ export const GeminiApiKeyModal = ({
           {/* Instructions */}
           <div className="text-xs text-muted-foreground space-y-1">
             <p>
+              <strong>Note:</strong> Ensure your API key has access to Gemini 3 Flash Preview.
+            </p>
+            <p>
               <strong>How to get your API key:</strong>
             </p>
             <ol className="list-decimal list-inside space-y-1 ml-2">
