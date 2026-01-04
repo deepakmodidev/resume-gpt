@@ -9,6 +9,7 @@ import {
   Users,
   Shield,
   Target,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,12 +23,20 @@ const features = [
     size: "double", // spans 2 columns (positions 1-2)
   },
   {
+    title: "AI Cover Letter Generator",
+    description:
+      "Create tailored cover letters in seconds using advanced AI that matches your resume to job descriptions",
+    icon: FileText,
+    color: "text-pink-500",
+    size: "single", // spans 1 column (position 3)
+  },
+  {
     title: "AI Resume Assistant",
     description:
       "Powered by Gemini AI for intelligent content suggestions and resume optimization",
     icon: MessageCircle,
     color: "text-blue-500",
-    size: "single", // spans 1 column (position 3)
+    size: "single", // spans 1 column (position 4)
   },
   {
     title: "Professional Templates",
@@ -51,14 +60,6 @@ const features = [
     icon: Zap,
     color: "text-yellow-500",
     size: "double", // spans 2 columns (positions 6-7)
-  },
-  {
-    title: "Chat Management",
-    description:
-      "Organize resume conversations with search, rename, and delete capabilities",
-    icon: Users,
-    color: "text-cyan-500",
-    size: "single", // spans 1 column (position 8)
   },
   {
     title: "Secure & Private",
@@ -136,9 +137,9 @@ const FeatureCard = ({ feature, index }: FeatureCardProps) => {
               feature.color === "text-purple-500" && "bg-purple-500/10",
               feature.color === "text-green-500" && "bg-green-500/10",
               feature.color === "text-yellow-500" && "bg-yellow-500/10",
-              feature.color === "text-cyan-500" && "bg-cyan-500/10",
               feature.color === "text-red-500" && "bg-red-500/10",
               feature.color === "text-orange-500" && "bg-orange-500/10",
+              feature.color === "text-pink-500" && "bg-pink-500/10",
             )}
           >
             <feature.icon className={cn("size-8", feature.color)} />
