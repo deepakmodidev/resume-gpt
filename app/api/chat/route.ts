@@ -91,6 +91,7 @@ const GENERATION_CONFIG = {
   temperature: 0.6,
   topP: 0.9,
   maxOutputTokens: 2048,
+  responseMimeType: "application/json",
 };
 
 // Utility Functions
@@ -107,15 +108,26 @@ const validateData = (data: Record<string, unknown>) => {
 };
 
 const parseResponse = (text: string): ParsedResponse => {
-  const cleaned = text.replace(/```````/g, "").trim();
-  const jsonText = cleaned.startsWith("{")
-    ? cleaned
-    : cleaned.match(/{[\s\S]*}/)?.[0] || cleaned;
-
   try {
-    return JSON.parse(jsonText);
-  } catch {
-    return { acknowledgement: jsonText, updatedSection: {} };
+    // With responseMimeType: "application/json", the model should return clean JSON.
+    // We still strip markdown code blocks just in case it ignores the config.
+    const cleaned = text
+      .replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1")
+      .trim();
+    return JSON.parse(cleaned);
+  } catch (e) {
+    console.error("JSON Parse Error:", e);
+    console.log("Raw text that failed parsing:", text);
+    // If parsing fails, try to extract a JSON object loosely
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch (innerError) {
+        // failed again
+      }
+    }
+    return { acknowledgement: text, updatedSection: {} };
   }
 };
 

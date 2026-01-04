@@ -21,7 +21,10 @@ export const ApiKeyNotification = ({
       setHasApiKey(!!userApiKey);
 
       // Show notification if no API key (will show on every refresh)
-      if (!userApiKey) {
+      const isDismissed = localStorage.getItem("api-key-notification-dismissed");
+
+      // Show notification if no API key AND not dismissed
+      if (!userApiKey && !isDismissed) {
         setIsVisible(true);
       }
     };
@@ -39,7 +42,7 @@ export const ApiKeyNotification = ({
 
   const handleDismiss = () => {
     setIsVisible(false);
-    // Removed localStorage persistence - notification will show on next refresh
+    localStorage.setItem("api-key-notification-dismissed", "true");
   };
 
   if (!isVisible || hasApiKey) {
