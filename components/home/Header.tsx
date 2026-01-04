@@ -68,15 +68,21 @@ export function Header() {
           <nav className="hidden md:flex items-center justify-center gap-8">
             <Link
               href="/ats-analyzer"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
             >
               ATS Analyzer
             </Link>
             <Link
               href="/cover-letter"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
             >
               Cover Letter
+            </Link>
+            <Link
+              href="/interview"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
+            >
+              Interview Prep
             </Link>
             <Link
               href="/"

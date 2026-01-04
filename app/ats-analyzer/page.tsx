@@ -52,167 +52,31 @@ export default function ATSAnalysisPage() {
   const [analysisResult, setAnalysisResult] =
     useState<ATSAnalysisResult | null>(null);
 
-  const extractTextFromPDF = async (file: File): Promise<string> => {
-    try {
-      console.log(
-        "📄 Starting PDF extraction for file:",
-        file.name,
-        "Size:",
-        file.size,
-      );
-
-      // Dynamic import PDF.js to avoid SSR issues
-      const pdfjsLib = await import("pdfjs-dist");
-
-      // Set up worker options - use local worker file
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
-
-      const arrayBuffer = await file.arrayBuffer();
-      console.log("📦 ArrayBuffer created, size:", arrayBuffer.byteLength);
-
-      // Configure PDF.js with options
-      const loadingTask = pdfjsLib.getDocument({
-        data: arrayBuffer,
-        useWorkerFetch: false,
-        isEvalSupported: false,
-        useSystemFonts: true,
-      });
-
-      const pdf = await loadingTask.promise;
-      console.log("📖 PDF loaded, pages:", pdf.numPages);
-
-      let fullText = "";
-
-      for (let i = 1; i <= pdf.numPages; i++) {
-        console.log(`📃 Processing page ${i}/${pdf.numPages}`);
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items
-          .map((item) => {
-            if ("str" in item) {
-              return item.str;
-            }
-            return "";
-          })
-          .join(" ");
-        fullText += pageText + "\n";
-        console.log(`✅ Page ${i} extracted, text length:`, pageText.length);
-      }
-
-      console.log(
-        "🎉 PDF extraction complete, total text length:",
-        fullText.length,
-      );
-      return fullText.trim();
-    } catch (error) {
-      console.error("❌ PDF parsing error details:", error);
-
-      // Fallback: try with a different approach
-      if (
-        error.message?.includes("GlobalWorkerOptions.workerSrc") ||
-        error.message?.includes("worker")
-      ) {
-        console.log("🔄 Retrying with different worker configuration...");
-        try {
-          const pdfjsLib = await import("pdfjs-dist");
-
-          // Try with a CDN worker as fallback
-          pdfjsLib.GlobalWorkerOptions.workerSrc =
-            "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-
-          const arrayBuffer = await file.arrayBuffer();
-          const loadingTask = pdfjsLib.getDocument({
-            data: arrayBuffer,
-            useWorkerFetch: false,
-            isEvalSupported: false,
-          });
-
-          const pdf = await loadingTask.promise;
-          let fullText = "";
-
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items
-              .map((item) => {
-                if ("str" in item) {
-                  return item.str;
-                }
-                return "";
-              })
-              .join(" ");
-            fullText += pageText + "\n";
-          }
-
-          console.log("✅ PDF extraction successful with CDN worker");
-          return fullText.trim();
-        } catch (fallbackError) {
-          console.error("❌ Fallback PDF parsing also failed:", fallbackError);
-          throw new Error(
-            `Failed to parse PDF file. Please try saving your PDF as text and uploading a .txt file instead.`,
-          );
-        }
-      }
-
-      throw new Error(`Failed to parse PDF file: ${error.message}`);
-    }
-  };
-
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    console.log(
-      "📁 File selected:",
-      file.name,
-      "Type:",
-      file.type,
-      "Size:",
-      file.size,
-    );
     setIsUploadingFile(true);
 
     try {
-      if (
-        file.type === "text/plain" ||
-        file.type === "text/rtf" ||
-        file.name.endsWith(".rtf")
-      ) {
-        console.log("📝 Processing text/RTF file");
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = e.target?.result as string;
-          // Basic RTF to text conversion (removes RTF formatting)
-          const cleanContent = content
-            .replace(/\\[a-z]+\d*\s?/g, "")
-            .replace(/[{}]/g, "");
-          setResumeContent(cleanContent);
-          toast.success("Resume uploaded successfully!");
-          setIsUploadingFile(false);
-        };
-        reader.onerror = (e) => {
-          console.error("FileReader error:", e);
-          toast.error("Failed to read file");
-          setIsUploadingFile(false);
-        };
-        reader.readAsText(file);
-      } else if (file.type === "application/pdf") {
-        console.log("📄 Processing PDF file");
-        toast.info("Parsing PDF...");
-        const pdfText = await extractTextFromPDF(file);
-        setResumeContent(pdfText);
-        toast.success("PDF resume parsed successfully!");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const { parseResume } = await import("@/app/actions/parse-resume");
+      const result = await parseResume(formData);
+
+      if (result.error) {
+        toast.error(result.error);
       } else {
-        console.warn("❌ Unsupported file type:", file.type);
-        toast.error("Please upload a supported file format: TXT, PDF, or RTF.");
+        setResumeContent(result.text || "");
+        toast.success("Resume uploaded successfully!");
       }
     } catch (error) {
-      console.error("❌ File upload error:", error);
-      toast.error(`Failed to process file: ${error.message}`);
+      console.error("File upload error:", error);
+      toast.error(`Failed to process file: ${(error as Error).message}`);
     } finally {
       setIsUploadingFile(false);
+      event.target.value = ""; // Reset input
     }
   };
 
@@ -344,11 +208,10 @@ export default function ATSAnalysisPage() {
                           />
                           <label
                             htmlFor="resume-upload"
-                            className={`flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg transition-colors ${
-                              isUploadingFile
+                            className={`flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg transition-colors ${isUploadingFile
                                 ? "cursor-not-allowed opacity-50"
                                 : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
-                            }`}
+                              }`}
                           >
                             {isUploadingFile ? (
                               <>

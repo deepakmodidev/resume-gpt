@@ -63,126 +63,36 @@ export const CoverLetterGenerator = ({
     const [coverLetterData, setCoverLetterData] = useState<CoverLetterData | null>(null);
     const [hasGenerated, setHasGenerated] = useState(false);
 
-    // PDF extraction function (same as ATS analyzer)
-    const extractTextFromPDF = async (file: File): Promise<string> => {
-        try {
-            const pdfjsLib = await import("pdfjs-dist");
-            pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
-
-            const arrayBuffer = await file.arrayBuffer();
-            const loadingTask = pdfjsLib.getDocument({
-                data: arrayBuffer,
-                useWorkerFetch: false,
-                isEvalSupported: false,
-                useSystemFonts: true,
-            });
-
-            const pdf = await loadingTask.promise;
-            let fullText = "";
-
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items
-                    .map((item) => {
-                        if ("str" in item) {
-                            return item.str;
-                        }
-                        return "";
-                    })
-                    .join(" ");
-                fullText += pageText + "\n";
-            }
-
-            return fullText.trim();
-        } catch (error) {
-            // Fallback with CDN worker
-            if ((error as Error).message?.includes("worker")) {
-                try {
-                    const pdfjsLib = await import("pdfjs-dist");
-                    pdfjsLib.GlobalWorkerOptions.workerSrc =
-                        "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-
-                    const arrayBuffer = await file.arrayBuffer();
-                    const loadingTask = pdfjsLib.getDocument({
-                        data: arrayBuffer,
-                        useWorkerFetch: false,
-                        isEvalSupported: false,
-                    });
-
-                    const pdf = await loadingTask.promise;
-                    let fullText = "";
-
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const textContent = await page.getTextContent();
-                        const pageText = textContent.items
-                            .map((item) => {
-                                if ("str" in item) {
-                                    return item.str;
-                                }
-                                return "";
-                            })
-                            .join(" ");
-                        fullText += pageText + "\n";
-                    }
-
-                    return fullText.trim();
-                } catch (fallbackError) {
-                    throw new Error(
-                        `Failed to parse PDF file. Please try uploading a .txt file instead.`
-                    );
-                }
-            }
-            throw new Error(`Failed to parse PDF file: ${(error as Error).message}`);
-        }
-    };
-
-    const handleFileUpload = async (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
         setIsUploadingFile(true);
 
         try {
-            if (
-                file.type === "text/plain" ||
-                file.type === "text/rtf" ||
-                file.name.endsWith(".rtf")
-            ) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const content = e.target?.result as string;
-                    const cleanContent = content
-                        .replace(/\\[a-z]+\d*\s?/g, "")
-                        .replace(/[{}]/g, "");
-                    setResumeContent(cleanContent);
-                    // Parse basic info from resume text
-                    parseResumeFromText(cleanContent);
-                    toast.success("Resume uploaded successfully!");
-                    setIsUploadingFile(false);
-                };
-                reader.onerror = () => {
-                    toast.error("Failed to read file");
-                    setIsUploadingFile(false);
-                };
-                reader.readAsText(file);
-            } else if (file.type === "application/pdf") {
-                toast.info("Parsing PDF...");
-                const pdfText = await extractTextFromPDF(file);
-                setResumeContent(pdfText);
-                parseResumeFromText(pdfText);
-                toast.success("PDF resume parsed successfully!");
+            const formData = new FormData();
+            formData.append("file", file);
+
+            // Import server action
+            const { parseResume: parseResumeAction } = await import("@/app/actions/parse-resume");
+
+            const result = await parseResumeAction(formData);
+
+            if (result.error) {
+                toast.error(result.error);
             } else {
-                toast.error("Please upload a supported file format: TXT, PDF, or RTF.");
+                const text = result.text || "";
+                setResumeContent(text);
+                // Parse basic info from resume text
+                parseResumeFromText(text);
+                toast.success("Resume parsed successfully!");
             }
         } catch (error) {
             console.error("File upload error:", error);
             toast.error(`Failed to process file: ${(error as Error).message}`);
         } finally {
             setIsUploadingFile(false);
+            event.target.value = ""; // Reset input
         }
     };
 
