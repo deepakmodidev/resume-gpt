@@ -5,6 +5,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 ## Features
 
 - **AI-powered resume content suggestions** (Gemini)
+- **AI Cover Letter Generator** - Create tailored cover letters instantly
 - **Advanced ATS compatibility analysis** with RAG and NLP
 - **Smart skill extraction and matching** using semantic analysis
 - **Multiple professional resume templates** (10+ designs)
@@ -13,6 +14,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 - **Google OAuth authentication**
 - **Chat-based resume building**
 - **Real-time ATS scoring with optimization suggestions**
+- **AI Interview Prep** _[Experimental - WIP]_
 
 ## Tech Stack
 
@@ -81,11 +83,12 @@ The application includes advanced ATS (Applicant Tracking System) analysis power
 
 - Sign in with Google to create and manage your resumes
 - Use AI chat to generate resume content
+- Generate tailored cover letters with AI
 - Choose from 10+ professional templates (Modern, Executive, Creative, Techie, etc.)
 - Analyze resume compatibility with job descriptions using ATS scorer
 - Get real-time optimization suggestions based on NLP analysis
 - Edit your resume content in real-time with live preview
-- Download your resume as a PDF
+- Download your resume or cover letter as a PDF
 
 ## License
 
