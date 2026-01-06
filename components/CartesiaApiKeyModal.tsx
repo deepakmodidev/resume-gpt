@@ -105,18 +105,15 @@ export const CartesiaApiKeyModal = () => {
 
             <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 p-3 rounded-lg">
               <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                <strong>Note:</strong> Your API key is stored locally in your browser and never sent to our servers.
+                <strong>Note:</strong> Your API key is stored locally in your
+                browser and never sent to our servers.
               </p>
             </div>
           </div>
 
           <DialogFooter className="flex justify-between sm:justify-between">
             {hasKey && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleRemove}
-              >
+              <Button variant="destructive" size="sm" onClick={handleRemove}>
                 Remove Key
               </Button>
             )}
@@ -134,4 +131,3 @@ export const CartesiaApiKeyModal = () => {
     </>
   );
 };
-

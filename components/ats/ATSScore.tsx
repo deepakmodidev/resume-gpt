@@ -109,14 +109,22 @@ export function ATSScore({
   };
 
   const getScoreIcon = (score: number) => {
-    if (score >= 80) return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
-    if (score >= 60) return <Target className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
+    if (score >= 80)
+      return (
+        <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+      );
+    if (score >= 60)
+      return (
+        <Target className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+      );
     return <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />;
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800";
-    if (score >= 60) return "bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-800";
+    if (score >= 80)
+      return "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800";
+    if (score >= 60)
+      return "bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-800";
     return "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800";
   };
 
@@ -386,7 +394,10 @@ export function ATSScore({
 
                     <TabsContent value="suggestions" className="space-y-3 mt-4">
                       {result.suggestions.map((suggestion, index) => (
-                        <div key={index} className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+                        <div
+                          key={index}
+                          className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg"
+                        >
                           <div className="flex items-start gap-3">
                             <div className="bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300 rounded-full p-1">
                               <Lightbulb className="h-3 w-3" />

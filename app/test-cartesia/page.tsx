@@ -4,11 +4,19 @@ import { useState } from "react";
 import { useCartesiaTTS } from "@/hooks/useCartesiaTTS";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Volume2, Square } from "lucide-react";
 
 export default function TestCartesiaPage() {
-  const [text, setText] = useState("Hello! This is a test of Cartesia's ultra-fast voice synthesis. How does it sound?");
+  const [text, setText] = useState(
+    "Hello! This is a test of Cartesia's ultra-fast voice synthesis. How does it sound?",
+  );
   const [status, setStatus] = useState("");
 
   const { speak, stop, isSpeaking, isInitialized, error } = useCartesiaTTS({
@@ -31,7 +39,9 @@ export default function TestCartesiaPage() {
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold">🎤 Cartesia Voice Test</h1>
-          <p className="text-muted-foreground">Test ultra-fast voice synthesis</p>
+          <p className="text-muted-foreground">
+            Test ultra-fast voice synthesis
+          </p>
         </div>
 
         <Card>
@@ -39,11 +49,17 @@ export default function TestCartesiaPage() {
             <CardTitle>Voice Settings</CardTitle>
             <CardDescription>
               {isInitialized ? (
-                <span className="text-green-600 dark:text-green-400">✅ Cartesia Initialized</span>
+                <span className="text-green-600 dark:text-green-400">
+                  ✅ Cartesia Initialized
+                </span>
               ) : error ? (
-                <span className="text-red-600 dark:text-red-400">❌ {error}</span>
+                <span className="text-red-600 dark:text-red-400">
+                  ❌ {error}
+                </span>
               ) : (
-                <span className="text-yellow-600 dark:text-yellow-400">⏳ Initializing...</span>
+                <span className="text-yellow-600 dark:text-yellow-400">
+                  ⏳ Initializing...
+                </span>
               )}
             </CardDescription>
           </CardHeader>
@@ -100,8 +116,16 @@ export default function TestCartesiaPage() {
               variant="outline"
               className="w-full justify-start"
               onClick={() => {
-                setText("Hello! I'm your AI interviewer. Let's begin the interview.");
-                setTimeout(() => speak("Hello! I'm your AI interviewer. Let's begin the interview."), 100);
+                setText(
+                  "Hello! I'm your AI interviewer. Let's begin the interview.",
+                );
+                setTimeout(
+                  () =>
+                    speak(
+                      "Hello! I'm your AI interviewer. Let's begin the interview.",
+                    ),
+                  100,
+                );
               }}
               disabled={!isInitialized || isSpeaking}
             >
@@ -112,8 +136,16 @@ export default function TestCartesiaPage() {
               variant="outline"
               className="w-full justify-start"
               onClick={() => {
-                setText("Can you tell me about your experience with React and TypeScript?");
-                setTimeout(() => speak("Can you tell me about your experience with React and TypeScript?"), 100);
+                setText(
+                  "Can you tell me about your experience with React and TypeScript?",
+                );
+                setTimeout(
+                  () =>
+                    speak(
+                      "Can you tell me about your experience with React and TypeScript?",
+                    ),
+                  100,
+                );
               }}
               disabled={!isInitialized || isSpeaking}
             >
@@ -124,8 +156,16 @@ export default function TestCartesiaPage() {
               variant="outline"
               className="w-full justify-start"
               onClick={() => {
-                setText("That's great! Can you describe a challenging project you worked on?");
-                setTimeout(() => speak("That's great! Can you describe a challenging project you worked on?"), 100);
+                setText(
+                  "That's great! Can you describe a challenging project you worked on?",
+                );
+                setTimeout(
+                  () =>
+                    speak(
+                      "That's great! Can you describe a challenging project you worked on?",
+                    ),
+                  100,
+                );
               }}
               disabled={!isInitialized || isSpeaking}
             >
@@ -137,7 +177,9 @@ export default function TestCartesiaPage() {
         <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
           <CardContent className="pt-6">
             <div className="space-y-2 text-sm">
-              <p className="font-semibold text-blue-900 dark:text-blue-100">💡 Tips:</p>
+              <p className="font-semibold text-blue-900 dark:text-blue-100">
+                💡 Tips:
+              </p>
               <ul className="space-y-1 text-blue-800 dark:text-blue-200 list-disc list-inside">
                 <li>Make sure your Cartesia API key is configured</li>
                 <li>Check your speakers/headphones are working</li>
@@ -157,4 +199,3 @@ export default function TestCartesiaPage() {
     </div>
   );
 }
-

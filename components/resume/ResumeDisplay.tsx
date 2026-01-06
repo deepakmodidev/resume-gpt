@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ResumeData } from "@/lib/types";
 import { TemplateModal } from "./TemplateModal";
 import { ResumeContent } from "./ResumeContent";
@@ -17,14 +17,13 @@ export const ResumeDisplay = ({
   data,
   handleDataChange,
 }: ResumeDisplayProps) => {
-  const [resumeData, setResumeData] = useState<ResumeData>(data);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   // Always start with 'modern' to match SSR, then update from localStorage after mount
   const [currentTemplate, setCurrentTemplate] = useState("modern");
   const [isDownloading, setIsDownloading] = useState(false);
 
   // On mount, update template from localStorage if available
-  useEffect(() => {
+  React.useEffect(() => {
     if (typeof window !== "undefined") {
       const savedTemplate = localStorage.getItem("resume-template");
       if (savedTemplate && savedTemplate !== currentTemplate) {
@@ -33,10 +32,6 @@ export const ResumeDisplay = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    setResumeData(data);
-  }, [data]);
 
   const handleContentEdit = (key: "name" | "title", value: string) => {
     handleDataChange((draft) => {
@@ -60,7 +55,7 @@ export const ResumeDisplay = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ data: resumeData, template: currentTemplate }),
+        body: JSON.stringify({ data, template: currentTemplate }),
       });
 
       if (!response.ok) {
@@ -139,10 +134,11 @@ export const ResumeDisplay = ({
               <button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
-                className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${isDownloading
+                className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${
+                  isDownloading
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
-                  }`}
+                }`}
               >
                 {isDownloading ? (
                   <LoaderPinwheelIcon className="w-4 h-4 animate-spin" />
@@ -173,7 +169,7 @@ export const ResumeDisplay = ({
           <TabsContent value="resume" className="mt-0 h-full">
             <div className="px-4 pb-4 max-w-5xl mx-auto">
               <ResumeContent
-                data={resumeData}
+                data={data}
                 isEditable={true}
                 onContentEdit={handleContentEdit}
                 template={currentTemplate}
@@ -203,13 +199,13 @@ export const ResumeDisplay = ({
 
                   <ATSScore
                     resumeContent={
-                      `${resumeData.name || ""}\n${resumeData.title || ""}\n` +
-                      `${resumeData.contact?.email || ""} ${resumeData.contact?.phone || ""}\n` +
-                      `${resumeData.summary || ""}\n` +
-                      `${resumeData.experience?.map((exp) => `${exp.title} at ${exp.company}\n${exp.description}`).join("\n") || ""}\n` +
-                      `${resumeData.education?.map((edu) => `${edu.degree} - ${edu.institution}`).join("\n") || ""}\n` +
-                      `${resumeData.skills?.join(", ") || ""}\n` +
-                      `${resumeData.projects?.map((proj) => `${proj.name}: ${proj.description}`).join("\n") || ""}`
+                      `${data.name || ""}\n${data.title || ""}\n` +
+                      `${data.contact?.email || ""} ${data.contact?.phone || ""}\n` +
+                      `${data.summary || ""}\n` +
+                      `${data.experience?.map((exp) => `${exp.title} at ${exp.company}\n${exp.description}`).join("\n") || ""}\n` +
+                      `${data.education?.map((edu) => `${edu.degree} - ${edu.institution}`).join("\n") || ""}\n` +
+                      `${data.skills?.join(", ") || ""}\n` +
+                      `${data.projects?.map((proj) => `${proj.name}: ${proj.description}`).join("\n") || ""}`
                     }
                   />
                 </CardContent>

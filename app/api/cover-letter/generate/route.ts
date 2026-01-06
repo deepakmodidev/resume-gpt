@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     if (!companyName || !jobTitle) {
       return NextResponse.json(
         { error: "Company name and job title are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -160,7 +160,7 @@ Generate a compelling, professional cover letter based solely on the applicant's
             ? error.message
             : "Failed to generate cover letter",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

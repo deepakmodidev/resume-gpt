@@ -53,14 +53,21 @@ export class ATSAnalyzer {
   ): Promise<ATSAnalysisResult> {
     try {
       // Use smart NLP-based analyzer for intelligent skill extraction
-      const smartResult = this.smartAnalyzer.analyze(resumeContent, jobDescription);
+      const smartResult = this.smartAnalyzer.analyze(
+        resumeContent,
+        jobDescription,
+      );
 
       // Extract only relevant skills (not all words) using smart analyzer
-      const matchedKeywords = smartResult.matchedSkills.map(skill => skill.skill);
-      const missingKeywords = smartResult.missingSkills.map(skill => skill.skill);
+      const matchedKeywords = smartResult.matchedSkills.map(
+        (skill) => skill.skill,
+      );
+      const missingKeywords = smartResult.missingSkills.map(
+        (skill) => skill.skill,
+      );
       const criticalMissingKeywords = smartResult.missingSkills
-        .filter(skill => skill.importance > 70)
-        .map(skill => skill.skill);
+        .filter((skill) => skill.importance > 70)
+        .map((skill) => skill.skill);
 
       // Generate improvement and strength areas from smart analysis
       const improvementAreas = this.generateSmartImprovementAreas(smartResult);
@@ -69,10 +76,24 @@ export class ATSAnalyzer {
       // Map smart results to legacy format for backward compatibility
       const scores: ATSScore = {
         overall: smartResult.overallScore,
-        keyword: Math.round((smartResult.matchedSkills.length / (smartResult.matchedSkills.length + smartResult.missingSkills.length)) * 100) || 0,
+        keyword:
+          Math.round(
+            (smartResult.matchedSkills.length /
+              (smartResult.matchedSkills.length +
+                smartResult.missingSkills.length)) *
+              100,
+          ) || 0,
         format: 85, // Default good format score since we're focusing on content
-        content: Math.round((smartResult.breakdown.technicalMatch + smartResult.breakdown.businessMatch) / 2),
-        semantic: Math.round((smartResult.breakdown.technicalMatch + smartResult.breakdown.managementMatch) / 2),
+        content: Math.round(
+          (smartResult.breakdown.technicalMatch +
+            smartResult.breakdown.businessMatch) /
+            2,
+        ),
+        semantic: Math.round(
+          (smartResult.breakdown.technicalMatch +
+            smartResult.breakdown.managementMatch) /
+            2,
+        ),
       };
 
       return {
@@ -96,7 +117,7 @@ export class ATSAnalyzer {
           formatQuality: scores.format,
           keywordDensity: 60,
         },
-        matchedSkills: smartResult.matchedSkills.map(skill => ({
+        matchedSkills: smartResult.matchedSkills.map((skill) => ({
           skill: skill.skill,
           category: skill.category,
           weight: skill.relevance / 100,
@@ -498,7 +519,9 @@ export class ATSAnalyzer {
   /**
    * Generate improvement areas using smart analysis
    */
-  private generateSmartImprovementAreas(smartResult: SmartATSAnalysis): string[] {
+  private generateSmartImprovementAreas(
+    smartResult: SmartATSAnalysis,
+  ): string[] {
     const areas: string[] = [];
 
     if (smartResult.breakdown.technicalMatch < 70) {

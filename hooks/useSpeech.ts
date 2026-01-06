@@ -37,7 +37,9 @@ export const useSpeech = ({
 
       if (!SpeechRecognition) {
         setIsSupported(false);
-        setError("Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.");
+        setError(
+          "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.",
+        );
         return;
       }
 
@@ -56,13 +58,13 @@ export const useSpeech = ({
 
       recognitionRef.current.onresult = (event: any) => {
         console.log("🎤 Speech result received:", event.results.length);
-        let interimTranscript = '';
-        let finalTranscript = '';
+        let interimTranscript = "";
+        let finalTranscript = "";
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ';
+            finalTranscript += transcript + " ";
             console.log("✅ Final transcript:", transcript);
           } else {
             interimTranscript += transcript;
@@ -81,7 +83,7 @@ export const useSpeech = ({
       recognitionRef.current.onend = () => {
         console.log("🎤 Speech recognition ended");
         setIsListening(false);
-        
+
         // Check if we should restart (mic button still pressed)
         if (shouldBeListeningRef.current) {
           console.log("🔄 Auto-restarting recognition (silence detected)");
@@ -116,16 +118,19 @@ export const useSpeech = ({
 
         let errorMessage = "Speech recognition error occurred.";
         if (event.error === "not-allowed") {
-          errorMessage = "Microphone permission denied. Please enable microphone access.";
+          errorMessage =
+            "Microphone permission denied. Please enable microphone access.";
         } else if (event.error === "no-speech") {
-          errorMessage = "No speech detected. Click the mic button and try speaking again.";
+          errorMessage =
+            "No speech detected. Click the mic button and try speaking again.";
         } else if (event.error === "aborted") {
           // Normal when user stops manually
           return;
         } else if (event.error === "network") {
           errorMessage = "Network error. Please check your connection.";
         } else if (event.error === "audio-capture") {
-          errorMessage = "Microphone not working. Please check your microphone.";
+          errorMessage =
+            "Microphone not working. Please check your microphone.";
         }
 
         setError(errorMessage);
@@ -141,7 +146,7 @@ export const useSpeech = ({
         console.log("Initial voices loaded:", voices.length);
 
         // Listen for voices loaded event (required for Chrome)
-        if ('onvoiceschanged' in synthRef.current) {
+        if ("onvoiceschanged" in synthRef.current) {
           synthRef.current.onvoiceschanged = () => {
             const loadedVoices = synthRef.current?.getVoices();
             console.log("Voices changed event - loaded:", loadedVoices?.length);
@@ -153,7 +158,7 @@ export const useSpeech = ({
     return () => {
       // Cleanup: Stop all audio streams
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
       }
 
@@ -164,7 +169,10 @@ export const useSpeech = ({
       }
 
       // Close audio context
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      if (
+        audioContextRef.current &&
+        audioContextRef.current.state !== "closed"
+      ) {
         audioContextRef.current.close();
       }
 
@@ -194,7 +202,7 @@ export const useSpeech = ({
     finalTranscriptRef.current = "";
     setError(null);
     shouldBeListeningRef.current = true;
-    
+
     if (recognitionRef.current) {
       try {
         await setupAudioVisualizer();
@@ -203,9 +211,13 @@ export const useSpeech = ({
       } catch (e: any) {
         console.error("Speech start error:", e);
         if (e.name === "NotAllowedError") {
-          setError("Microphone permission denied. Please enable microphone access in your browser settings.");
+          setError(
+            "Microphone permission denied. Please enable microphone access in your browser settings.",
+          );
         } else if (e.name === "NotFoundError") {
-          setError("No microphone found. Please connect a microphone and try again.");
+          setError(
+            "No microphone found. Please connect a microphone and try again.",
+          );
         } else if (e.message && e.message.includes("already started")) {
           console.log("⚠️ Recognition already running");
           return; // Already running, that's fine
@@ -220,12 +232,12 @@ export const useSpeech = ({
 
   const stopListening = useCallback(() => {
     shouldBeListeningRef.current = false;
-    
+
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       console.log("🛑 Stopped listening");
     }
-    
+
     // Stop animation frame
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
@@ -254,7 +266,7 @@ export const useSpeech = ({
       synthRef.current.cancel();
 
       // Wait a bit for cancel to complete
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // CRITICAL: Wait for voices to load
       let voices = synthRef.current.getVoices();
@@ -262,7 +274,7 @@ export const useSpeech = ({
 
       while (voices.length === 0 && attempts < 10) {
         console.log(`⏳ Waiting for voices... attempt ${attempts + 1}`);
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         voices = synthRef.current?.getVoices() || [];
         attempts++;
       }
@@ -306,10 +318,19 @@ export const useSpeech = ({
 
         // Chrome bug: sometimes fires error with no details but speech works
         // Only show error if speech never started
-        if (!hasStarted && e.error && e.error !== 'canceled' && e.error !== 'interrupted') {
-          setError(`Speech error: ${e.error || 'unknown'}. Please check your audio settings.`);
+        if (
+          !hasStarted &&
+          e.error &&
+          e.error !== "canceled" &&
+          e.error !== "interrupted"
+        ) {
+          setError(
+            `Speech error: ${e.error || "unknown"}. Please check your audio settings.`,
+          );
         } else if (!hasStarted) {
-          console.warn("⚠️ Error fired but no details - might be Chrome bug, continuing...");
+          console.warn(
+            "⚠️ Error fired but no details - might be Chrome bug, continuing...",
+          );
         }
 
         // Call onEnd even on error
@@ -319,17 +340,21 @@ export const useSpeech = ({
       // Find the best voice
       const preferredVoice = voices.find(
         (v) =>
-          (v.lang.startsWith('en') && v.name.includes("Google")) ||
+          (v.lang.startsWith("en") && v.name.includes("Google")) ||
           v.name.includes("Samantha") ||
-          (v.lang.startsWith('en') && v.name.includes("Microsoft")) ||
-          v.lang === "en-US"
+          (v.lang.startsWith("en") && v.name.includes("Microsoft")) ||
+          v.lang === "en-US",
       );
 
       if (preferredVoice) {
-        console.log("✅ Using voice:", preferredVoice.name, `(${preferredVoice.lang})`);
+        console.log(
+          "✅ Using voice:",
+          preferredVoice.name,
+          `(${preferredVoice.lang})`,
+        );
         utterance.voice = preferredVoice;
       } else {
-        const englishVoice = voices.find(v => v.lang.startsWith('en'));
+        const englishVoice = voices.find((v) => v.lang.startsWith("en"));
         if (englishVoice) {
           console.log("✅ Using English voice:", englishVoice.name);
           utterance.voice = englishVoice;
@@ -342,7 +367,7 @@ export const useSpeech = ({
       utterance.rate = 1.1; // Slightly faster speech
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
-      utterance.lang = 'en-US';
+      utterance.lang = "en-US";
 
       console.log("🗣️ Speaking:", text.substring(0, 80) + "...");
 
@@ -387,7 +412,6 @@ export const useSpeech = ({
       } else {
         synthRef.current.speak(utterance);
       }
-
     } catch (err) {
       console.error("❌ Speak function error:", err);
       setError("Failed to initialize speech. Please try again.");
@@ -407,12 +431,16 @@ export const useSpeech = ({
     try {
       // Stop previous stream if exists
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
 
-      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-        audioContextRef.current = new (window.AudioContext ||
-          (window as any).webkitAudioContext)();
+      if (
+        !audioContextRef.current ||
+        audioContextRef.current.state === "closed"
+      ) {
+        audioContextRef.current = new (
+          window.AudioContext || (window as any).webkitAudioContext
+        )();
       }
 
       if (audioContextRef.current.state === "suspended") {

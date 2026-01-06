@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
+import { auth } from "@/lib/auth";
 
 const React = require("react");
 const ReactDOMServer = require("react-dom/server");
@@ -31,10 +32,10 @@ async function getBrowser() {
       });
     } catch {
       console.error(
-        "Local puppeteer not found. Install with: npm install --save-dev puppeteer",
+        "Local puppeteer not found. Install with: npm install --save-dev puppeteer"
       );
       throw new Error(
-        "Puppeteer not found for local development. Please install puppeteer as a dev dependency.",
+        "Puppeteer not found for local development. Please install puppeteer as a dev dependency."
       );
     }
   }
@@ -45,18 +46,24 @@ export async function POST(request: Request) {
   let browser = null; // Ensure browser can be closed in finally block
 
   try {
+    // Authentication required for PDF generation
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { data, template } = await request.json();
 
     if (!data) {
       return NextResponse.json(
         { error: "Resume data is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Render the resume React component to an HTML string
     const resumeHtml = ReactDOMServer.renderToString(
-      createElement(ResumeContent, { data, isEditable: false, template }),
+      createElement(ResumeContent, { data, isEditable: false, template })
     );
 
     // Launch browser and open a new page
@@ -84,7 +91,7 @@ export async function POST(request: Request) {
         // Wait for DOM and network to be mostly idle for reliable rendering
         waitUntil: ["domcontentloaded", "networkidle2"],
         timeout: 60000,
-      },
+      }
     );
 
     // Generate the PDF from the rendered page
@@ -110,7 +117,7 @@ export async function POST(request: Request) {
     console.error("PDF Generation Error:", error);
     return NextResponse.json(
       { error: "PDF generation failed", details: error.message },
-      { status: 500 },
+      { status: 500 }
     );
   } finally {
     // Always close the browser if it was opened, even on error

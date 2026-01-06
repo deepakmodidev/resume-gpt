@@ -48,6 +48,12 @@ export async function POST(req: NextRequest) {
     // Store analysis results in database if resumeId is provided and user is authenticated
     if (resumeId && isAuthenticated) {
       try {
+        // Fetch existing chat data first (avoids N+1 query)
+        const existingChat = await db.chat.findUnique({
+          where: { id: resumeId, userId: session.user.id },
+          select: { resumeData: true },
+        });
+
         // Ensure atsAnalysis is fully serializable (no class instances)
         const atsAnalysis = JSON.parse(
           JSON.stringify({
@@ -58,19 +64,21 @@ export async function POST(req: NextRequest) {
             analyzedAt: new Date().toISOString(),
           }),
         );
-        await db.chat.update({
-          where: {
-            id: resumeId,
-            userId: session.user.id,
-          },
-          data: {
-            resumeData: {
-              ...(((await db.chat.findUnique({ where: { id: resumeId } }))
-                ?.resumeData as ResumeData) || {}),
-              atsAnalysis,
+
+        if (existingChat) {
+          await db.chat.update({
+            where: {
+              id: resumeId,
+              userId: session.user.id,
             },
-          },
-        });
+            data: {
+              resumeData: {
+                ...((existingChat.resumeData as ResumeData) || {}),
+                atsAnalysis,
+              },
+            },
+          });
+        }
       } catch (dbError) {
         console.warn("Database update failed:", dbError);
         // Continue without DB storage - don't fail the main analysis

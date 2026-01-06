@@ -103,7 +103,8 @@ export const GeminiApiKeyModal = ({
             Gemini API Key
           </DialogTitle>
           <DialogDescription>
-            Add your own Gemini API key to use your quota instead of the shared one.
+            Add your own Gemini API key to use your quota instead of the shared
+            one.
           </DialogDescription>
         </DialogHeader>
 
@@ -179,7 +180,8 @@ export const GeminiApiKeyModal = ({
           {/* Instructions */}
           <div className="text-xs text-muted-foreground space-y-1">
             <p>
-              <strong>Note:</strong> Ensure your API key has access to Gemini 3 Flash Preview.
+              <strong>Note:</strong> Ensure your API key has access to Gemini 3
+              Flash Preview.
             </p>
             <p>
               <strong>How to get your API key:</strong>

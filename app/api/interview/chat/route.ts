@@ -48,14 +48,14 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not available" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     if (!messages || messages.length === 0) {
       return NextResponse.json(
         { error: "No messages provided" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     // Build chat history - Filter out AI welcome message if it's the only message
     let chatHistory = messages.slice(0, -1); // All except the last message
-    
+
     // Gemini requires first message to be from user, not model
     // If chat history starts with model message (welcome), skip it
     if (chatHistory.length > 0 && chatHistory[0].role === "model") {
@@ -90,22 +90,30 @@ export async function POST(req: NextRequest) {
     if (resumeText && jobDescription) {
       // Extract candidate name from resume
       const extractName = (text: string): string | null => {
-        const lines = text.split('\n').filter(line => line.trim());
+        const lines = text.split("\n").filter((line) => line.trim());
         if (lines.length === 0) return null;
 
         const firstLine = lines[0].trim();
-        if (firstLine.length > 2 && firstLine.length < 50 && !/[@#$%^&*()_+=\[\]{}|\\:;"'<>,.?\/]/.test(firstLine)) {
-          const cleanName = firstLine.replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s*/i, '').trim();
+        if (
+          firstLine.length > 2 &&
+          firstLine.length < 50 &&
+          !/[@#$%^&*()_+=\[\]{}|\\:;"'<>,.?\/]/.test(firstLine)
+        ) {
+          const cleanName = firstLine
+            .replace(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s*/i, "")
+            .trim();
           const words = cleanName.split(/\s+/);
           if (words.length >= 2 && words.length <= 4) {
-            return words.slice(0, 2).join(' ');
+            return words.slice(0, 2).join(" ");
           }
         }
         return null;
       };
 
       const candidateName = extractName(resumeText);
-      const nameContext = candidateName ? `\nCANDIDATE NAME: ${candidateName}` : '';
+      const nameContext = candidateName
+        ? `\nCANDIDATE NAME: ${candidateName}`
+        : "";
 
       currentMessage = `
 [CONTEXT START]
@@ -124,7 +132,7 @@ ${currentMessage}
 
     // Use streaming for faster responses
     const result = await chat.sendMessageStream(currentMessage);
-    
+
     // Create a streaming response
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -132,9 +140,11 @@ ${currentMessage}
         try {
           for await (const chunk of result.stream) {
             const text = chunk.text();
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ text })}\n\n`),
+            );
           }
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
         } catch (error) {
           controller.error(error);
@@ -144,9 +154,9 @@ ${currentMessage}
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
       },
     });
   } catch (error: any) {
@@ -161,9 +171,6 @@ ${currentMessage}
       errorMessage = "Network error";
     }
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

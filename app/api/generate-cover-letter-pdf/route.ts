@@ -28,10 +28,10 @@ async function getBrowser() {
       });
     } catch {
       console.error(
-        "Local puppeteer not found. Install with: npm install --save-dev puppeteer"
+        "Local puppeteer not found. Install with: npm install --save-dev puppeteer",
       );
       throw new Error(
-        "Puppeteer not found for local development. Please install puppeteer as a dev dependency."
+        "Puppeteer not found for local development. Please install puppeteer as a dev dependency.",
       );
     }
   }
@@ -46,12 +46,12 @@ export async function POST(request: Request) {
     if (!data) {
       return NextResponse.json(
         { error: "Cover letter data is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const coverLetterHtml = ReactDOMServer.renderToString(
-      createElement(CoverLetterContent, { data, template })
+      createElement(CoverLetterContent, { data, template }),
     );
 
     browser = await getBrowser();
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
       {
         waitUntil: ["domcontentloaded", "networkidle2"],
         timeout: 60000,
-      }
+      },
     );
 
     const pdfBuffer = await page.pdf({
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
     console.error("PDF Generation Error:", error);
     return NextResponse.json(
       { error: "PDF generation failed", details: (error as Error).message },
-      { status: 500 }
+      { status: 500 },
     );
   } finally {
     if (browser !== null) {

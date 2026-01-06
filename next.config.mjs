@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium"],
+  outputFileTracingIncludes: {
+    "/api/generate-pdf": ["./node_modules/@sparticuz/chromium/**/*"],
+    "/api/generate-cover-letter-pdf": [
+      "./node_modules/@sparticuz/chromium/**/*",
+    ],
+  },
   typescript: {
     ignoreBuildErrors: false,
   },

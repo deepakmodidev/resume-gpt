@@ -52,7 +52,9 @@ export default function ATSAnalysisPage() {
   const [analysisResult, setAnalysisResult] =
     useState<ATSAnalysisResult | null>(null);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -208,10 +210,11 @@ export default function ATSAnalysisPage() {
                           />
                           <label
                             htmlFor="resume-upload"
-                            className={`flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg transition-colors ${isUploadingFile
+                            className={`flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg transition-colors ${
+                              isUploadingFile
                                 ? "cursor-not-allowed opacity-50"
                                 : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
-                              }`}
+                            }`}
                           >
                             {isUploadingFile ? (
                               <>

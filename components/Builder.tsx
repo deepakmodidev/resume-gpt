@@ -131,30 +131,17 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
 
   return (
     <div className="flex h-screen bg-background text-foreground">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex">
-        <ChatSidebar
-          session={session}
-          onNewChat={handleNewChat}
-          currentChatId={id}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={toggleSidebarCollapse}
-        />
-      </div>
+      {/* Sidebar - handles both mobile and desktop internally */}
+      <ChatSidebar
+        session={session}
+        onNewChat={handleNewChat}
+        currentChatId={id}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapse}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full min-h-0">
-        {/* Mobile Header with Sidebar */}
-        <div className="md:hidden">
-          <ChatSidebar
-            session={session}
-            onNewChat={handleNewChat}
-            currentChatId={id}
-            isCollapsed={false}
-            onToggleCollapse={undefined}
-          />
-        </div>
-
         {/* Chat and Resume Layout */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           <div

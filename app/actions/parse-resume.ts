@@ -4,7 +4,7 @@ import pdf from "pdf-parse";
 import mammoth from "mammoth";
 
 export async function parseResume(
-  formData: FormData
+  formData: FormData,
 ): Promise<{ text: string; error?: string }> {
   try {
     const file = formData.get("file") as File;
