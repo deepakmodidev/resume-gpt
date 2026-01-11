@@ -3,6 +3,7 @@ import "@/app/globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/react";
+import { Toaster } from "sonner";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -78,6 +79,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster richColors position="bottom-right" />
             <Analytics />
           </ThemeProvider>
         </SessionProvider>

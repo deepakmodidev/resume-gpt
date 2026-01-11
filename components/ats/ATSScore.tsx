@@ -93,9 +93,10 @@ export function ATSScore({
       setResult(data.analysis);
       setShowFullAnalysis(true);
       toast.success(`ATS Score: ${data.analysis.scores.overall}%`);
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to analyze";
       logger.error("ATS analysis error", error as Error);
-      toast.error("Failed to analyze. Please try again.");
+      toast.error(message);
     } finally {
       setIsAnalyzing(false);
     }
