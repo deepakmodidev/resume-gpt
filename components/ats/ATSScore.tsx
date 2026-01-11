@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { apiRequest } from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -72,30 +75,26 @@ export function ATSScore({
 
     setIsAnalyzing(true);
     try {
-      const response = await fetch("/api/ats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeContent,
-          jobDescription,
-          jobTitle,
-          company,
-          industry,
-          resumeId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Analysis failed");
-      }
+      const data = await apiRequest<{ analysis: ATSAnalysisResult }>(
+        API_ENDPOINTS.ATS,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            resumeContent,
+            jobDescription,
+            jobTitle,
+            company,
+            industry,
+            resumeId,
+          }),
+        }
+      );
 
       setResult(data.analysis);
       setShowFullAnalysis(true);
       toast.success(`ATS Score: ${data.analysis.scores.overall}%`);
     } catch (error) {
-      console.error("Analysis error:", error);
+      logger.error("ATS analysis error", error as Error);
       toast.error("Failed to analyze. Please try again.");
     } finally {
       setIsAnalyzing(false);
@@ -162,7 +161,7 @@ export function ATSScore({
               disabled={
                 isAnalyzing || !jobDescription.trim() || !jobTitle.trim()
               }
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+              className="bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
             >
               {isAnalyzing ? (
                 <div className="flex items-center gap-2">

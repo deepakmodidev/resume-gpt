@@ -1,5 +1,6 @@
 "use client";
 
+import { logger } from "@/lib/logger";
 import { useState, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,7 +51,7 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
         toast.success("Resume parsed successfully!");
       }
     } catch (error) {
-      console.error("File upload error:", error);
+      logger.error("File upload error:", error);
       toast.error(`Failed to process file: ${(error as Error).message}`);
       setFileName("");
     } finally {

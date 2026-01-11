@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { ApiKeySchema } from "@/lib/validators";
+import { STORAGE_KEYS } from "@/lib/constants";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +23,7 @@ export const CartesiaApiKeyModal = () => {
   const [hasKey, setHasKey] = useState(false);
 
   useEffect(() => {
-    const storedKey = localStorage.getItem("cartesia-api-key");
+    const storedKey = localStorage.getItem(STORAGE_KEYS.CARTESIA_API_KEY);
     if (storedKey) {
       setApiKey(storedKey);
       setHasKey(true);
@@ -28,15 +31,26 @@ export const CartesiaApiKeyModal = () => {
   }, []);
 
   const handleSave = () => {
-    if (apiKey.trim()) {
-      localStorage.setItem("cartesia-api-key", apiKey.trim());
-      setHasKey(true);
-      setOpen(false);
+    if (!apiKey.trim()) {
+      toast.error("Please enter an API key");
+      return;
     }
+
+    // Validate API key format
+    const validation = ApiKeySchema.safeParse(apiKey.trim());
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
+      return;
+    }
+
+    localStorage.setItem(STORAGE_KEYS.CARTESIA_API_KEY, validation.data);
+    setHasKey(true);
+    toast.success("Cartesia API key saved successfully!");
+    setOpen(false);
   };
 
   const handleRemove = () => {
-    localStorage.removeItem("cartesia-api-key");
+    localStorage.removeItem(STORAGE_KEYS.CARTESIA_API_KEY);
     setApiKey("");
     setHasKey(false);
   };
@@ -54,7 +68,7 @@ export const CartesiaApiKeyModal = () => {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-yellow-500" />

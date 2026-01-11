@@ -1,5 +1,6 @@
 "use client";
 
+import { logger } from "@/lib/logger";
 import { useEffect, useState } from "react";
 import { AlertCircle, Chrome, Info } from "lucide-react";
 import {
@@ -66,7 +67,7 @@ export const BrowserCompatibilityCheck = ({
         const devices = await navigator.mediaDevices.enumerateDevices();
         hasMicrophone = devices.some((device) => device.kind === "audioinput");
       } catch (e) {
-        console.error("Failed to check microphone:", e);
+        logger.error("Failed to check microphone:", e);
       }
 
       const isSupported = hasWebSpeech && hasMicrophone && !isMobile;

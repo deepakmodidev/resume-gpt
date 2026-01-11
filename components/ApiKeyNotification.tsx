@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Key, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { STORAGE_KEYS } from "@/lib/constants";
 
 interface ApiKeyNotificationProps {
   onManageKey?: () => void;
@@ -16,13 +17,13 @@ export const ApiKeyNotification = ({
 
   useEffect(() => {
     const checkApiKey = () => {
-      const userApiKey = localStorage.getItem("gemini-api-key");
+      const userApiKey = localStorage.getItem(STORAGE_KEYS.GEMINI_API_KEY);
 
       setHasApiKey(!!userApiKey);
 
       // Show notification if no API key (will show on every refresh)
       const isDismissed = localStorage.getItem(
-        "api-key-notification-dismissed",
+        "api-key-notification-dismissed"
       );
 
       // Show notification if no API key AND not dismissed
@@ -44,7 +45,7 @@ export const ApiKeyNotification = ({
 
   const handleDismiss = () => {
     setIsVisible(false);
-    localStorage.setItem("api-key-notification-dismissed", "true");
+    localStorage.setItem(STORAGE_KEYS.API_KEY_NOTIFICATION_DISMISSED, "true");
   };
 
   if (!isVisible || hasApiKey) {

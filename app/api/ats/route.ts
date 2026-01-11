@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import db from "@/prisma/prisma";
 import { ATSAnalyzer } from "@/lib/rag/ats-analyzer";
+import { validateRequest, ATSRequestSchema } from "@/lib/validators";
+import { logger } from "@/lib/logger";
 
 interface ResumeData {
   atsAnalysis?: {
@@ -20,15 +22,18 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     const isAuthenticated = !!session?.user?.id;
 
-    const { resumeContent, jobDescription, resumeId } = await req.json();
+    const rawData = await req.json();
 
-    // Validate input
-    if (!resumeContent || !jobDescription) {
-      return NextResponse.json(
-        { error: "Missing required fields: resumeContent, jobDescription" },
-        { status: 400 },
-      );
+    // Validate input with Zod
+    const validation = validateRequest(ATSRequestSchema, rawData);
+    if (!validation.success) {
+      const { error } = validation;
+      logger.warn("ATS validation failed", { error });
+      return NextResponse.json({ error }, { status: 400 });
     }
+
+    // TypeScript now knows validation.data exists
+    const { resumeContent, jobDescription, resumeId } = validation.data;
 
     // Initialize ATS analyzer
     const analyzer = new ATSAnalyzer();
@@ -36,13 +41,13 @@ export async function POST(req: NextRequest) {
     // Perform ATS analysis
     const analysis = await analyzer.analyzeResumeVsJob(
       resumeContent,
-      jobDescription,
+      jobDescription
     );
 
     // Get keyword placement suggestions
     const keywordSuggestions = analyzer.getKeywordSuggestions(
       resumeContent,
-      analysis.missingKeywords.slice(0, 10), // Top 10 missing keywords
+      analysis.missingKeywords.slice(0, 10) // Top 10 missing keywords
     );
 
     // Store analysis results in database if resumeId is provided and user is authenticated
@@ -62,7 +67,7 @@ export async function POST(req: NextRequest) {
             missingKeywords: analysis.missingKeywords,
             suggestions: analysis.suggestions,
             analyzedAt: new Date().toISOString(),
-          }),
+          })
         );
 
         if (existingChat) {
@@ -144,7 +149,7 @@ export async function POST(req: NextRequest) {
         details: errorMessage,
         timestamp: new Date().toISOString(),
       },
-      { status: statusCode },
+      { status: statusCode }
     );
   }
 }
@@ -236,7 +241,7 @@ export async function GET(req: NextRequest) {
     console.error("Get ATS analyses error:", error);
     return NextResponse.json(
       { error: "Failed to fetch analyses" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

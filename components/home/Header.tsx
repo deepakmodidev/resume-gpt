@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { logger } from "@/lib/logger";
 
 export function Header() {
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -42,7 +43,7 @@ export function Header() {
       setIsSigningIn(true);
       await handleGoogleSignIn();
     } catch (error) {
-      console.error("Sign in failed:", error);
+      logger.error("Sign in failed:", error);
     } finally {
       setIsSigningIn(false);
     }
@@ -116,7 +117,7 @@ export function Header() {
           {/* Auth & Theme Toggle - Right */}
           <div className="flex items-center justify-end gap-3">
             {/* Auth Button - Fixed Width Container */}
-            <div className="w-[100px] sm:w-[120px] flex justify-end">
+            <div className="w-25 sm:w-30 flex justify-end">
               {status === "loading" ? (
                 <Button
                   variant="outline"

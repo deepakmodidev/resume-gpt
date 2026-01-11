@@ -6,8 +6,8 @@ export interface ChatMessage {
 }
 
 export interface InitialChatData {
-  messages: ChatMessage[];
-  resumeData: Record<string, unknown>;
+  messages: ChatMessage[] | unknown[];
+  resumeData?: Record<string, unknown> | unknown;
 }
 
 export type ResumeData = {

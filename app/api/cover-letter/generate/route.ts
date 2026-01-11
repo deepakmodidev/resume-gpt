@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { validateRequest, CoverLetterRequestSchema } from "@/lib/validators";
+import { logger } from "@/lib/logger";
+import { env } from "@/lib/env";
 
 const SYSTEM_INSTRUCTION = `
 You are a professional cover letter writer. Generate personalized, compelling cover letters based on the user's resume and job description.
@@ -50,28 +53,49 @@ const GENERATION_CONFIG = {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawData = await req.json();
+
+    // Validate required fields first
+    if (!rawData.companyName || !rawData.jobTitle) {
+      return NextResponse.json(
+        { error: "Company name and job title are required" },
+        { status: 400 }
+      );
+    }
+
+    // Build validation data
+    const validationData = {
+      resumeData: rawData.resumeData,
+      jobDescription: rawData.jobDescription || "",
+      jobTitle: rawData.jobTitle,
+      company: rawData.companyName,
+      userApiKey: rawData.userApiKey,
+    };
+
+    const validation = validateRequest(
+      CoverLetterRequestSchema,
+      validationData
+    );
+    if (!validation.success) {
+      const { error } = validation;
+      logger.warn("Cover letter validation failed:", error);
+      return NextResponse.json({ error }, { status: 400 });
+    }
+
     const {
       resumeData,
       jobDescription,
-      companyName,
       jobTitle,
-      recipientName,
-      tone = "professional",
-    } = body;
-
-    if (!companyName || !jobTitle) {
-      return NextResponse.json(
-        { error: "Company name and job title are required" },
-        { status: 400 },
-      );
-    }
+      company: companyName,
+    } = validation.data;
+    const recipientName = rawData.recipientName;
+    const tone = rawData.tone || "professional";
 
     const apiKey = process.env.GEMINI_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not configured" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -160,7 +184,7 @@ Generate a compelling, professional cover letter based solely on the applicant's
             ? error.message
             : "Failed to generate cover letter",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

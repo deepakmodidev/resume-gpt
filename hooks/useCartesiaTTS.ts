@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { STORAGE_KEYS, EXTERNAL_APIS } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 
 interface UseCartesiaTTSProps {
   onStart?: () => void;
@@ -29,12 +31,12 @@ export const useCartesiaTTS = ({
       try {
         // Get API key from localStorage or env
         const apiKey =
-          localStorage.getItem("cartesia-api-key") ||
+          localStorage.getItem(STORAGE_KEYS.CARTESIA_API_KEY) ||
           process.env.NEXT_PUBLIC_CARTESIA_API_KEY;
 
         if (!apiKey) {
-          console.warn(
-            "⚠️ Cartesia API key not found. Using browser TTS fallback.",
+          logger.warn(
+            "⚠️ Cartesia API key not found. Using browser TTS fallback."
           );
           setError("Cartesia API key not configured");
           return;
@@ -48,11 +50,13 @@ export const useCartesiaTTS = ({
         )();
 
         setIsInitialized(true);
-        console.log("✅ Cartesia TTS initialized with API key");
-      } catch (err: any) {
-        console.error("❌ Cartesia initialization error:", err);
-        setError(err.message);
-        onError?.(err);
+        logger.debug("✅ Cartesia TTS initialized with API key");
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error";
+        logger.error("❌ Cartesia initialization error:", err);
+        setError(errorMessage);
+        onError?.(err instanceof Error ? err : new Error(errorMessage));
       }
     };
 
@@ -93,14 +97,14 @@ export const useCartesiaTTS = ({
   const speak = useCallback(
     async (text: string, callback?: () => void) => {
       if (!isInitialized || !apiKeyRef.current || !audioContextRef.current) {
-        console.warn("⚠️ Cartesia not initialized, cannot speak");
+        logger.warn("⚠️ Cartesia not initialized, cannot speak");
         setError("Cartesia not initialized");
         callback?.();
         return;
       }
 
       try {
-        console.log("🗣️ Cartesia speaking:", text.substring(0, 80) + "...");
+        logger.debug("🗣️ Cartesia speaking:", text.substring(0, 80) + "...");
         setIsSpeaking(true);
         setError(null);
         onStart?.();
@@ -113,7 +117,7 @@ export const useCartesiaTTS = ({
         audioQueueRef.current = [];
 
         // Generate audio using Cartesia REST API
-        const response = await fetch("https://api.cartesia.ai/tts/bytes", {
+        const response = await fetch(EXTERNAL_APIS.CARTESIA_TTS, {
           method: "POST",
           headers: {
             "X-API-Key": apiKeyRef.current,
@@ -141,7 +145,7 @@ export const useCartesiaTTS = ({
 
         if (!response.ok) {
           throw new Error(
-            `Cartesia API error: ${response.status} ${response.statusText}`,
+            `Cartesia API error: ${response.status} ${response.statusText}`
           );
         }
 
@@ -151,7 +155,7 @@ export const useCartesiaTTS = ({
         const audioBuffer = audioContextRef.current.createBuffer(
           1, // mono
           audioData.length,
-          44100,
+          44100
         );
         audioBuffer.getChannelData(0).set(audioData);
 
@@ -168,15 +172,16 @@ export const useCartesiaTTS = ({
           const duration = audioBuffer.duration * 1000;
           setTimeout(callback, duration);
         }
-      } catch (err: any) {
-        console.error("❌ Cartesia TTS error:", err);
-        setError(err.message || "Failed to generate speech");
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Failed to generate speech";
+        logger.error("❌ Cartesia TTS error:", err);
+        setError(errorMessage);
         setIsSpeaking(false);
-        onError?.(err);
+        onError?.(err instanceof Error ? err : new Error(errorMessage));
         callback?.();
       }
     },
-    [isInitialized, onStart, onEnd, onError, playNextInQueue],
+    [isInitialized, onStart, onEnd, onError, playNextInQueue]
   );
 
   // Stop speaking

@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { CoverLetterGenerator } from "@/components/cover-letter/CoverLetterGenerator";
 import { Header } from "@/components/home/Header";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "AI Cover Letter Generator | ResumeGPT",
@@ -16,11 +17,13 @@ export const metadata: Metadata = {
 
 export default function CoverLetterPage() {
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <Header />
-      <main className="flex-1 min-h-0 overflow-hidden">
-        <CoverLetterGenerator />
-      </main>
-    </div>
+    <ErrorBoundary>
+      <div className="h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 min-h-0 overflow-hidden">
+          <CoverLetterGenerator />
+        </main>
+      </div>
+    </ErrorBoundary>
   );
 }

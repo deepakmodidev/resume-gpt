@@ -1,4 +1,5 @@
 import { SmartATSAnalyzer, type SmartATSAnalysis } from "./smart-ats-analyzer";
+import { logger } from "@/lib/logger";
 
 export interface ATSScore {
   overall: number;
@@ -128,7 +129,7 @@ export class ATSAnalyzer {
         experienceMatch: smartResult.breakdown.experienceMatch,
       };
     } catch (error) {
-      console.error("ATS Analysis Error:", error);
+      logger.error("ATS Analysis Error:", error);
 
       // Return fallback analysis
       return this.getFallbackAnalysis();

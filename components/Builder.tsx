@@ -13,6 +13,7 @@ import { GeminiApiKeyModal } from "@/components/GeminiApiKeyModal";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/useChat";
+import { STORAGE_KEYS } from "@/lib/constants";
 import { ANIMATION_VARIANTS } from "@/constants/resume";
 import { Sparkles, X } from "lucide-react";
 import type { Session } from "next-auth";
@@ -40,7 +41,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("sidebar-collapsed");
+      const stored = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED);
       return stored ? JSON.parse(stored) : false;
     }
     return false;
@@ -49,7 +50,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [showGenAINotification, setShowGenAINotification] = useState(() => {
     if (typeof window !== "undefined") {
-      return !localStorage.getItem("genai-notification-dismissed");
+      return !localStorage.getItem(STORAGE_KEYS.GENAI_DISMISSED);
     }
     return true;
   });
@@ -86,7 +87,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       sendMessage(message, id);
       setInputValue(""); // Clear input after sending
     },
-    [sendMessage, id],
+    [sendMessage, id]
   );
 
   const handleSuggestionClick = useCallback((suggestion: string) => {
@@ -96,7 +97,10 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   const toggleSidebarCollapse = useCallback(() => {
     setIsSidebarCollapsed((prev) => {
       const newState = !prev;
-      localStorage.setItem("sidebar-collapsed", JSON.stringify(newState));
+      localStorage.setItem(
+        STORAGE_KEYS.SIDEBAR_COLLAPSED,
+        JSON.stringify(newState)
+      );
       return newState;
     });
   }, []);
@@ -112,7 +116,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   const dismissGenAINotification = useCallback(() => {
     setShowGenAINotification(false);
     if (typeof window !== "undefined") {
-      localStorage.setItem("genai-notification-dismissed", "true");
+      localStorage.setItem(STORAGE_KEYS.GENAI_DISMISSED, "true");
     }
   }, []);
 

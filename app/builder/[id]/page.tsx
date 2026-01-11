@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { Builder } from "@/components/Builder"; // Import the named export instead of default
 import db from "@/prisma/prisma";
 import { redirect } from "next/navigation";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default async function page({
   params,

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { logger } from "@/lib/logger";
 
 interface UseSpeechProps {
   onSpeechStart?: () => void;
@@ -38,7 +39,7 @@ export const useSpeech = ({
       if (!SpeechRecognition) {
         setIsSupported(false);
         setError(
-          "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.",
+          "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari."
         );
         return;
       }
@@ -50,14 +51,14 @@ export const useSpeech = ({
       recognitionRef.current.maxAlternatives = 1;
 
       recognitionRef.current.onstart = () => {
-        console.log("🎤 Speech recognition started");
+        logger.debug("🎤 Speech recognition started");
         setIsListening(true);
         setError(null);
         onSpeechStart?.();
       };
 
       recognitionRef.current.onresult = (event: any) => {
-        console.log("🎤 Speech result received:", event.results.length);
+        logger.debug("🎤 Speech result received:", event.results.length);
         let interimTranscript = "";
         let finalTranscript = "";
 
@@ -65,10 +66,10 @@ export const useSpeech = ({
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
             finalTranscript += transcript + " ";
-            console.log("✅ Final transcript:", transcript);
+            logger.debug("✅ Final transcript:", transcript);
           } else {
             interimTranscript += transcript;
-            console.log("⏳ Interim transcript:", transcript);
+            logger.debug("⏳ Interim transcript:", transcript);
           }
         }
 
@@ -81,21 +82,22 @@ export const useSpeech = ({
       };
 
       recognitionRef.current.onend = () => {
-        console.log("🎤 Speech recognition ended");
+        logger.debug("🎤 Speech recognition ended");
         setIsListening(false);
 
         // Check if we should restart (mic button still pressed)
         if (shouldBeListeningRef.current) {
-          console.log("🔄 Auto-restarting recognition (silence detected)");
+          logger.debug("🔄 Auto-restarting recognition (silence detected)");
           // Small delay before restart
           setTimeout(() => {
             if (shouldBeListeningRef.current && recognitionRef.current) {
               try {
                 recognitionRef.current.start();
-                console.log("✅ Recognition restarted");
-              } catch (e: any) {
-                if (!e.message?.includes("already started")) {
-                  console.error("Failed to restart:", e);
+                logger.debug("✅ Recognition restarted");
+              } catch (e: unknown) {
+                const errorMessage = e instanceof Error ? e.message : String(e);
+                if (!errorMessage.includes("already started")) {
+                  logger.error("Failed to restart:", e);
                 }
               }
             }
@@ -104,16 +106,16 @@ export const useSpeech = ({
           // User manually stopped - send transcript
           const finalText = finalTranscriptRef.current || transcript;
           if (finalText && finalText.trim()) {
-            console.log("📤 Sending transcript:", finalText);
+            logger.debug("📤 Sending transcript:", finalText);
             onSpeechEnd?.(finalText);
           } else {
-            console.log("⚠️ Recognition ended with no transcript");
+            logger.debug("⚠️ Recognition ended with no transcript");
           }
         }
       };
 
       recognitionRef.current.onerror = (event: any) => {
-        console.error("❌ Speech recognition error:", event.error);
+        logger.error("❌ Speech recognition error:", event.error);
         setIsListening(false);
 
         let errorMessage = "Speech recognition error occurred.";
@@ -143,13 +145,16 @@ export const useSpeech = ({
       if (synthRef.current) {
         // Force initial load
         const voices = synthRef.current.getVoices();
-        console.log("Initial voices loaded:", voices.length);
+        logger.debug("Initial voices loaded:", voices.length);
 
         // Listen for voices loaded event (required for Chrome)
         if ("onvoiceschanged" in synthRef.current) {
           synthRef.current.onvoiceschanged = () => {
             const loadedVoices = synthRef.current?.getVoices();
-            console.log("Voices changed event - loaded:", loadedVoices?.length);
+            logger.debug(
+              "Voices changed event - loaded:",
+              loadedVoices?.length
+            );
           };
         }
       }
@@ -207,19 +212,20 @@ export const useSpeech = ({
       try {
         await setupAudioVisualizer();
         recognitionRef.current.start();
-        console.log("🎤 Started listening (continuous mode)");
-      } catch (e: any) {
-        console.error("Speech start error:", e);
-        if (e.name === "NotAllowedError") {
+        logger.debug("🎤 Started listening (continuous mode)");
+      } catch (e: unknown) {
+        const err = e instanceof Error ? e : new Error(String(e));
+        logger.error("Speech start error:", e);
+        if (err.name === "NotAllowedError") {
           setError(
-            "Microphone permission denied. Please enable microphone access in your browser settings.",
+            "Microphone permission denied. Please enable microphone access in your browser settings."
           );
-        } else if (e.name === "NotFoundError") {
+        } else if (err.name === "NotFoundError") {
           setError(
-            "No microphone found. Please connect a microphone and try again.",
+            "No microphone found. Please connect a microphone and try again."
           );
-        } else if (e.message && e.message.includes("already started")) {
-          console.log("⚠️ Recognition already running");
+        } else if (err.message && err.message.includes("already started")) {
+          logger.debug("⚠️ Recognition already running");
           return; // Already running, that's fine
         } else {
           setError("Failed to start speech recognition. Please try again.");
@@ -235,7 +241,7 @@ export const useSpeech = ({
 
     if (recognitionRef.current) {
       recognitionRef.current.stop();
-      console.log("🛑 Stopped listening");
+      logger.debug("🛑 Stopped listening");
     }
 
     // Stop animation frame
@@ -251,7 +257,7 @@ export const useSpeech = ({
 
   const speak = useCallback(async (text: string, onEnd?: () => void) => {
     if (!synthRef.current) {
-      console.error("❌ Speech synthesis not available!");
+      logger.error("❌ Speech synthesis not available!");
       setError("Speech synthesis not supported in your browser.");
       return;
     }
@@ -273,21 +279,21 @@ export const useSpeech = ({
       let attempts = 0;
 
       while (voices.length === 0 && attempts < 10) {
-        console.log(`⏳ Waiting for voices... attempt ${attempts + 1}`);
+        logger.debug(`⏳ Waiting for voices... attempt ${attempts + 1}`);
         await new Promise((resolve) => setTimeout(resolve, 100));
         voices = synthRef.current?.getVoices() || [];
         attempts++;
       }
 
       if (voices.length === 0) {
-        console.error("❌ No voices available after waiting!");
+        logger.error("❌ No voices available after waiting!");
         setError("No speech voices available. Please refresh the page.");
         return;
       }
 
-      console.log(`✅ Voices loaded: ${voices.length} available`);
+      logger.debug(`✅ Voices loaded: ${voices.length} available`);
       voices.forEach((v, i) => {
-        if (i < 5) console.log(`  - ${v.name} (${v.lang})`);
+        if (i < 5) logger.debug(`  - ${v.name} (${v.lang})`);
       });
 
       const utterance = new SpeechSynthesisUtterance(text);
@@ -296,23 +302,23 @@ export const useSpeech = ({
       let hasStarted = false;
 
       utterance.onstart = () => {
-        console.log("🔊 TTS Started successfully");
+        logger.debug("🔊 TTS Started successfully");
         hasStarted = true;
         setIsSpeaking(true);
         setError(null);
       };
 
       utterance.onend = () => {
-        console.log("✅ TTS Ended successfully");
+        logger.debug("✅ TTS Ended successfully");
         setIsSpeaking(false);
         onEnd?.();
       };
 
       utterance.onerror = (e: any) => {
-        console.error("❌ TTS Error event fired");
-        console.error("Error object:", e);
-        console.error("Error type:", typeof e.error, e.error);
-        console.error("Has started:", hasStarted);
+        logger.error("❌ TTS Error event fired");
+        logger.error("Error object:", e);
+        logger.error("Error type:", typeof e.error, e.error);
+        logger.error("Has started:", hasStarted);
 
         setIsSpeaking(false);
 
@@ -325,11 +331,11 @@ export const useSpeech = ({
           e.error !== "interrupted"
         ) {
           setError(
-            `Speech error: ${e.error || "unknown"}. Please check your audio settings.`,
+            `Speech error: ${e.error || "unknown"}. Please check your audio settings.`
           );
         } else if (!hasStarted) {
-          console.warn(
-            "⚠️ Error fired but no details - might be Chrome bug, continuing...",
+          logger.warn(
+            "⚠️ Error fired but no details - might be Chrome bug, continuing..."
           );
         }
 
@@ -343,23 +349,23 @@ export const useSpeech = ({
           (v.lang.startsWith("en") && v.name.includes("Google")) ||
           v.name.includes("Samantha") ||
           (v.lang.startsWith("en") && v.name.includes("Microsoft")) ||
-          v.lang === "en-US",
+          v.lang === "en-US"
       );
 
       if (preferredVoice) {
-        console.log(
+        logger.debug(
           "✅ Using voice:",
           preferredVoice.name,
-          `(${preferredVoice.lang})`,
+          `(${preferredVoice.lang})`
         );
         utterance.voice = preferredVoice;
       } else {
         const englishVoice = voices.find((v) => v.lang.startsWith("en"));
         if (englishVoice) {
-          console.log("✅ Using English voice:", englishVoice.name);
+          logger.debug("✅ Using English voice:", englishVoice.name);
           utterance.voice = englishVoice;
         } else {
-          console.log("⚠️ Using default voice:", voices[0].name);
+          logger.debug("⚠️ Using default voice:", voices[0].name);
           utterance.voice = voices[0];
         }
       }
@@ -369,11 +375,11 @@ export const useSpeech = ({
       utterance.volume = 1.0;
       utterance.lang = "en-US";
 
-      console.log("🗣️ Speaking:", text.substring(0, 80) + "...");
+      logger.debug("🗣️ Speaking:", text.substring(0, 80) + "...");
 
       // CRITICAL FIX: Split long text into chunks (Chrome has issues with long text)
       if (text.length > 200) {
-        console.log("📝 Text is long, will speak in chunks");
+        logger.debug("📝 Text is long, will speak in chunks");
         const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
         let currentIndex = 0;
 
@@ -392,7 +398,7 @@ export const useSpeech = ({
               if (currentIndex < sentences.length) {
                 speakNext();
               } else {
-                console.log("✅ All chunks spoken");
+                logger.debug("✅ All chunks spoken");
                 setIsSpeaking(false);
                 onEnd?.();
               }
@@ -413,7 +419,7 @@ export const useSpeech = ({
         synthRef.current.speak(utterance);
       }
     } catch (err) {
-      console.error("❌ Speak function error:", err);
+      logger.error("❌ Speak function error:", err);
       setError("Failed to initialize speech. Please try again.");
       onEnd?.();
     }
@@ -471,8 +477,8 @@ export const useSpeech = ({
         animationFrameRef.current = requestAnimationFrame(updateVolume);
       };
       updateVolume();
-    } catch (e: any) {
-      console.error("Audio visualizer setup failed:", e);
+    } catch (e: unknown) {
+      logger.error("Audio visualizer setup failed:", e);
       throw e; // Re-throw to be caught by startListening
     }
   };

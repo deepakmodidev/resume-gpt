@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { ResumeData } from "@/lib/types";
+import { API_ENDPOINTS, STORAGE_KEYS } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 import { TemplateModal } from "./TemplateModal";
 import { ResumeContent } from "./ResumeContent";
 import { ATSScore } from "@/components/ats/ATSScore";
@@ -25,7 +27,7 @@ export const ResumeDisplay = ({
   // On mount, update template from localStorage if available
   React.useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedTemplate = localStorage.getItem("resume-template");
+      const savedTemplate = localStorage.getItem(STORAGE_KEYS.RESUME_TEMPLATE);
       if (savedTemplate && savedTemplate !== currentTemplate) {
         setCurrentTemplate(savedTemplate);
       }
@@ -43,14 +45,14 @@ export const ResumeDisplay = ({
     setCurrentTemplate(template);
     // Save selected template to localStorage
     if (typeof window !== "undefined") {
-      localStorage.setItem("resume-template", template);
+      localStorage.setItem(STORAGE_KEYS.RESUME_TEMPLATE, template);
     }
   };
 
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
     try {
-      const response = await fetch("/api/generate-pdf", {
+      const response = await fetch(API_ENDPOINTS.PDF, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -72,7 +74,7 @@ export const ResumeDisplay = ({
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error downloading PDF:", error);
+      logger.error("PDF download error", error as Error);
       alert("Failed to download PDF. Please try again.");
     } finally {
       setIsDownloading(false);

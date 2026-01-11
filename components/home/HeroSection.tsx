@@ -9,6 +9,7 @@ import { checkSession } from "@/actions/session-actions";
 import { handleGoogleSignIn } from "@/actions/auth-actions";
 import { ResumePreview } from "./ResumePreview";
 import { DotPattern } from "@/components/ui/dot-pattern";
+import { logger } from "@/lib/logger";
 
 interface HeroSectionProps {
   chatId: string;
@@ -29,7 +30,7 @@ export function HeroSection({ chatId }: HeroSectionProps) {
         await handleGoogleSignIn();
       }
     } catch (error) {
-      console.error("Error checking session:", error);
+      logger.error("Error checking session:", error);
       await handleGoogleSignIn();
     } finally {
       setIsCheckingSession(false);

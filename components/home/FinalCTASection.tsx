@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, FileText, FileEditIcon } from "lucide-react";
 import { checkSession } from "@/actions/session-actions";
 import { handleGoogleSignIn } from "@/actions/auth-actions";
+import { logger } from "@/lib/logger";
 
 interface FinalCTASectionProps {
   chatId: string;
@@ -26,7 +27,7 @@ export function FinalCTASection({ chatId }: FinalCTASectionProps) {
         await handleGoogleSignIn();
       }
     } catch (error) {
-      console.error("Error checking session:", error);
+      logger.error("Error checking session:", error);
       await handleGoogleSignIn();
     } finally {
       setIsCheckingSession(false);

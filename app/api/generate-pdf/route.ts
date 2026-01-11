@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 import { auth } from "@/lib/auth";
+import { validateRequest, PDFRequestSchema } from "@/lib/validators";
+import { logger } from "@/lib/logger";
+import { env } from "@/lib/env";
 
 const React = require("react");
 const ReactDOMServer = require("react-dom/server");
@@ -31,7 +34,7 @@ async function getBrowser() {
         headless: true,
       });
     } catch {
-      console.error(
+      logger.error(
         "Local puppeteer not found. Install with: npm install --save-dev puppeteer"
       );
       throw new Error(
@@ -52,14 +55,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data, template } = await request.json();
+    const rawData = await request.json();
 
-    if (!data) {
-      return NextResponse.json(
-        { error: "Resume data is required" },
-        { status: 400 }
-      );
+    // Validate request body
+    const validation = validateRequest(PDFRequestSchema, rawData);
+    if (!validation.success) {
+      const { error } = validation;
+      logger.warn("PDF generation validation failed:", error);
+      return NextResponse.json({ error }, { status: 400 });
     }
+
+    const { data, template } = validation.data;
 
     // Render the resume React component to an HTML string
     const resumeHtml = ReactDOMServer.renderToString(

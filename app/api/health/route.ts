@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import db from "@/prisma/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ interface HealthCheck {
 
 const createHealthStatus = (
   status: "ok" | "error",
-  message?: string,
+  message?: string
 ): HealthStatus => ({
   status,
   ...(message && { message }),

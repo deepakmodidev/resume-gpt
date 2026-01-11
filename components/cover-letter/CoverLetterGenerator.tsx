@@ -2,6 +2,9 @@
 
 import React, { useState } from "react";
 import { CoverLetterData, ResumeData } from "@/lib/types";
+import { apiRequest } from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 import { CoverLetterDisplay } from "./CoverLetterDisplay";
 import {
   Sparkles,
@@ -52,7 +55,7 @@ export const CoverLetterGenerator = ({
 }: CoverLetterGeneratorProps) => {
   const [resumeContent, setResumeContent] = useState("");
   const [resumeData, setResumeData] = useState<ResumeData>(
-    initialResumeData || defaultResumeData,
+    initialResumeData || defaultResumeData
   );
   const [jobDescription, setJobDescription] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -69,7 +72,7 @@ export const CoverLetterGenerator = ({
   const [hasGenerated, setHasGenerated] = useState(false);
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -96,7 +99,7 @@ export const CoverLetterGenerator = ({
         toast.success("Resume parsed successfully!");
       }
     } catch (error) {
-      console.error("File upload error:", error);
+      logger.error("File upload error:", error);
       toast.error(`Failed to process file: ${(error as Error).message}`);
     } finally {
       setIsUploadingFile(false);
@@ -156,31 +159,26 @@ export const CoverLetterGenerator = ({
         ? { ...resumeData, rawContent: resumeContent }
         : resumeData;
 
-      const response = await fetch("/api/cover-letter/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          resumeData: dataToSend,
-          jobDescription: jobDescription.trim() || undefined,
-          companyName,
-          jobTitle,
-          recipientName: recipientName || undefined,
-          tone,
-        }),
-      });
+      const data = await apiRequest<{ coverLetterData: any }>(
+        API_ENDPOINTS.COVER_LETTER,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            resumeData: dataToSend,
+            jobDescription: jobDescription.trim() || undefined,
+            companyName,
+            jobTitle,
+            recipientName: recipientName || undefined,
+            tone,
+          }),
+        }
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate cover letter");
-      }
-
-      const data = await response.json();
       setCoverLetterData(data.coverLetterData);
       setHasGenerated(true);
       toast.success("Cover letter generated!");
     } catch (err) {
+      logger.error("Cover letter generation error", err as Error);
       setError(err instanceof Error ? err.message : "An error occurred");
       toast.error(err instanceof Error ? err.message : "Generation failed");
     } finally {
@@ -261,7 +259,7 @@ export const CoverLetterGenerator = ({
                 )}
 
                 <textarea
-                  className="w-full min-h-[100px] px-3 py-2.5 text-sm rounded-lg border border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
+                  className="w-full min-h-25 px-3 py-2.5 text-sm rounded-lg border border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
                   placeholder="Or paste your resume content here..."
                   value={resumeContent}
                   onChange={(e) => {
@@ -363,7 +361,7 @@ export const CoverLetterGenerator = ({
                 </Label>
                 <textarea
                   id="jobDescription"
-                  className="w-full min-h-[100px] px-3 py-2.5 text-sm rounded-lg border border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
+                  className="w-full min-h-25 px-3 py-2.5 text-sm rounded-lg border border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
                   placeholder="Paste job description for tailored letter, or leave empty for general letter..."
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
@@ -381,7 +379,7 @@ export const CoverLetterGenerator = ({
               <Button
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="w-full h-9 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium text-sm shadow-md shadow-blue-500/20"
+                className="w-full h-9 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium text-sm shadow-md shadow-blue-500/20"
               >
                 {isGenerating ? (
                   <>
@@ -406,7 +404,7 @@ export const CoverLetterGenerator = ({
           {coverLetterData ? (
             <CoverLetterDisplay data={coverLetterData} />
           ) : (
-            <div className="flex items-center justify-center h-full min-h-[500px] text-center p-10">
+            <div className="flex items-center justify-center h-full min-h-125 text-center p-10">
               <div className="text-muted-foreground">
                 <FileText className="w-16 h-16 mx-auto mb-4 opacity-30" />
                 <p className="text-lg font-medium">Preview</p>

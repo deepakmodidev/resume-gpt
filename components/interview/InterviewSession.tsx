@@ -1,10 +1,13 @@
 "use client";
+import { logger } from "@/lib/logger";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { AudioVisualizer } from "./AudioVisualizer";
 import { useSpeech } from "@/hooks/useSpeech";
 import { useCartesiaTTS } from "@/hooks/useCartesiaTTS";
 import { Button } from "@/components/ui/button";
+import { STORAGE_KEYS, API_ENDPOINTS } from "@/lib/constants";
+import { apiRequest } from "@/lib/api-client";
 import {
   Mic,
   MicOff,
@@ -73,7 +76,7 @@ export const InterviewSession = ({
       }
     },
     onError: (e) => {
-      console.error("Speech Error", e);
+      logger.error("Speech Error", e);
       setStatus("idle");
     },
   });
@@ -87,22 +90,22 @@ export const InterviewSession = ({
     error: cartesiaError,
   } = useCartesiaTTS({
     onStart: () => {
-      console.log("🔊 Cartesia started speaking");
+      logger.debug("🔊 Cartesia started speaking");
     },
     onEnd: () => {
-      console.log("✅ Cartesia finished speaking");
+      logger.debug("✅ Cartesia finished speaking");
       setStatus("idle");
       // Auto-start listening after AI speaks
       setTimeout(() => startListening(), 1000);
     },
-    onError: (error) => console.error("Cartesia error:", error),
+    onError: (error) => logger.error("Cartesia error:", error),
   });
 
   // Use Cartesia if available, fallback to browser TTS
   const speak = cartesiaInitialized
     ? cartesiaSpeak
     : () => {
-        console.warn("Cartesia not initialized");
+        logger.warn("Cartesia not initialized");
       };
   const isSpeaking = cartesiaIsSpeaking;
   const cancelSpeech = cartesiaStop;
@@ -120,25 +123,21 @@ export const InterviewSession = ({
       setMessages(newMessages);
 
       try {
-        const userApiKey = localStorage.getItem("gemini-api-key");
+        const userApiKey = localStorage.getItem(STORAGE_KEYS.GEMINI_API_KEY);
 
-        const response = await fetch("/api/interview/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: newMessages,
-            resumeText: messages.length === 0 ? resumeText : undefined,
-            jobDescription: messages.length === 0 ? jobDescription : undefined,
-            userApiKey,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.error) throw new Error(data.error);
+        const data = await apiRequest<{ response: string }>(
+          API_ENDPOINTS.INTERVIEW,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              messages: newMessages,
+              resumeText: messages.length === 0 ? resumeText : undefined,
+              jobDescription:
+                messages.length === 0 ? jobDescription : undefined,
+              userApiKey,
+            }),
+          }
+        );
 
         const aiText = data.response;
         setMessages([...newMessages, { role: "model", content: aiText }]);
@@ -154,7 +153,7 @@ export const InterviewSession = ({
           }, 500);
         });
       } catch (error) {
-        console.error("Interview Error:", error);
+        logger.error("Interview Error:", error);
         const errorMessage =
           error instanceof Error
             ? error.message
@@ -172,28 +171,28 @@ export const InterviewSession = ({
         ]);
       }
     },
-    [messages, resumeText, jobDescription, speak, startListening, status],
+    [messages, resumeText, jobDescription, speak, startListening, status]
   );
 
   const toggleMic = useCallback(() => {
     if (status === "listening") {
-      console.log("🛑 Stopping listening, transcript:", transcript);
+      logger.debug("🛑 Stopping listening, transcript:", transcript);
       stopListening();
       // Use current transcript state
       if (transcript && transcript.trim()) {
-        console.log("📤 Sending transcript:", transcript);
+        logger.debug("📤 Sending transcript:", transcript);
         handleSendResponse(transcript);
       } else {
-        console.log("⚠️ No transcript to send");
+        logger.debug("⚠️ No transcript to send");
         setStatus("idle");
         toast.error("No speech detected. Please try speaking again.");
       }
     } else {
       if (status === "speaking") {
-        console.log("⏹️ Canceling speech");
+        logger.debug("⏹️ Canceling speech");
         cancelSpeech();
       }
-      console.log("▶️ Starting listening");
+      logger.debug("▶️ Starting listening");
       startListening();
       setStatus("listening");
     }
@@ -257,17 +256,17 @@ export const InterviewSession = ({
 
       const welcome = `${greeting} Let's start. Please introduce yourself briefly.`;
 
-      console.log("👋 Welcome message:", welcome);
+      logger.debug("👋 Welcome message:", welcome);
       setMessages([{ role: "model", content: welcome }]);
       setStatus("speaking");
 
       // Try to speak, but continue even if it fails
       speak(welcome, () => {
-        console.log("✅ Welcome complete, starting to listen");
+        logger.debug("✅ Welcome complete, starting to listen");
         setStatus("idle");
         // Auto-start listening after welcome
         setTimeout(() => {
-          console.log("🎤 Auto-starting microphone");
+          logger.debug("🎤 Auto-starting microphone");
           startListening();
         }, 1500);
       });
@@ -286,7 +285,7 @@ export const InterviewSession = ({
     const transcript = messages
       .map(
         (msg) =>
-          `${msg.role === "user" ? "You" : "Interviewer"}: ${msg.content}`,
+          `${msg.role === "user" ? "You" : "Interviewer"}: ${msg.content}`
       )
       .join("\n\n");
 

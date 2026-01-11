@@ -2,9 +2,10 @@
 
 import pdf from "pdf-parse";
 import mammoth from "mammoth";
+import { logger } from "@/lib/logger";
 
 export async function parseResume(
-  formData: FormData,
+  formData: FormData
 ): Promise<{ text: string; error?: string }> {
   try {
     const file = formData.get("file") as File;
@@ -46,7 +47,7 @@ export async function parseResume(
 
     return { text };
   } catch (error) {
-    console.error("Error parsing resume:", error);
+    logger.error("Error parsing resume:", error);
     return { text: "", error: "Failed to parse file content." };
   }
 }

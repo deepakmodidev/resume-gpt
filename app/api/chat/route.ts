@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { auth } from "@/lib/auth";
 import db from "@/prisma/prisma";
+import { validateRequest, ChatRequestSchema } from "@/lib/validators";
+import { logger } from "@/lib/logger";
+import { AI_MODELS } from "@/lib/constants";
+import { env } from "@/lib/env";
 
 // Types
 interface ParsedResponse {
@@ -116,8 +120,8 @@ const parseResponse = (text: string): ParsedResponse => {
       .trim();
     return JSON.parse(cleaned);
   } catch (e) {
-    console.error("JSON Parse Error:", e);
-    console.log("Raw text that failed parsing:", text);
+    logger.error("JSON Parse Error:", e);
+    logger.debug("Raw text that failed parsing:", text);
     // If parsing fails, try to extract a JSON object loosely
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -133,7 +137,7 @@ const parseResponse = (text: string): ParsedResponse => {
 
 const deepMerge = (
   target: Record<string, unknown>,
-  source: Record<string, unknown>,
+  source: Record<string, unknown>
 ) => {
   if (
     !target ||
@@ -150,7 +154,7 @@ const deepMerge = (
       : value && typeof value === "object"
         ? deepMerge(
             (result[key] as Record<string, unknown>) ?? {},
-            value as Record<string, unknown>,
+            value as Record<string, unknown>
           )
         : value;
   });
@@ -163,7 +167,7 @@ const upsertChat = async (
   message: string,
   userMsg: unknown,
   modelMsg: unknown,
-  resumeData: unknown,
+  resumeData: unknown
 ) => {
   const chat = await db.chat.findUnique({ where: { id: chatId, userId } }); // 🎯 RAG: Database Retrieval - Gets stored conversation context
 
@@ -204,24 +208,40 @@ const handleError = (error: unknown, defaultStatus = 500) => {
 // Handlers
 export async function POST(req: NextRequest) {
   try {
-    const data = await req.json();
-    const message = validateData(data);
-    const { history, resumeData, chatId, userApiKey } = data;
+    const rawData = await req.json();
+
+    // Validate request with Zod
+    const validation = validateRequest(ChatRequestSchema, rawData);
+    if (!validation.success) {
+      const { error } = validation;
+      logger.warn("Chat validation failed", { error });
+      return NextResponse.json({ error }, { status: 400 });
+    }
+
+    // TypeScript now knows validation.data exists
+    const { history, resumeData, chatId, userApiKey } = validation.data;
+    const message = history[history.length - 1]?.parts?.[0]?.text;
+
+    if (!message) {
+      return NextResponse.json({ error: "Missing message" }, { status: 400 });
+    }
 
     const session = await auth();
-    if (!session?.user?.id)
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const apiKey = userApiKey || process.env.GEMINI_KEY;
-    if (!apiKey)
+    if (!apiKey) {
       return NextResponse.json(
         { error: "API key not available" },
-        { status: 500 },
+        { status: 500 }
       );
+    }
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview",
+      model: AI_MODELS.GEMINI_FLASH,
       systemInstruction: SYSTEM_INSTRUCTION, // 🎯 RAG: System Knowledge - Built-in domain expertise
     });
     const chat = model.startChat({
@@ -229,7 +249,7 @@ export async function POST(req: NextRequest) {
       history, // 🎯 RAG: Conversational - Retrieves previous conversation context
     });
     const result = await chat.sendMessage(
-      `${message}\nResume Data: ${JSON.stringify(resumeData)}`, // 🎯 RAG: Resume Context - Augments with current resume data
+      `${message}\nResume Data: ${JSON.stringify(resumeData)}` // 🎯 RAG: Resume Context - Augments with current resume data
     );
     const response = parseResponse(result.response.text());
 
@@ -250,7 +270,7 @@ export async function POST(req: NextRequest) {
       message,
       userMsg,
       modelMsg,
-      mergedData, // 🎯 RAG: Database Storage - Stores context for future retrieval
+      mergedData // 🎯 RAG: Database Storage - Stores context for future retrieval
     );
     return NextResponse.json({ response });
   } catch (error) {
@@ -308,7 +328,7 @@ export async function PUT(req: NextRequest) {
     if (!chatId || !newName)
       return NextResponse.json(
         { error: "Chat ID and name required" },
-        { status: 400 },
+        { status: 400 }
       );
 
     const updated = await db.chat.updateMany({

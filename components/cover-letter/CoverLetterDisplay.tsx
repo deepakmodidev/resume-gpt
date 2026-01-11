@@ -2,6 +2,9 @@
 
 import React, { useState } from "react";
 import { CoverLetterData } from "@/lib/types";
+import { apiRequest } from "@/lib/api-client";
+import { API_ENDPOINTS, TIMEOUTS, STORAGE_KEYS } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 import { CoverLetterContent } from "./CoverLetterContent";
 import { CoverLetterTemplateModal } from "./CoverLetterTemplateModal";
 import { LoaderPinwheelIcon } from "lucide-react";
@@ -18,18 +21,16 @@ export const CoverLetterDisplay = ({ data }: CoverLetterDisplayProps) => {
   const handleTemplateSelect = (template: string) => {
     setCurrentTemplate(template);
     if (typeof window !== "undefined") {
-      localStorage.setItem("cover-letter-template", template);
+      localStorage.setItem(STORAGE_KEYS.COVER_LETTER_TEMPLATE, template);
     }
   };
 
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
     try {
-      const response = await fetch("/api/generate-cover-letter-pdf", {
+      const response = await fetch(API_ENDPOINTS.COVER_LETTER_PDF, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data, template: currentTemplate }),
       });
 
@@ -51,7 +52,7 @@ export const CoverLetterDisplay = ({ data }: CoverLetterDisplayProps) => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error downloading PDF:", error);
+      logger.error("PDF download error", error as Error);
       alert("Failed to download PDF. Please try again.");
     } finally {
       setIsDownloading(false);

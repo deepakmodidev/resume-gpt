@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
+import { apiRequest, APIError } from "@/lib/api-client";
+import { API_ENDPOINTS, STORAGE_KEYS } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 import {
   Plus,
   MessageSquare,
@@ -76,7 +79,7 @@ const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffDays = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
   );
 
   if (diffDays === 0) {
@@ -137,7 +140,7 @@ const ChatListItem = ({
         "flex items-center p-2 rounded-lg cursor-pointer group transition-colors",
         isActive
           ? "bg-primary/10 text-primary border border-primary/20"
-          : "hover:bg-muted/50",
+          : "hover:bg-muted/50"
       )}
       onClick={() => !isEditing && onSelect(chat.id)}
     >
@@ -239,18 +242,14 @@ const SidebarContent = ({
   }, []);
 
   const checkUserApiKey = () => {
-    const userApiKey = localStorage.getItem("gemini-api-key");
+    const userApiKey = localStorage.getItem(STORAGE_KEYS.GEMINI_API_KEY);
     setHasUserApiKey(!!userApiKey);
   };
 
   const fetchChats = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/chat");
-      if (!response.ok) {
-        throw new Error("Failed to fetch chats");
-      }
-      const data = await response.json();
+      const data = await apiRequest<{ chats: Chat[] }>(API_ENDPOINTS.CHAT);
       if (Array.isArray(data.chats)) {
         const chatsWithDates = data.chats.map((chat) => ({
           ...chat,
@@ -261,7 +260,7 @@ const SidebarContent = ({
         setChats([]);
       }
     } catch (error) {
-      console.error("Error fetching chats:", error);
+      logger.error("Error fetching chats", error as Error);
       toast.error("Error fetching chats");
     } finally {
       setIsLoading(false);
@@ -294,33 +293,25 @@ const SidebarContent = ({
 
     setIsLoading(true);
     try {
-      const response = await fetch("/api/chat", {
+      await apiRequest(API_ENDPOINTS.CHAT, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           chatId: editingChatId,
           newName: editValue.trim(),
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update chat title");
-      }
-
       setChats((prevChats) =>
         prevChats.map((chat) =>
           chat.id === editingChatId
             ? { ...chat, title: editValue.trim() }
-            : chat,
-        ),
+            : chat
+        )
       );
 
       toast.success("Chat name updated successfully");
     } catch (error) {
-      console.error(error);
+      logger.error("Failed to update chat name", error as Error);
       toast.error("Failed to update chat name");
     } finally {
       setEditingChatId(null);
@@ -341,23 +332,15 @@ const SidebarContent = ({
 
     setIsLoading(true);
     try {
-      const response = await fetch("/api/chat", {
+      await apiRequest(API_ENDPOINTS.CHAT, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ chatId }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete chat");
-      }
 
       setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
       toast.success("Chat deleted successfully");
     } catch (error) {
-      console.error(error);
+      logger.error("Failed to delete chat", error as Error);
       toast.error("Failed to delete chat");
     } finally {
       setIsLoading(false);
@@ -370,7 +353,7 @@ const SidebarContent = ({
 
   const filteredChats = searchQuery
     ? chats.filter((chat) =>
-        chat.title?.toLowerCase().includes(searchQuery.toLowerCase()),
+        chat.title?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : chats;
 
@@ -384,7 +367,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
+              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
             )}
           >
             <div className="flex items-center gap-2">
@@ -421,7 +404,7 @@ const SidebarContent = ({
           onClick={onNewChat}
           className={cn(
             "justify-start bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-xs hover:shadow-md transition-all duration-300 ease-in-out",
-            isCollapsed ? "w-auto px-2" : "w-full",
+            isCollapsed ? "w-auto px-2" : "w-full"
           )}
           size="sm"
           title={isCollapsed ? "New Chat" : undefined}
@@ -430,7 +413,7 @@ const SidebarContent = ({
           <span
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2",
+              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2"
             )}
           >
             New Chat
@@ -442,7 +425,7 @@ const SidebarContent = ({
       <div
         className={cn(
           "border-b transition-all duration-300 ease-in-out overflow-hidden",
-          isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
+          isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100"
         )}
       >
         <div className="p-4">
@@ -470,7 +453,7 @@ const SidebarContent = ({
                 size="icon"
                 className={cn(
                   "w-full h-10 p-0",
-                  currentChatId === chat.id && "bg-primary/10 text-primary",
+                  currentChatId === chat.id && "bg-primary/10 text-primary"
                 )}
                 onClick={() => handleChatSelect(chat.id)}
                 title={chat.title}
@@ -583,7 +566,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
+              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100"
             )}
           >
             <Button
@@ -608,7 +591,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
+              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100"
             )}
           >
             <div className="shrink-0 bg-border h-px w-full" />
@@ -617,7 +600,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "flex items-center p-2 transition-all duration-300 ease-in-out",
-              isCollapsed ? "justify-center" : "justify-between w-full",
+              isCollapsed ? "justify-center" : "justify-between w-full"
             )}
           >
             <div className="flex items-center">
@@ -633,7 +616,7 @@ const SidebarContent = ({
               <div
                 className={cn(
                   "flex flex-col items-start text-left transition-all duration-300 ease-in-out overflow-hidden",
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
+                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
                 )}
               >
                 <p className="ml-2 text-sm font-medium whitespace-nowrap">
@@ -648,7 +631,7 @@ const SidebarContent = ({
             <div
               className={cn(
                 "transition-all duration-300 ease-in-out overflow-hidden",
-                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
+                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
               )}
             >
               <Button
@@ -666,7 +649,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
+              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100"
             )}
           >
             <div className="shrink-0 bg-border h-px w-full" />
@@ -675,14 +658,14 @@ const SidebarContent = ({
           <div
             className={cn(
               "flex items-center transition-all duration-300 ease-in-out",
-              isCollapsed ? "justify-center" : "justify-start",
+              isCollapsed ? "justify-center" : "justify-start"
             )}
           >
             <ThemeToggle />
             <span
               className={cn(
                 "text-sm text-muted-foreground transition-all duration-300 ease-in-out overflow-hidden",
-                isCollapsed ? "w-0 opacity-0" : "ml-2 w-auto opacity-100",
+                isCollapsed ? "w-0 opacity-0" : "ml-2 w-auto opacity-100"
               )}
             >
               Theme
@@ -761,13 +744,13 @@ export const ChatSidebar = ({
     <div
       className={cn(
         "hidden md:flex h-full border-r bg-card transition-all duration-300 ease-in-out overflow-hidden",
-        isCollapsed ? "w-16" : "w-64",
+        isCollapsed ? "w-16" : "w-64"
       )}
     >
       <div
         className={cn(
           "transition-all duration-300 ease-in-out",
-          isCollapsed ? "w-16" : "w-64",
+          isCollapsed ? "w-16" : "w-64"
         )}
       >
         <SidebarContent

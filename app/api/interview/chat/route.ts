@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { auth } from "@/lib/auth";
+import { validateRequest, InterviewChatRequestSchema } from "@/lib/validators";
+import { logger } from "@/lib/logger";
+import { env } from "@/lib/env";
 
 const SYSTEM_INSTRUCTION = `
 You are an expert technical interviewer conducting a screening interview.
@@ -36,26 +39,29 @@ const GENERATION_CONFIG = {
 
 export async function POST(req: NextRequest) {
   try {
+    const rawData = await req.json();
+
+    // Validate request body
+    const validation = validateRequest(InterviewChatRequestSchema, rawData);
+    if (!validation.success) {
+      const { error } = validation;
+      logger.warn("Interview chat validation failed:", error);
+      return NextResponse.json({ error }, { status: 400 });
+    }
+
     const { messages, resumeText, jobDescription, userApiKey } =
-      await req.json();
+      validation.data;
 
     // Interview is public - no auth required
     // Optional: Check session for logged-in users
     const session = await auth();
     const userId = session?.user?.id;
 
-    const apiKey = userApiKey || process.env.GEMINI_KEY;
+    const apiKey = userApiKey || env.GEMINI_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not available" },
-        { status: 500 },
-      );
-    }
-
-    if (!messages || messages.length === 0) {
-      return NextResponse.json(
-        { error: "No messages provided" },
-        { status: 400 },
+        { status: 500 }
       );
     }
 
@@ -141,7 +147,7 @@ ${currentMessage}
           for await (const chunk of result.stream) {
             const text = chunk.text();
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ text })}\n\n`),
+              encoder.encode(`data: ${JSON.stringify({ text })}\n\n`)
             );
           }
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));

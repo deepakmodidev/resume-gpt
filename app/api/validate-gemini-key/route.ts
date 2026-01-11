@@ -1,14 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { validateRequest, ValidateKeyRequestSchema } from "@/lib/validators";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
-    const { apiKey } = await req.json();
+    const rawData = await req.json();
 
-    if (!apiKey || !apiKey.startsWith("AIza")) {
+    // Validate request body
+    const validation = validateRequest(ValidateKeyRequestSchema, rawData);
+    if (!validation.success) {
+      const { error } = validation;
+      logger.warn("Validate key validation failed:", error);
+      return NextResponse.json({ error }, { status: 400 });
+    }
+
+    const { apiKey } = validation.data;
+
+    if (!apiKey.startsWith("AIza")) {
       return NextResponse.json(
         { error: "Invalid API key format" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -22,7 +34,7 @@ export async function POST(req: NextRequest) {
     // If we get here without throwing, the key is valid
     return NextResponse.json({ valid: true });
   } catch (error) {
-    console.error("API key validation error:", error);
+    logger.error("API key validation error:", error);
     return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
   }
 }

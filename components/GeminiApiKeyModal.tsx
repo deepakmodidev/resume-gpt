@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { Eye, EyeOff, Key, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ApiKeySchema } from "@/lib/validators";
+import { STORAGE_KEYS, API_ENDPOINTS } from "@/lib/constants";
+import { apiRequest } from "@/lib/api-client";
+import { logger } from "@/lib/logger";
 
 import {
   Dialog,
@@ -31,7 +35,7 @@ export const GeminiApiKeyModal = ({
   useEffect(() => {
     if (isOpen) {
       // Check if user already has a stored API key
-      const storedKey = localStorage.getItem("gemini-api-key");
+      const storedKey = localStorage.getItem(STORAGE_KEYS.GEMINI_API_KEY);
       if (storedKey) {
         setHasStoredKey(true);
         setApiKey(storedKey);
@@ -41,17 +45,13 @@ export const GeminiApiKeyModal = ({
 
   const validateApiKey = async (key: string) => {
     try {
-      const response = await fetch("/api/validate-gemini-key", {
+      await apiRequest(API_ENDPOINTS.VALIDATE_KEY, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ apiKey: key }),
       });
-
-      return response.ok;
+      return true;
     } catch (error) {
-      console.error("Error validating API key:", error);
+      logger.error("Error validating API key:", error);
       return false;
     }
   };
@@ -62,8 +62,10 @@ export const GeminiApiKeyModal = ({
       return;
     }
 
-    if (!apiKey.startsWith("AIza")) {
-      toast.error("Invalid Gemini API key format");
+    // Validate API key format with Zod
+    const validation = ApiKeySchema.safeParse(apiKey.trim());
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
       return;
     }
 
@@ -73,7 +75,7 @@ export const GeminiApiKeyModal = ({
       const isValid = await validateApiKey(apiKey);
 
       if (isValid) {
-        localStorage.setItem("gemini-api-key", apiKey);
+        localStorage.setItem(STORAGE_KEYS.GEMINI_API_KEY, apiKey);
         setHasStoredKey(true);
         toast.success("API key saved successfully!");
         onClose();
@@ -88,7 +90,7 @@ export const GeminiApiKeyModal = ({
   };
 
   const handleRemove = () => {
-    localStorage.removeItem("gemini-api-key");
+    localStorage.removeItem(STORAGE_KEYS.GEMINI_API_KEY);
     setApiKey("");
     setHasStoredKey(false);
     toast.success("API key removed successfully!");
