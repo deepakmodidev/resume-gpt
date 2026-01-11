@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,8 +26,16 @@ import {
 
 export function Header() {
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  // Prefetch builder route when user is authenticated
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.prefetch("/builder/new");
+    }
+  }, [status, router]);
 
   const handleSignInClick = async () => {
     try {
@@ -41,6 +49,13 @@ export function Header() {
   };
 
   const handleNewResume = () => {
+    setIsNavigating(true);
+    const newChatId = uuidv4();
+    router.push(`/builder/${newChatId}`);
+  };
+
+  const handleGoToChat = () => {
+    setIsNavigating(true);
     const newChatId = uuidv4();
     router.push(`/builder/${newChatId}`);
   };
@@ -117,8 +132,11 @@ export function Header() {
                     <Button
                       variant="outline"
                       className="flex items-center gap-2 hover:bg-muted transition-all duration-200 rounded-lg w-full"
+                      disabled={isNavigating}
                     >
-                      {session.user.image ? (
+                      {isNavigating ? (
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : session.user.image ? (
                         <Image
                           src={session.user.image}
                           alt={session.user.name || "User"}
@@ -130,7 +148,9 @@ export function Header() {
                         <User className="h-4 w-4" />
                       )}
                       <span className="hidden sm:inline pb-1 font-medium truncate">
-                        {session.user.name?.split(" ")[0] || "User"}
+                        {isNavigating
+                          ? "Loading..."
+                          : session.user.name?.split(" ")[0] || "User"}
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
@@ -139,7 +159,7 @@ export function Header() {
                       <Plus className="mr-2 h-4 w-4" />
                       <span>New Resume</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleNewResume}>
+                    <DropdownMenuItem onClick={handleGoToChat}>
                       <MessageSquare className="mr-2 h-4 w-4" />
                       <span>Go to Chat</span>
                     </DropdownMenuItem>
