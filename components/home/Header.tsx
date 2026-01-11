@@ -15,7 +15,6 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { handleGoogleSignIn } from "@/actions/auth-actions";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,14 +50,12 @@ export function Header() {
 
   const handleNewResume = () => {
     setIsNavigating(true);
-    const newChatId = uuidv4();
-    router.push(`/builder/${newChatId}`);
+    router.push(`/builder/new`);
   };
 
   const handleGoToChat = () => {
     setIsNavigating(true);
-    const newChatId = uuidv4();
-    router.push(`/builder/${newChatId}`);
+    router.push(`/builder/new`);
   };
 
   const handleSignOut = async () => {

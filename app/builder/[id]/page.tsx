@@ -17,24 +17,28 @@ export default async function page({
     redirect("/");
   }
 
-  // --- Fetch ONLY the specific chat data here ---
-  const chat = await db.chat.findUnique({
-    where: {
-      id,
-      userId: session.user.id,
-    },
-    select: {
-      id: true,
-      title: true,
-      messages: true,
-      resumeData: true,
-      resumeTemplate: true,
-    },
-  });
+  // Handle "new" route - don't try to fetch from database
+  let chat = null;
+  if (id !== "new") {
+    // --- Fetch ONLY the specific chat data here ---
+    chat = await db.chat.findUnique({
+      where: {
+        id,
+        userId: session.user.id,
+      },
+      select: {
+        id: true,
+        title: true,
+        messages: true,
+        resumeData: true,
+        resumeTemplate: true,
+      },
+    });
+  }
 
   // Ensure we have a valid ID to pass to the Builder
   const validParams = {
-    id: id || "", // Ensure id is never undefined
+    id: id === "new" ? "" : id, // Pass empty string for new chats
   };
 
   return (

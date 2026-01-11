@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { HomeLayout } from "@/components/home/HomeLayout";
 import { Header } from "@/components/home/Header";
 import { HeroSection } from "@/components/home/HeroSection";
@@ -17,19 +16,16 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  // Generate UUID on server - no need for "use client"
-  const chatId = uuidv4();
-
   return (
     <HomeLayout>
       <Header />
       <main className="flex-1">
-        <HeroSection chatId={chatId} />
+        <HeroSection />
         <ResumeBuildingSection />
         <DemoSection />
         <FeaturesSection />
         <TestimonialSection />
-        <FinalCTASection chatId={chatId} />
+        <FinalCTASection />
       </main>
       <Footer />
     </HomeLayout>

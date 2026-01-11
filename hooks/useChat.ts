@@ -298,7 +298,7 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
   const updateResumeData = useCallback(
     (updater: (data: ResumeData) => void) => {
       setResumeData((prev) => {
-        const updated = { ...prev };
+        const updated = JSON.parse(JSON.stringify(prev));
         updater(updated);
         return updated;
       });
@@ -314,5 +314,6 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
     hasInteracted,
     sendMessage,
     updateResumeData,
+    setHasInteracted,
   };
 };

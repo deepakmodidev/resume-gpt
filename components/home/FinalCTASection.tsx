@@ -8,11 +8,7 @@ import { checkSession } from "@/actions/session-actions";
 import { handleGoogleSignIn } from "@/actions/auth-actions";
 import { logger } from "@/lib/logger";
 
-interface FinalCTASectionProps {
-  chatId: string;
-}
-
-export function FinalCTASection({ chatId }: FinalCTASectionProps) {
+export function FinalCTASection() {
   const [isCheckingSession, setIsCheckingSession] = useState(false);
   const router = useRouter();
 
@@ -22,7 +18,7 @@ export function FinalCTASection({ chatId }: FinalCTASectionProps) {
       const hasSession = await checkSession();
 
       if (hasSession) {
-        router.push(`/builder/${chatId}`);
+        router.push(`/builder/new`);
       } else {
         await handleGoogleSignIn();
       }

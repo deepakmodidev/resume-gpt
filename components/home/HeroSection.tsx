@@ -11,11 +11,7 @@ import { ResumePreview } from "./ResumePreview";
 import { DotPattern } from "@/components/ui/dot-pattern";
 import { logger } from "@/lib/logger";
 
-interface HeroSectionProps {
-  chatId: string;
-}
-
-export function HeroSection({ chatId }: HeroSectionProps) {
+export function HeroSection() {
   const [isCheckingSession, setIsCheckingSession] = useState(false);
   const router = useRouter();
 
@@ -25,7 +21,7 @@ export function HeroSection({ chatId }: HeroSectionProps) {
       const hasSession = await checkSession();
 
       if (hasSession) {
-        router.push(`/builder/${chatId}`);
+        router.push(`/builder/new`);
       } else {
         await handleGoogleSignIn();
       }

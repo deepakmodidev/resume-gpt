@@ -5,7 +5,7 @@ import { logger } from "@/lib/logger";
 import { TemplateModal } from "./TemplateModal";
 import { ResumeContent } from "./ResumeContent";
 import { ATSScore } from "@/components/ats/ATSScore";
-import { LoaderPinwheelIcon, Target, FileText, Layout, Download } from "lucide-react";
+import { LoaderPinwheelIcon, Target, FileText, LayoutTemplate, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -103,26 +103,26 @@ export const ResumeDisplay = ({
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsTemplateModalOpen(true)}
-                className="text-white flex items-center gap-2 bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-lg hover:bg-primary/90 transition-all shadow-xs hover:shadow-md font-medium"
+                className="text-white inline-flex items-center justify-center gap-2 bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 hover:scale-[1.02] transition-all shadow-xs hover:shadow-md font-medium"
               >
-                <Layout className="w-4 h-4" />
-                Templates
+                <LayoutTemplate className="w-4 h-4 shrink-0" />
+                <span>Templates</span>
               </button>
 
               <button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
-                className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${isDownloading
+                className={`inline-flex items-center justify-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${isDownloading
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
                   }`}
               >
                 {isDownloading ? (
-                  <LoaderPinwheelIcon className="w-4 h-4 animate-spin" />
+                  <LoaderPinwheelIcon className="w-4 h-4 shrink-0 animate-spin" />
                 ) : (
-                  <Download className="w-4 h-4" />
+                  <Download className="w-4 h-4 shrink-0" />
                 )}
-                {isDownloading ? "Downloading..." : "Download PDF"}
+                <span>{isDownloading ? "Downloading..." : "Download PDF"}</span>
               </button>
             </div>
           </div>
@@ -135,7 +135,7 @@ export const ResumeDisplay = ({
             <div className="px-4 pb-4 max-w-5xl mx-auto">
               <ResumeContent
                 data={data}
-                isEditable={true}
+                isEditable={false}
                 onContentEdit={handleContentEdit}
                 template={currentTemplate}
               />

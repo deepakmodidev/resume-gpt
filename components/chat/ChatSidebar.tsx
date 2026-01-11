@@ -192,7 +192,12 @@ const ChatListItem = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(chat)}>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(chat);
+              }}
+            >
               <Edit2 className="h-4 w-4 mr-2" />
               Rename
             </DropdownMenuItem>
@@ -201,7 +206,10 @@ const ChatListItem = ({
               Open
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onDelete(chat.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(chat.id);
+              }}
               className="text-destructive"
             >
               <Trash2 className="h-4 w-4 mr-2" />
@@ -239,6 +247,26 @@ const SidebarContent = ({
   useEffect(() => {
     fetchChats();
     checkUserApiKey();
+  }, []);
+
+  // Refresh chat list when currentChatId changes (e.g., when a new chat is created)
+  useEffect(() => {
+    if (currentChatId) {
+      // Check if this chat exists in our list, if not, refresh
+      const chatExists = chats.some(chat => chat.id === currentChatId);
+      if (!chatExists) {
+        fetchChats();
+      }
+    }
+  }, [currentChatId]);
+
+  // Periodic refresh to catch updates from manual edits (every 30 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchChats();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   const checkUserApiKey = () => {
@@ -291,7 +319,6 @@ const SidebarContent = ({
       return;
     }
 
-    setIsLoading(true);
     try {
       await apiRequest(API_ENDPOINTS.CHAT, {
         method: "PUT",
@@ -303,9 +330,7 @@ const SidebarContent = ({
 
       setChats((prevChats) =>
         prevChats.map((chat) =>
-          chat.id === editingChatId
-            ? { ...chat, title: editValue.trim() }
-            : chat
+          chat.id === editingChatId ? { ...chat, title: editValue.trim() } : chat
         )
       );
 
@@ -316,7 +341,6 @@ const SidebarContent = ({
     } finally {
       setEditingChatId(null);
       setEditValue("");
-      setIsLoading(false);
     }
   };
 
@@ -330,7 +354,6 @@ const SidebarContent = ({
       return;
     }
 
-    setIsLoading(true);
     try {
       await apiRequest(API_ENDPOINTS.CHAT, {
         method: "DELETE",
@@ -342,8 +365,6 @@ const SidebarContent = ({
     } catch (error) {
       logger.error("Failed to delete chat", error as Error);
       toast.error("Failed to delete chat");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -353,8 +374,8 @@ const SidebarContent = ({
 
   const filteredChats = searchQuery
     ? chats.filter((chat) =>
-        chat.title?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      chat.title?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : chats;
 
   const groupedChats = groupChatsByTimeframe(filteredChats);
