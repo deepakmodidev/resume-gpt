@@ -88,7 +88,7 @@ export const ResumeContent = ({
           <h2 className={styles.sectionHeader}>Skills</h2>
           {template === "classic" ? (
             <p className={styles.skills}>
-              {data.skills
+              {(Array.isArray(data.skills) ? data.skills : [])
                 .map((skill) =>
                   typeof skill === "string" ? skill : String(skill),
                 )
@@ -113,7 +113,7 @@ export const ResumeContent = ({
       )}
 
       {/* Projects Section */}
-      {data.projects?.some((p) => p.name) && (
+      {Array.isArray(data.projects) && data.projects.some((p) => p.name) && (
         <section>
           <h2 className={styles.sectionHeader}>Projects</h2>
           <div className="space-y-1">
@@ -122,22 +122,22 @@ export const ResumeContent = ({
                 project.name && (
                   <div key={idx}>
                     <h3 className={styles.projectTitle}>{project.name}</h3>
-                    {project.techStack?.length > 0 && (
+                    {Array.isArray(project.techStack) && project.techStack.length > 0 && (
                       <p className={styles.projectTech}>
                         {template === "creative"
-                          ? `// ${project.techStack?.join(" / ")}`
+                          ? `// ${project.techStack.join(" / ")}`
                           : template === "techie"
-                            ? `[${project.techStack?.join(", ")}]`
+                            ? `[${project.techStack.join(", ")}]`
                             : template === "artistic"
-                              ? `✨ ${project.techStack?.join(" • ")}`
-                              : project.techStack?.join(", ")}
+                              ? `✨ ${project.techStack.join(" • ")}`
+                              : project.techStack.join(", ")}
                       </p>
                     )}
                     <p className={`${styles.text} whitespace-pre-line`}>
                       {typeof project.description === "string"
                         ? project.description
                         : typeof project.description === "object" &&
-                            project.description
+                          project.description
                           ? JSON.stringify(project.description)
                           : String(project.description || "")}
                     </p>
@@ -149,7 +149,7 @@ export const ResumeContent = ({
       )}
 
       {/* Experience Section */}
-      {data.experience?.some((exp) => exp.title) && (
+      {Array.isArray(data.experience) && data.experience.some((exp) => exp.title) && (
         <section>
           <h2 className={styles.sectionHeader}>Experience</h2>
           <div className="space-y-1">
@@ -184,7 +184,7 @@ export const ResumeContent = ({
       )}
 
       {/* Education Section */}
-      {data.education?.some((edu) => edu.degree) && (
+      {Array.isArray(data.education) && data.education.some((edu) => edu.degree) && (
         <section>
           <h2 className={styles.sectionHeader}>Education</h2>
           <div>
@@ -218,7 +218,7 @@ export const ResumeContent = ({
       )}
 
       {/* Achievements Section */}
-      {data.achievements?.length > 0 && (
+      {Array.isArray(data.achievements) && data.achievements.length > 0 && (
         <section>
           <h2 className={styles.sectionHeader}>Achievements</h2>
           <ul

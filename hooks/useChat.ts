@@ -265,14 +265,16 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
             ...parsed.updatedSection,
           }));
         }
-      } catch (error) {
+      } catch (error: unknown) {
         logger.error("AI message error", error as Error);
         let errorMessage = "⚠️ AI response parsing failed.";
 
-        if (error.name === "AbortError") {
-          errorMessage = "Request timed out. Please try again.";
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
+        if (error instanceof Error) {
+          if (error.name === "AbortError") {
+            errorMessage = "Request timed out. Please try again.";
+          } else {
+            errorMessage = error.message;
+          }
         }
 
         setMessages((prev) => [

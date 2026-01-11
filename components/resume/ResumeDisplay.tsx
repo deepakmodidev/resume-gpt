@@ -169,7 +169,7 @@ export const ResumeDisplay = ({
                       `${data.summary || ""}\n` +
                       `${data.experience?.map((exp) => `${exp.title} at ${exp.company}\n${exp.description}`).join("\n") || ""}\n` +
                       `${data.education?.map((edu) => `${edu.degree} - ${edu.institution}`).join("\n") || ""}\n` +
-                      `${data.skills?.join(", ") || ""}\n` +
+                      `${(Array.isArray(data.skills) ? data.skills : []).join(", ") || ""}\n` +
                       `${data.projects?.map((proj) => `${proj.name}: ${proj.description}`).join("\n") || ""}`
                     }
                   />

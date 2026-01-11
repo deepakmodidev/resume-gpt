@@ -7,7 +7,6 @@ import { useSpeech } from "@/hooks/useSpeech";
 import { useCartesiaTTS } from "@/hooks/useCartesiaTTS";
 import { Button } from "@/components/ui/button";
 import { STORAGE_KEYS, API_ENDPOINTS } from "@/lib/constants";
-import { apiRequest } from "@/lib/api-client";
 import {
   Mic,
   MicOff,
@@ -105,8 +104,8 @@ export const InterviewSession = ({
   const speak = cartesiaInitialized
     ? cartesiaSpeak
     : () => {
-        logger.warn("Cartesia not initialized");
-      };
+      logger.warn("Cartesia not initialized");
+    };
   const isSpeaking = cartesiaIsSpeaking;
   const cancelSpeech = cartesiaStop;
 
@@ -125,21 +124,58 @@ export const InterviewSession = ({
       try {
         const userApiKey = localStorage.getItem(STORAGE_KEYS.GEMINI_API_KEY);
 
-        const data = await apiRequest<{ response: string }>(
-          API_ENDPOINTS.INTERVIEW,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              messages: newMessages,
-              resumeText: messages.length === 0 ? resumeText : undefined,
-              jobDescription:
-                messages.length === 0 ? jobDescription : undefined,
-              userApiKey,
-            }),
-          }
-        );
+        // Use fetch directly for SSE streaming response
+        const response = await fetch(API_ENDPOINTS.INTERVIEW, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: newMessages,
+            resumeText: messages.length === 0 ? resumeText : undefined,
+            jobDescription:
+              messages.length === 0 ? jobDescription : undefined,
+            userApiKey,
+          }),
+        });
 
-        const aiText = data.response;
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `API error: ${response.status}`);
+        }
+
+        // Handle SSE streaming response
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let aiText = "";
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") continue;
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.text) {
+                    aiText += parsed.text;
+                  }
+                } catch {
+                  // Ignore parse errors for incomplete chunks
+                }
+              }
+            }
+          }
+        }
+
+        if (!aiText) {
+          throw new Error("No response from AI");
+        }
+
         setMessages([...newMessages, { role: "model", content: aiText }]);
         setStatus("speaking");
 
@@ -491,11 +527,10 @@ export const InterviewSession = ({
         {/* Main Action Button */}
         <Button
           size="lg"
-          className={`rounded-full h-20 w-20 shadow-2xl transition-all duration-300 ${
-            status === "listening"
-              ? "bg-red-600 hover:bg-red-700 animate-pulse"
-              : "bg-white text-black hover:bg-gray-200"
-          }`}
+          className={`rounded-full h-20 w-20 shadow-2xl transition-all duration-300 ${status === "listening"
+            ? "bg-red-600 hover:bg-red-700 animate-pulse"
+            : "bg-white text-black hover:bg-gray-200"
+            }`}
           onClick={toggleMic}
           disabled={status === "processing"}
         >
@@ -529,11 +564,10 @@ export const InterviewSession = ({
                       {msg.role === "user" ? "You" : "AI Interviewer"}
                     </span>
                     <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                        msg.role === "user"
-                          ? "bg-cyan-600 text-white"
-                          : "bg-gray-800 text-gray-200"
-                      }`}
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === "user"
+                        ? "bg-cyan-600 text-white"
+                        : "bg-gray-800 text-gray-200"
+                        }`}
                     >
                       {msg.content}
                     </div>

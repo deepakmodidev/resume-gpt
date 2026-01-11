@@ -7,89 +7,14 @@ import { logger } from "@/lib/logger";
 import { AI_MODELS } from "@/lib/constants";
 import { env } from "@/lib/env";
 
+import { SYSTEM_INSTRUCTION } from "@/lib/prompts";
+import { deepMerge } from "@/lib/utils";
+
 // Types
 interface ParsedResponse {
   acknowledgement: string;
   updatedSection: Record<string, unknown>;
 }
-
-// Constants
-const SYSTEM_INSTRUCTION = `
-You are ResumeGPT, an AI resume assistant developed by Deepak Modi, that helps users create professional, ATS-optimized resumes with instant preview and download capabilities. 
-
-RESPONSE FORMAT - CRITICAL:
-Your response MUST be valid JSON with EXACTLY this structure:
-{
-  "acknowledgement": "Your response text here",
-  "updatedSection": {} 
-}
-
-FORMATTING RULES:
-- Never use Markdown, asterisks, or any formatting characters in your responses
-- Only reply with clean, plain text—no bold, italics, bullet points, or special formatting
-- Never mention JSON, data structures, or technical implementation details
-- Always provide clean, plain text responses as if speaking directly to the user
-- Never reply with empty objects - always provide meaningful acknowledgements
-- When referring to resume updates, say things like "I've updated your resume" or "Your resume has been enhanced"
-- If a user asks where their resume is, tell them they can preview their resume on the preview screen to the right
-
-RESUME DATA STRUCTURE:
-- ALWAYS ensure 'skills' field is an array of strings: ["JavaScript", "React", "Python"]
-- Never return 'skills' as a single string, object, or any other type
-- Maintain consistent data types across all resume sections
-- Use proper date formats for experience and education (e.g., "Jan 2023 - Present")
-- Keep contact information in standard professional formats
-
-CONVERSATION CONTEXT: // 🎯 RAG: System Instruction - Defines context retrieval behavior
-- Remember ALL previous interactions in the conversation
-- For each response, review the entire conversation history to ensure consistency with past interactions // 🎯 RAG: Memory Pattern - Instructions for context-aware responses
-- Reference past requests when users say "add what I mentioned earlier"
-- Maintain consistency with previously discussed resume content
-- Show understanding of the user's career goals and industry
-
-RESUME OPTIMIZATION EXPERTISE: // 🎯 RAG: Domain Knowledge - Built-in industry expertise
-- Suggest ATS-friendly keywords relevant to the user's target role
-- Transform weak descriptions into impactful, results-oriented statements
-- Recommend quantifiable achievements with specific metrics
-- Help optimize content for both ATS systems and human reviewers
-- Ensure proper professional formatting and structure
-
-TECHNICAL REQUIREMENTS:
-- DO NOT include any text before or after the JSON object
-- DO NOT include any formatting, code blocks, icons, images, or explanation outside the JSON
-- If you cannot answer in the required JSON format, you MUST return:
-{"acknowledgement": "I cannot process this request.", "updatedSection": {}}
-
-INTELLIGENT CONTENT GENERATION:
-When users provide minimal information:
-- Analyze existing resume data to understand their background
-- Generate relevant content based on their industry and experience level
-- Fill gaps with professional, realistic content that matches their profile
-- Inform users to review and customize generated suggestions
-
-RESPONSE GUIDELINES:
-For general conversation like greetings or questions about your capabilities:
-{
-  "acknowledgement": "Hi, I'm ResumeGPT - your AI resume assistant designed to help you create professional, job-winning resumes. I can enhance your content, suggest improvements, and optimize your resume for ATS systems. How can I help with your resume today?",
-  "updatedSection": {}
-}
-
-For resume-related queries without updates needed:
-{
-  "acknowledgement": "Your helpful response about the resume, showing that you remember previous conversation context and provide actionable advice",
-  "updatedSection": {}
-}
-
-For resume updates, include ONLY the sections that need to be changed:
-{
-  "acknowledgement": "I've enhanced your resume with stronger content that will help you stand out to employers and pass ATS screening.",
-  "updatedSection": {
-    "sectionName": "new content"
-  }
-}
-
-Remember to be conversational, professional, and focused on helping users create resumes that land interviews and job offers.
-`;
 
 const GENERATION_CONFIG = {
   temperature: 0.6,
@@ -98,67 +23,62 @@ const GENERATION_CONFIG = {
   responseMimeType: "application/json",
 };
 
-// Utility Functions
-const validateData = (data: Record<string, unknown>) => {
-  const { history, resumeData, chatId } = data;
-  if (!Array.isArray(history) || !history.length)
-    throw new Error("Invalid history");
-  if (!chatId) throw new Error("Missing chat ID");
-  const message = (history.at(-1) as { parts?: { text?: string }[] })
-    ?.parts?.[0]?.text;
-  if (!message || !resumeData)
-    throw new Error("Missing message or resume data");
-  return message;
-};
-
 const parseResponse = (text: string): ParsedResponse => {
-  try {
-    // With responseMimeType: "application/json", the model should return clean JSON.
-    // We still strip markdown code blocks just in case it ignores the config.
-    const cleaned = text
-      .replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1")
-      .trim();
-    return JSON.parse(cleaned);
-  } catch (e) {
-    logger.error("JSON Parse Error:", e);
-    logger.debug("Raw text that failed parsing:", text);
-    // If parsing fails, try to extract a JSON object loosely
+  const cleanAndParse = (input: string) => {
+    try {
+      // Remove markdown and trim
+      const cleaned = input
+        .replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1")
+        .trim();
+      return JSON.parse(cleaned);
+    } catch {
+      return null;
+    }
+  };
+
+  // 1. Attempt standard parsing
+  let parsed = cleanAndParse(text);
+
+  // 2. Fallback: Try regex extraction if standard parse failed
+  if (!parsed) {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
+    if (jsonMatch) parsed = cleanAndParse(jsonMatch[0]);
+  }
+
+  // 3. Construct result
+  if (parsed) {
+    let ack = parsed.acknowledgement || parsed.response;
+
+    // Handle edge case: acknowledgement is an object/array
+    if (typeof ack === "object") {
       try {
-        return JSON.parse(jsonMatch[0]);
-      } catch (innerError) {
-        // failed again
+        ack = JSON.stringify(ack);
+      } catch {
+        ack = "";
       }
     }
-    return { acknowledgement: text, updatedSection: {} };
+
+    // Handle edge case: acknowledgement is empty
+    if (!ack || typeof ack !== "string" || !ack.trim()) {
+      ack = "Error: AI response text was empty.";
+    }
+
+    return {
+      acknowledgement: ack,
+      updatedSection: parsed.updatedSection || parsed.data || {},
+    };
   }
-};
 
-const deepMerge = (
-  target: Record<string, unknown>,
-  source: Record<string, unknown>
-) => {
-  if (
-    !target ||
-    !source ||
-    typeof target !== "object" ||
-    typeof source !== "object"
-  )
-    return source;
+  // 4. Final Fallback: Return raw text (assuming AI failed to JSON-ify)
+  // If it looks like code/malformed JSON, show error
+  if (text.trim().startsWith("{") || text.includes('{"')) {
+    return {
+      acknowledgement: "Error: Invalid JSON response from AI.",
+      updatedSection: {},
+    };
+  }
 
-  const result = { ...target };
-  Object.entries(source).forEach(([key, value]) => {
-    result[key] = Array.isArray(value)
-      ? value
-      : value && typeof value === "object"
-        ? deepMerge(
-            (result[key] as Record<string, unknown>) ?? {},
-            value as Record<string, unknown>
-          )
-        : value;
-  });
-  return result;
+  return { acknowledgement: text, updatedSection: {} };
 };
 
 const upsertChat = async (
@@ -242,21 +162,17 @@ export async function POST(req: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: AI_MODELS.GEMINI_FLASH,
-      systemInstruction: SYSTEM_INSTRUCTION, // 🎯 RAG: System Knowledge - Built-in domain expertise
+      systemInstruction: `${SYSTEM_INSTRUCTION}\n\nCURRENT RESUME DATA:\n${JSON.stringify(resumeData)}`,
     });
     const chat = model.startChat({
       generationConfig: GENERATION_CONFIG,
-      history, // 🎯 RAG: Conversational - Retrieves previous conversation context
+      history,
     });
-    const result = await chat.sendMessage(
-      `${message}\nResume Data: ${JSON.stringify(resumeData)}` // 🎯 RAG: Resume Context - Augments with current resume data
-    );
+    const result = await chat.sendMessage(message);
     const response = parseResponse(result.response.text());
 
     const acknowledgement =
-      response?.acknowledgement && response.acknowledgement.trim() !== ""
-        ? response.acknowledgement
-        : "I'm here to help with your resume. What would you like to know?";
+      response?.acknowledgement || "Error: AI response empty.";
     const updatedSection = response?.updatedSection || {};
 
     const mergedData = deepMerge(resumeData, updatedSection); // 🎯 RAG: Context Merging - Combines retrieved data with new updates
