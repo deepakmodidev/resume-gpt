@@ -10,6 +10,7 @@ export const API_ENDPOINTS = {
   COVER_LETTER_PDF: "/api/generate-cover-letter-pdf",
   PDF: "/api/generate-pdf",
   INTERVIEW: "/api/interview/chat",
+  TTS: "/api/tts",
   VALIDATE_KEY: "/api/validate-gemini-key",
   HEALTH: "/api/health",
   PARSE_RESUME: "/actions/parse-resume",

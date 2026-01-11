@@ -16,7 +16,7 @@ const envSchema = z.object({
 
   // Optional - API Keys
   GEMINI_KEY: z.string().min(1).optional(),
-  NEXT_PUBLIC_CARTESIA_API_KEY: z.string().optional(),
+  CARTESIA_API_KEY: z.string().optional(),
 
   // Optional - Deployment Environment
   AWS_LAMBDA_FUNCTION_NAME: z.string().optional(),
