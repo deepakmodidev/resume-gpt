@@ -38,6 +38,8 @@ export default async function page({
   };
 
   return (
-    <Builder session={session} params={validParams} initialChatData={chat} />
+    <ErrorBoundary>
+      <Builder session={session} params={validParams} initialChatData={chat} />
+    </ErrorBoundary>
   );
 }

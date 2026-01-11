@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState, useEffect } from "react";
-import { redirect } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,7 +31,11 @@ export interface BuilderProps {
 }
 
 export function Builder({ session, params, initialChatData }: BuilderProps) {
-  if (!session) redirect("/");
+  // Note: Auth is already handled in the server component (app/builder/[id]/page.tsx)
+  // This is a safety fallback - should never actually render null
+  if (!session) {
+    return null;
+  }
 
   const { id: paramsId } = params;
   const [fallbackId] = useState(() => uuidv4()); // Generate a fallback ID if params.id is missing

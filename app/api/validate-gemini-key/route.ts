@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { validateRequest, ValidateKeyRequestSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
+import { AI_MODELS } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     // Test the API key by making a simple request
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const model = genAI.getGenerativeModel({ model: AI_MODELS.GEMINI_FLASH });
 
     // Test with a simple prompt
     await model.generateContent("Test");
