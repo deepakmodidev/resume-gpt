@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { logger } from "@/lib/logger";
 
 import { ResumeForm } from "@/components/resume/ResumeForm";
 import { ResumeDisplay } from "@/components/resume/ResumeDisplay";
@@ -93,7 +94,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
         await saveResume(id, resumeData);
         setSaveStatus("saved");
       } catch (error) {
-        console.error("Auto-save failed:", error);
+        logger.error("Auto-save failed:", error);
         setSaveStatus("error");
       }
     }, 2000);
@@ -101,9 +102,6 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
     return () => clearTimeout(timer);
   }, [resumeData, id, hasInteracted, autoSaveEnabled]);
 
-  const handleNewChat = useCallback(() => {
-    router.push(`/builder/new`);
-  }, [router]);
 
   // Generate and set fallback ID only when user interacts without an existing ID
   useEffect(() => {
@@ -191,7 +189,6 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       {/* Sidebar - handles both mobile and desktop internally */}
       <ChatSidebar
         session={session}
-        onNewChat={handleNewChat}
         currentChatId={id}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={toggleSidebarCollapse}
@@ -206,38 +203,38 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
           >
             <div className="flex flex-col h-full">
               {hasInteracted && (
-                <div className="px-4 py-2 border-b flex items-center justify-between gap-4">
-                  <div className="grid flex-1 grid-cols-2 h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
-                    <button
-                      onClick={() => setActiveTab("chat")}
-                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "chat" ? "bg-background text-foreground shadow-sm" : ""
-                        }`}
-                    >
-                      <MessageSquare className="w-4 h-4 mr-2" /> Chat
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("edit")}
-                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "edit" ? "bg-background text-foreground shadow-sm" : ""
-                        }`}
-                    >
-                      <Edit className="w-4 h-4 mr-2" /> Edit
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-1 w-[110px] justify-end shrink-0">
-                    {saveStatus !== "idle" && (
-                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${saveStatus === "saved"
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : saveStatus === "saving"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          : "bg-red-100 text-red-700"
-                        }`}>
-                        {saveStatus === "saving" && <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>}
-                        {saveStatus === "saved" && <><CircleCheckBig className="w-4 h-4" /> Saved</>}
-                        {saveStatus === "error" && "Error"}
-                      </div>
-                    )}
-                  </div>
+              <div className="px-4 py-2 border-b flex items-center justify-between gap-4">
+                <div className="grid flex-1 grid-cols-2 h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
+                  <button
+                    onClick={() => setActiveTab("chat")}
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "chat" ? "bg-background text-foreground shadow-sm" : ""
+                      }`}
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" /> Chat
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("edit")}
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "edit" ? "bg-background text-foreground shadow-sm" : ""
+                      }`}
+                  >
+                    <Edit className="w-4 h-4 mr-2" /> Edit
+                  </button>
                 </div>
+                <div className="flex items-center gap-1 w-[110px] justify-end shrink-0">
+                    {saveStatus !== "idle" && (
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${saveStatus === "saved"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    : saveStatus === "saving"
+                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                      : "bg-red-100 text-red-700"
+                    }`}>
+                    {saveStatus === "saving" && <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>}
+                    {saveStatus === "saved" && <><CircleCheckBig className="w-4 h-4" /> Saved</>}
+                    {saveStatus === "error" && "Error"}
+                  </div>
+                    )}
+                </div>
+              </div>
               )}
 
               {!hasInteracted ? (
@@ -257,24 +254,24 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                 </div>
               ) : (
                 <>
-                  <div className={`flex-1 flex-col min-h-0 mt-0 overflow-hidden ${activeTab === "chat" ? "flex" : "hidden"}`}>
-                    <ChatMessages
-                      messages={messages}
-                      isGenerating={isGenerating}
-                      hasInteracted={hasInteracted}
-                      onSuggestionClick={handleSuggestionClick}
-                    />
-                    <ChatInput
-                      onSendMessage={handleSendMessage}
-                      isGenerating={isGenerating}
-                      inputValue={inputValue}
-                      onInputChange={setInputValue}
-                    />
-                  </div>
+              <div className={`flex-1 flex-col min-h-0 mt-0 overflow-hidden ${activeTab === "chat" ? "flex" : "hidden"}`}>
+                <ChatMessages
+                  messages={messages}
+                  isGenerating={isGenerating}
+                  hasInteracted={hasInteracted}
+                  onSuggestionClick={handleSuggestionClick}
+                />
+                <ChatInput
+                  onSendMessage={handleSendMessage}
+                  isGenerating={isGenerating}
+                  inputValue={inputValue}
+                  onInputChange={setInputValue}
+                />
+              </div>
 
-                  <div className={`flex-1 min-h-0 mt-0 overflow-hidden h-full flex-col ${activeTab === "edit" ? "flex" : "hidden"}`}>
+              <div className={`flex-1 min-h-0 mt-0 overflow-hidden h-full flex-col ${activeTab === "edit" ? "flex" : "hidden"}`}>
                     <ResumeForm data={resumeData} handleDataChange={handleResumeDataChange} />
-                  </div>
+              </div>
                 </>
               )}
             </div>
@@ -322,7 +319,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             className="fixed bottom-4 right-4 z-50 max-w-sm"
           >
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg shadow-lg border border-white/20">
+            <div className="bg-linear-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg shadow-lg border border-white/20">
               <div className="flex items-start gap-3">
                 <div className="p-1 bg-white/20 rounded-full">
                   <Sparkles className="w-4 h-4" />

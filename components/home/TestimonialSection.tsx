@@ -1,5 +1,3 @@
-"use client";
-
 import { Star, Quote, CheckCircle } from "lucide-react";
 
 const testimonials = [

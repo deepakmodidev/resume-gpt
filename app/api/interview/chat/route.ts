@@ -4,38 +4,8 @@ import { auth } from "@/lib/auth";
 import { validateRequest, InterviewChatRequestSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
 import { env } from "@/lib/env";
-
-const SYSTEM_INSTRUCTION = `
-You are an expert technical interviewer conducting a screening interview.
-
-CRITICAL RULES:
-1. **ULTRA SHORT**: Maximum 2 sentences per response. This is for VOICE interview.
-2. **ONE QUESTION ONLY**: Ask one simple question, then STOP.
-3. **NO MARKDOWN**: Plain text only. No asterisks, bullets, or formatting.
-4. **CONVERSATIONAL**: Speak naturally like a real person on a phone call.
-5. **FAST PACED**: Keep the interview moving quickly.
-
-INTERVIEW STYLE:
-- Welcome briefly, then ask them to introduce themselves
-- Ask about their experience related to the job
-- Ask one technical or behavioral question at a time
-- Keep responses under 20 words when possible
-
-EXAMPLE RESPONSES:
-✅ "Great! Tell me about your experience with React."
-✅ "Interesting. Can you describe a challenging project you worked on?"
-✅ "Thanks for sharing. What interests you about this role?"
-
-❌ "That's wonderful to hear! I'm really impressed by your background. Now, I'd like to ask you several questions about..."
-
-Remember: SHORT and FAST. This is a voice interview, not an essay.
-`;
-
-const GENERATION_CONFIG = {
-  temperature: 0.7,
-  topP: 0.8,
-  maxOutputTokens: 150, // Very short responses for faster speech
-};
+import { INTERVIEW_PROMPT } from "@/lib/prompts";
+import { AI_GENERATION_CONFIGS } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -68,7 +38,7 @@ export async function POST(req: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-3-flash-preview", // Latest and fastest
-      systemInstruction: SYSTEM_INSTRUCTION,
+      systemInstruction: INTERVIEW_PROMPT,
     });
 
     // Build chat history - Filter out AI welcome message if it's the only message
@@ -82,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     // Start Chat
     const chat = model.startChat({
-      generationConfig: GENERATION_CONFIG,
+      generationConfig: AI_GENERATION_CONFIGS.INTERVIEW,
       history: chatHistory.map((msg: any) => ({
         role: msg.role === "user" ? "user" : "model",
         parts: [{ text: msg.content }],
@@ -166,7 +136,7 @@ ${currentMessage}
       },
     });
   } catch (error: any) {
-    console.error("Interview API Error:", error);
+    logger.error("Interview API Error:", error);
 
     let errorMessage = "Failed to generate response";
     if (error.message?.includes("API key")) {

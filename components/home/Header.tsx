@@ -14,7 +14,6 @@ import {
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { handleGoogleSignIn } from "@/actions/auth-actions";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,16 +25,8 @@ import { logger } from "@/lib/logger";
 
 export function Header() {
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
   const { data: session, status } = useSession();
-  const router = useRouter();
 
-  // Prefetch builder route when user is authenticated
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.prefetch("/builder/new");
-    }
-  }, [status, router]);
 
   const handleSignInClick = async () => {
     try {
@@ -48,15 +39,6 @@ export function Header() {
     }
   };
 
-  const handleNewResume = () => {
-    setIsNavigating(true);
-    router.push(`/builder/new`);
-  };
-
-  const handleGoToChat = () => {
-    setIsNavigating(true);
-    router.push(`/builder/new`);
-  };
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/" });
@@ -115,26 +97,14 @@ export function Header() {
           <div className="flex items-center justify-end gap-3">
             {/* Auth Button - Fixed Width Container */}
             <div className="w-25 sm:w-30 flex justify-end">
-              {status === "loading" ? (
-                <Button
-                  variant="outline"
-                  disabled
-                  className="text-sm font-medium flex items-center gap-2 shadow-xs w-full"
-                >
-                  <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
-                  <span className="hidden sm:inline">Loading...</span>
-                </Button>
-              ) : status === "authenticated" && session?.user ? (
+              {status === "authenticated" && session?.user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="outline"
                       className="flex items-center gap-2 hover:bg-muted transition-all duration-200 rounded-lg w-full"
-                      disabled={isNavigating}
                     >
-                      {isNavigating ? (
-                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      ) : session.user.image ? (
+                      {session.user.image ? (
                         <Image
                           src={session.user.image}
                           alt={session.user.name || "User"}
@@ -146,20 +116,22 @@ export function Header() {
                         <User className="h-4 w-4" />
                       )}
                       <span className="hidden sm:inline pb-1 font-medium truncate">
-                        {isNavigating
-                          ? "Loading..."
-                          : session.user.name?.split(" ")[0] || "User"}
+                        {session.user.name?.split(" ")[0] || "User"}
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem onClick={handleNewResume}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      <span>New Resume</span>
+                    <DropdownMenuItem asChild>
+                      <Link href="/builder/new">
+                        <Plus className="mr-2 h-4 w-4" />
+                        <span>New Resume</span>
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleGoToChat}>
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      <span>Go to Chat</span>
+                    <DropdownMenuItem asChild>
+                      <Link href="/builder/new">
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        <span>Go to Chat</span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>

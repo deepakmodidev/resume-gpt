@@ -1,34 +1,7 @@
-"use client";
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { ArrowRight, FileText, FileEditIcon } from "lucide-react";
-import { checkSession } from "@/actions/session-actions";
-import { handleGoogleSignIn } from "@/actions/auth-actions";
-import { logger } from "@/lib/logger";
+import { FinalCTAButton } from "./FinalCTAButton";
 
 export function FinalCTASection() {
-  const [isCheckingSession, setIsCheckingSession] = useState(false);
-  const router = useRouter();
-
-  const handleStartBuilding = async () => {
-    try {
-      setIsCheckingSession(true);
-      const hasSession = await checkSession();
-
-      if (hasSession) {
-        router.push(`/builder/new`);
-      } else {
-        await handleGoogleSignIn();
-      }
-    } catch (error) {
-      logger.error("Error checking session:", error);
-      await handleGoogleSignIn();
-    } finally {
-      setIsCheckingSession(false);
-    }
-  };
   return (
     <section className="py-20 relative">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 text-center">
@@ -63,24 +36,7 @@ export function FinalCTASection() {
                   Join thousands of professionals who have landed their dream
                   jobs with AI-optimized resumes.
                 </p>
-                <Button
-                  onClick={handleStartBuilding}
-                  disabled={isCheckingSession}
-                  size="lg"
-                  className="bg-linear-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 font-semibold text-lg px-8 py-4 h-auto rounded-xl shadow-lg"
-                >
-                  {isCheckingSession ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                      Loading...
-                    </div>
-                  ) : (
-                    <>
-                      Start Building Now
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </>
-                  )}
-                </Button>
+                <FinalCTAButton />
               </div>
             </div>
           </div>

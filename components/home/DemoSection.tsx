@@ -1,7 +1,6 @@
 "use client";
 import { useRef } from "react";
 import { useScroll, useTransform, motion } from "framer-motion";
-// import SafariFrame from '@/components/ui/safari-frame';
 
 export function DemoSection() {
   const sectionRef = useRef(null);

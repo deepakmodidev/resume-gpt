@@ -29,24 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface ATSAnalysisResult {
-  scores: {
-    overall: number;
-    keyword: number;
-    format: number;
-    content: number;
-    semantic: number;
-  };
-  matchedKeywords: string[];
-  missingKeywords: string[];
-  criticalMissingKeywords: string[];
-  suggestions: string[];
-  industryFit: number;
-  readabilityScore: number;
-  semanticSimilarity: number;
-  keywordDensity: number;
-}
+import type { ATSAnalysisResult } from "@/lib/types";
 
 interface ATSScoreProps {
   resumeContent: string;

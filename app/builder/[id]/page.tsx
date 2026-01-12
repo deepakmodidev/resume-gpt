@@ -4,6 +4,25 @@ import db from "@/prisma/prisma";
 import { redirect } from "next/navigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
+// Cached function for fetching chat data
+async function getChatData(chatId: string, userId: string) {
+  "use cache";
+  
+  return await db.chat.findUnique({
+    where: {
+      id: chatId,
+      userId,
+    },
+    select: {
+      id: true,
+      title: true,
+      messages: true,
+      resumeData: true,
+      resumeTemplate: true,
+    },
+  });
+}
+
 export default async function page({
   params,
 }: {
@@ -20,20 +39,8 @@ export default async function page({
   // Handle "new" route - don't try to fetch from database
   let chat = null;
   if (id !== "new") {
-    // --- Fetch ONLY the specific chat data here ---
-    chat = await db.chat.findUnique({
-      where: {
-        id,
-        userId: session.user.id,
-      },
-      select: {
-        id: true,
-        title: true,
-        messages: true,
-        resumeData: true,
-        resumeTemplate: true,
-      },
-    });
+    // --- Fetch ONLY the specific chat data here using cached function ---
+    chat = await getChatData(id, session.user.id);
   }
 
   // Ensure we have a valid ID to pass to the Builder

@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
           });
         }
       } catch (dbError) {
-        console.warn("Database update failed:", dbError);
+        logger.warn("Database update failed:", dbError);
         // Continue without DB storage - don't fail the main analysis
       }
     }
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("ATS Analysis error:", error);
+    logger.error("ATS Analysis error:", error);
 
     // Return more specific error information
     const errorMessage =
@@ -238,7 +238,7 @@ export async function GET(req: NextRequest) {
       hasMore: analyses.length === limit,
     });
   } catch (error) {
-    console.error("Get ATS analyses error:", error);
+    logger.error("Get ATS analyses error:", error);
     return NextResponse.json(
       { error: "Failed to fetch analyses" },
       { status: 500 }

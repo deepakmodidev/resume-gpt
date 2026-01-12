@@ -111,8 +111,24 @@ export const CoverLetterGenerator = ({
   const parseResumeFromText = (text: string) => {
     const lines = text.split("\n").filter((line) => line.trim());
 
-    // Try to extract name (usually first non-empty line or before email)
-    const name = lines[0]?.trim() || "";
+    // Extract name - look for a short line (likely the name) before email
+    // Limit to first 100 chars to avoid validation errors
+    let name = "";
+    for (const line of lines.slice(0, 5)) {
+      // Check first 5 lines
+      const trimmedLine = line.trim();
+      // Name is typically short (2-4 words, < 50 chars) and doesn't contain common resume keywords
+      if (
+        trimmedLine.length < 50 &&
+        trimmedLine.length > 2 &&
+        !/EXPERIENCE|EDUCATION|SKILLS|SUMMARY|PROFILE|PROJECTS|CONTACT/i.test(
+          trimmedLine
+        )
+      ) {
+        name = trimmedLine;
+        break;
+      }
+    }
 
     // Extract email
     const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
@@ -154,10 +170,12 @@ export const CoverLetterGenerator = ({
     setIsGenerating(true);
 
     try {
-      // Use resumeContent if available, otherwise use resumeData
-      const dataToSend = resumeContent
-        ? { ...resumeData, rawContent: resumeContent }
-        : resumeData;
+      // Prepare data - ensure name is not too long for validation
+      const dataToSend = {
+        ...resumeData,
+        name: resumeData.name?.substring(0, 100) || "Applicant", // Truncate to 100 chars max
+        ...(resumeContent && { rawContent: resumeContent }),
+      };
 
       const data = await apiRequest<{ coverLetterData: any }>(
         API_ENDPOINTS.COVER_LETTER,

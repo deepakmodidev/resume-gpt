@@ -1,37 +1,9 @@
-"use client";
-
-import { useState } from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { ArrowRight, Target } from "lucide-react";
-import { checkSession } from "@/actions/session-actions";
-import { handleGoogleSignIn } from "@/actions/auth-actions";
 import { ResumePreview } from "./ResumePreview";
 import { DotPattern } from "@/components/ui/dot-pattern";
-import { logger } from "@/lib/logger";
+import { HeroButton } from "./HeroButton";
 
 export function HeroSection() {
-  const [isCheckingSession, setIsCheckingSession] = useState(false);
-  const router = useRouter();
-
-  const handleGetStarted = async () => {
-    try {
-      setIsCheckingSession(true);
-      const hasSession = await checkSession();
-
-      if (hasSession) {
-        router.push(`/builder/new`);
-      } else {
-        await handleGoogleSignIn();
-      }
-    } catch (error) {
-      logger.error("Error checking session:", error);
-      await handleGoogleSignIn();
-    } finally {
-      setIsCheckingSession(false);
-    }
-  };
   return (
     <section className="relative pb-20 pt-12 overflow-hidden min-h-screen flex items-center">
       {/* Dot Pattern Background */}
@@ -123,39 +95,7 @@ export function HeroSection() {
           </p>
 
           {/* Enhanced CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <Button
-              onClick={handleGetStarted}
-              disabled={isCheckingSession}
-              size="lg"
-              className="bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold text-base md:text-xl px-8 py-4 md:px-12 md:py-6 h-auto rounded-xl md:rounded-2xl shadow-2xl transition-all duration-300"
-            >
-              {isCheckingSession ? (
-                <div className="flex items-center gap-2 md:gap-3">
-                  <div className="w-4 h-4 md:w-5 md:h-5 border-2 md:border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span className="text-sm md:text-base">Loading...</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 md:gap-3">
-                  <span className="text-sm md:text-base">Build Resume</span>
-                  <ArrowRight className="h-4 w-4 md:h-6 md:w-6" />
-                </div>
-              )}
-            </Button>
-
-            <Button
-              onClick={() => router.push("/ats-analyzer")}
-              variant="outline"
-              size="lg"
-              className="border-2 border-blue-500/30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm hover:bg-blue-50/80 dark:hover:bg-slate-800/80 font-bold text-base md:text-xl px-8 py-4 md:px-12 md:py-6 h-auto rounded-xl md:rounded-2xl shadow-lg transition-all duration-300"
-            >
-              <div className="flex items-center gap-2 md:gap-3">
-                <span className="text-sm md:text-base text-blue-600 dark:text-blue-400">
-                  Analyze ATS Score
-                </span>
-              </div>
-            </Button>
-          </div>
+          <HeroButton />
 
           {/* Enhanced Trust indicators */}
           <div className="space-y-4 pt-4">

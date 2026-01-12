@@ -1,5 +1,6 @@
 "use client";
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   NotepadTextDashed,
@@ -10,6 +11,11 @@ import {
 } from "lucide-react";
 
 export function Footer() {
+  const [currentYear, setCurrentYear] = useState(2024);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
   return (
     <section className="relative max-h-fit mt-0">
       <footer className="border-t max-h-fit overflow-hidden bg-background mt-20 z-101 relative">
@@ -96,7 +102,7 @@ export function Footer() {
 
           <div className="mt-20 md:mt-24 z-25 flex flex-col gap-1 items-center justify-center md:flex-row md:items-center md:justify-between">
             <p className="text-base text-muted-foreground">
-              ©{new Date().getFullYear()} ResumeGPT. All rights reserved.
+              ©{currentYear} ResumeGPT. All rights reserved.
             </p>
             <nav className="flex gap-4">
               <Link

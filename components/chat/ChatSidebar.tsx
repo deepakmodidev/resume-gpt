@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import { apiRequest, APIError } from "@/lib/api-client";
@@ -43,7 +43,6 @@ import { cn } from "@/lib/utils";
 
 interface ChatSidebarProps {
   session: Session;
-  onNewChat: () => void;
   currentChatId?: string;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -106,7 +105,6 @@ const truncateText = (text: string, maxLength: number) => {
 const ChatListItem = ({
   chat,
   isActive,
-  onSelect,
   onEdit,
   onDelete,
   isEditing,
@@ -117,7 +115,6 @@ const ChatListItem = ({
 }: {
   chat: Chat;
   isActive: boolean;
-  onSelect: (id: string) => void;
   onEdit: (chat: Chat) => void;
   onDelete: (id: string) => void;
   isEditing: boolean;
@@ -134,16 +131,8 @@ const ChatListItem = ({
     }
   }, [isEditing]);
 
-  return (
-    <div
-      className={cn(
-        "flex items-center p-2 rounded-lg cursor-pointer group transition-colors",
-        isActive
-          ? "bg-primary/10 text-primary border border-primary/20"
-          : "hover:bg-muted/50"
-      )}
-      onClick={() => !isEditing && onSelect(chat.id)}
-    >
+  const content = (
+    <>
       <MessageSquare className="h-4 w-4 text-muted-foreground shrink-0 mr-2" />
 
       <div className="flex-1 min-w-0">
@@ -201,9 +190,11 @@ const ChatListItem = ({
               <Edit2 className="h-4 w-4 mr-2" />
               Rename
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onSelect(chat.id)}>
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Open
+            <DropdownMenuItem asChild>
+              <Link href={`/builder/${chat.id}`}>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
@@ -218,19 +209,46 @@ const ChatListItem = ({
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-    </div>
+    </>
+  );
+
+  if (isEditing) {
+    return (
+      <div
+        className={cn(
+          "flex items-center p-2 rounded-lg group transition-colors",
+          isActive
+            ? "bg-primary/10 text-primary border border-primary/20"
+            : "hover:bg-muted/50"
+        )}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={`/builder/${chat.id}`}
+      className={cn(
+        "flex items-center p-2 rounded-lg cursor-pointer group transition-colors",
+        isActive
+          ? "bg-primary/10 text-primary border border-primary/20"
+          : "hover:bg-muted/50"
+      )}
+    >
+      {content}
+    </Link>
   );
 };
 
 const SidebarContent = ({
   session,
-  onNewChat,
   currentChatId,
   isCollapsed = false,
   onToggleCollapse,
 }: {
   session: Session;
-  onNewChat: () => void;
   currentChatId?: string;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -242,7 +260,6 @@ const SidebarContent = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [hasUserApiKey, setHasUserApiKey] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     fetchChats();
@@ -368,10 +385,6 @@ const SidebarContent = ({
     }
   };
 
-  const handleChatSelect = (chatId: string) => {
-    router.push(`/builder/${chatId}`);
-  };
-
   const filteredChats = searchQuery
     ? chats.filter((chat) =>
       chat.title?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -422,7 +435,7 @@ const SidebarContent = ({
         </div>
 
         <Button
-          onClick={onNewChat}
+          asChild
           className={cn(
             "justify-start bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-xs hover:shadow-md transition-all duration-300 ease-in-out",
             isCollapsed ? "w-auto px-2" : "w-full"
@@ -430,15 +443,17 @@ const SidebarContent = ({
           size="sm"
           title={isCollapsed ? "New Chat" : undefined}
         >
-          <Plus className="h-4 w-4 shrink-0" />
-          <span
-            className={cn(
-              "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2"
-            )}
-          >
-            New Chat
-          </span>
+          <Link href="/builder/new" className="flex items-center">
+            <Plus className="h-4 w-4 shrink-0" />
+            <span
+              className={cn(
+                "transition-all duration-300 ease-in-out overflow-hidden",
+                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2"
+              )}
+            >
+              New Chat
+            </span>
+          </Link>
         </Button>
       </div>
 
@@ -470,16 +485,18 @@ const SidebarContent = ({
             {chats.slice(0, 10).map((chat) => (
               <Button
                 key={chat.id}
+                asChild
                 variant="ghost"
                 size="icon"
                 className={cn(
                   "w-full h-10 p-0",
                   currentChatId === chat.id && "bg-primary/10 text-primary"
                 )}
-                onClick={() => handleChatSelect(chat.id)}
                 title={chat.title}
               >
-                <MessageSquare className="h-4 w-4" />
+                <Link href={`/builder/${chat.id}`}>
+                  <MessageSquare className="h-4 w-4" />
+                </Link>
               </Button>
             ))}
           </div>
@@ -517,7 +534,6 @@ const SidebarContent = ({
                         key={chat.id}
                         chat={chat}
                         isActive={currentChatId === chat.id}
-                        onSelect={handleChatSelect}
                         onEdit={startEditing}
                         onDelete={handleChatDelete}
                         isEditing={editingChatId === chat.id}
@@ -540,7 +556,6 @@ const SidebarContent = ({
                         key={chat.id}
                         chat={chat}
                         isActive={currentChatId === chat.id}
-                        onSelect={handleChatSelect}
                         onEdit={startEditing}
                         onDelete={handleChatDelete}
                         isEditing={editingChatId === chat.id}
@@ -563,7 +578,6 @@ const SidebarContent = ({
                         key={chat.id}
                         chat={chat}
                         isActive={currentChatId === chat.id}
-                        onSelect={handleChatSelect}
                         onEdit={startEditing}
                         onDelete={handleChatDelete}
                         isEditing={editingChatId === chat.id}
@@ -706,7 +720,6 @@ const SidebarContent = ({
 
 export const ChatSidebar = ({
   session,
-  onNewChat,
   currentChatId,
   isCollapsed = false,
   onToggleCollapse,
@@ -738,7 +751,6 @@ export const ChatSidebar = ({
               <SheetContent side="left" className="p-0 w-64">
                 <SidebarContent
                   session={session}
-                  onNewChat={onNewChat}
                   currentChatId={currentChatId}
                   isCollapsed={false}
                   onToggleCollapse={undefined}
@@ -776,7 +788,6 @@ export const ChatSidebar = ({
       >
         <SidebarContent
           session={session}
-          onNewChat={onNewChat}
           currentChatId={currentChatId}
           isCollapsed={isCollapsed}
           onToggleCollapse={onToggleCollapse}

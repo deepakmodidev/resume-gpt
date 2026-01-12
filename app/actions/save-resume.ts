@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import db from "@/prisma/prisma";
 import { ResumeData } from "@/lib/types";
+import { logger } from "@/lib/logger";
 
 export async function saveResume(chatId: string, resumeData: ResumeData) {
   const session = await auth();
@@ -44,7 +45,7 @@ export async function saveResume(chatId: string, resumeData: ResumeData) {
     
     return { success: true };
   } catch (error) {
-    console.error("Failed to save resume:", error);
+    logger.error("Failed to save resume:", error);
     return { error: "Failed to save" };
   }
 }

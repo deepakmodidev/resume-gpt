@@ -22,24 +22,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-
-interface ATSAnalysisResult {
-  scores: {
-    overall: number;
-    keyword: number;
-    format: number;
-    content: number;
-    semantic: number;
-  };
-  matchedKeywords: string[];
-  missingKeywords: string[];
-  criticalMissingKeywords: string[];
-  suggestions: string[];
-  industryFit: number;
-  readabilityScore: number;
-  semanticSimilarity: number;
-  keywordDensity: number;
-}
+import type { ATSAnalysisResult } from "@/lib/types";
 
 interface ATSResultsProps {
   analysis: ATSAnalysisResult;

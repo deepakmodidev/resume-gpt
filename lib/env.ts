@@ -7,8 +7,13 @@ import { z } from "zod";
  */
 
 const envSchema = z.object({
-  // Required
+  // Required - Database
   DATABASE_URL: z.string().url("Invalid DATABASE_URL format"),
+  DIRECT_URL: z.string().url("Invalid DIRECT_URL format").optional(),
+  
+  // Required - Authentication
+  GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID is required"),
+  GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_SECRET is required"),
   NEXTAUTH_SECRET: z
     .string()
     .min(32, "NEXTAUTH_SECRET must be at least 32 characters"),

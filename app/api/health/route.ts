@@ -3,8 +3,6 @@ import db from "@/prisma/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { env } from "@/lib/env";
 
-export const dynamic = "force-dynamic";
-
 // Types
 interface HealthStatus {
   status: "ok" | "error";

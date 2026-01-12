@@ -1,58 +1,17 @@
 import { NextResponse } from "next/server";
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
-import { auth } from "@/lib/auth";
+import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 import { validateRequest, PDFRequestSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
-import { env } from "@/lib/env";
+import { generatePDF } from "@/lib/pdf-service";
 
-const React = require("react");
-const ReactDOMServer = require("react-dom/server");
-const { createElement } = React;
 const { ResumeContent } = require("@/components/resume/ResumeContent");
 
-// Use @sparticuz/chromium to manage the Chromium executable path and version for serverless environments.
-
-// Function to get the appropriate browser instance for both local and Vercel
-async function getBrowser() {
-  const isServerless =
-    !!process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL;
-  if (isServerless) {
-    // Serverless (e.g., Vercel): use @sparticuz/chromium and puppeteer-core
-    const executablePath = await chromium.executablePath();
-    return puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: { width: 794, height: 1123 }, // A4 size in px at 96dpi
-      executablePath,
-      headless: true,
-    });
-  } else {
-    // Local development: use Puppeteer's default Chromium
-    try {
-      const localPuppeteer = require("puppeteer");
-      return localPuppeteer.launch({
-        headless: true,
-      });
-    } catch {
-      logger.error(
-        "Local puppeteer not found. Install with: npm install --save-dev puppeteer"
-      );
-      throw new Error(
-        "Puppeteer not found for local development. Please install puppeteer as a dev dependency."
-      );
-    }
-  }
-}
-
-// POST handler for the API route
 export async function POST(request: Request) {
-  let browser = null; // Ensure browser can be closed in finally block
-
   try {
     // Authentication required for PDF generation
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
     }
 
     const rawData = await request.json();
@@ -67,49 +26,18 @@ export async function POST(request: Request) {
 
     const { data, template } = validation.data;
 
-    // Render the resume React component to an HTML string
-    const resumeHtml = ReactDOMServer.renderToString(
-      createElement(ResumeContent, { data, isEditable: false, template })
-    );
-
-    // Launch browser and open a new page
-    browser = await getBrowser();
-    const page = await browser.newPage();
-
-    // Set the HTML content for the page. Uses CDN Tailwind for styling.
-    // If styles are missing in the PDF, consider inlining critical CSS.
-    await page.setContent(
-      `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Resume</title>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-          <style>
-             body { margin: 0; }
-          </style>
-        </head>
-        <body>${resumeHtml}</body>
-      </html>
-    `,
+    // Generate PDF using shared service
+    const pdfData = await generatePDF(
+      ResumeContent,
+      { data, isEditable: false, template },
       {
-        // Wait for DOM and network to be mostly idle for reliable rendering
-        waitUntil: ["domcontentloaded", "networkidle2"],
-        timeout: 60000,
+        title: "Resume",
+        filename: "resume.pdf",
       }
     );
 
-    // Generate the PDF from the rendered page
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true, // Ensures backgrounds and images are included
-      // margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
-      // To add headers/footers, use displayHeaderFooter and headerTemplate/footerTemplate
-    });
-
-    // Close the browser instance after PDF generation
-    await browser.close();
+    // Convert Uint8Array to Buffer for NextResponse compatibility
+    const pdfBuffer = Buffer.from(pdfData);
 
     // Return the PDF as a downloadable response
     return new NextResponse(pdfBuffer, {
@@ -119,24 +47,13 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    // Log and return error details for debugging
-    console.error("PDF Generation Error:", error);
+    logger.error("PDF Generation Error:", error);
     return NextResponse.json(
-      { error: "PDF generation failed", details: error.message },
+      {
+        error: "PDF generation failed",
+        details: (error as Error).message,
+      },
       { status: 500 }
     );
-  } finally {
-    // Always close the browser if it was opened, even on error
-    if (browser !== null) {
-      try {
-        await browser.close();
-      } catch (closeError) {
-        console.error("Error closing browser:", closeError);
-      }
-    }
   }
 }
-
-// Mark the route as dynamic and specify Node.js runtime for serverless compatibility
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";

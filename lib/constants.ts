@@ -10,9 +10,9 @@ export const API_ENDPOINTS = {
   COVER_LETTER_PDF: "/api/generate-cover-letter-pdf",
   PDF: "/api/generate-pdf",
   INTERVIEW: "/api/interview/chat",
-  TTS: "/api/tts",
   VALIDATE_KEY: "/api/validate-gemini-key",
   HEALTH: "/api/health",
+  TTS: "/api/tts",
   PARSE_RESUME: "/actions/parse-resume",
 } as const;
 
@@ -30,12 +30,35 @@ export const AI_MODELS = {
   GEMINI_FLASH: "gemini-3-flash-preview",
 } as const;
 
+export const AI_GENERATION_CONFIGS = {
+  RESUME_CHAT: {
+    temperature: 0.6,
+    topP: 0.9,
+    maxOutputTokens: 2048,
+    responseMimeType: "application/json",
+  },
+  COVER_LETTER: {
+    temperature: 0.7,
+    topP: 0.9,
+    maxOutputTokens: 2048,
+  },
+  INTERVIEW: {
+    temperature: 0.7,
+    topP: 0.8,
+    maxOutputTokens: 150, // Very short responses for faster speech
+  },
+} as const;
+
 export const LIMITS = {
   MAX_RESUME_SIZE: 100000, // 100KB
   MAX_MESSAGE_LENGTH: 10000, // 10K characters
   MAX_HISTORY_LENGTH: 100, // 100 messages
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
   MAX_JOB_DESCRIPTION_LENGTH: 50000, // 50K characters
+} as const;
+
+export const SESSION_CONFIG = {
+  MAX_AGE: 30 * 24 * 60 * 60, // 30 days in seconds
 } as const;
 
 export const STORAGE_KEYS = {

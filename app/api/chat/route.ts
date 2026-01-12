@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { auth } from "@/lib/auth";
+import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 import db from "@/prisma/prisma";
 import { validateRequest, ChatRequestSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
-import { AI_MODELS } from "@/lib/constants";
+import { AI_MODELS, AI_GENERATION_CONFIGS } from "@/lib/constants";
 import { env } from "@/lib/env";
 
-import { SYSTEM_INSTRUCTION } from "@/lib/prompts";
+import { RESUME_BUILDER_PROMPT } from "@/lib/prompts";
 import { deepMerge } from "@/lib/utils";
 
 // Types
@@ -15,13 +15,6 @@ interface ParsedResponse {
   acknowledgement: string;
   updatedSection: Record<string, unknown>;
 }
-
-const GENERATION_CONFIG = {
-  temperature: 0.6,
-  topP: 0.9,
-  maxOutputTokens: 2048,
-  responseMimeType: "application/json",
-};
 
 const parseResponse = (text: string): ParsedResponse => {
   const cleanAndParse = (input: string) => {
@@ -146,10 +139,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing message" }, { status: 400 });
     }
 
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
     }
+    const { userId } = authResult;
 
     const apiKey = userApiKey || process.env.GEMINI_KEY;
     if (!apiKey) {
@@ -162,10 +156,10 @@ export async function POST(req: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: AI_MODELS.GEMINI_FLASH,
-      systemInstruction: `${SYSTEM_INSTRUCTION}\n\nCURRENT RESUME DATA:\n${JSON.stringify(resumeData)}`,
+      systemInstruction: `${RESUME_BUILDER_PROMPT}\n\nCURRENT RESUME DATA:\n${JSON.stringify(resumeData)}`,
     });
     const chat = model.startChat({
-      generationConfig: GENERATION_CONFIG,
+      generationConfig: AI_GENERATION_CONFIGS.RESUME_CHAT,
       history,
     });
     const result = await chat.sendMessage(message);
@@ -182,7 +176,7 @@ export async function POST(req: NextRequest) {
 
     await upsertChat(
       chatId,
-      session.user.id,
+      userId,
       message,
       userMsg,
       modelMsg,
@@ -194,17 +188,25 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// Cached function for fetching user chats
+async function getUserChats(userId: string) {
+  "use cache";
+  
+  return await db.chat.findMany({
+    where: { userId },
+    select: { id: true, title: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user?.id)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
 
-    const chats = await db.chat.findMany({
-      where: { userId: session.user.id },
-      select: { id: true, title: true },
-      orderBy: { createdAt: "desc" },
-    });
+    const chats = await getUserChats(authResult.userId);
 
     return NextResponse.json({ chats });
   } catch (error) {
@@ -214,16 +216,17 @@ export async function GET() {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
 
     const { chatId } = await req.json();
     if (!chatId)
       return NextResponse.json({ error: "Chat ID required" }, { status: 400 });
 
     const deleted = await db.chat.deleteMany({
-      where: { id: chatId, userId: session.user.id },
+      where: { id: chatId, userId: authResult.userId },
     });
     if (!deleted.count)
       return NextResponse.json({ error: "Chat not found" }, { status: 404 });
@@ -236,9 +239,10 @@ export async function DELETE(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
 
     const { chatId, newName } = await req.json();
     if (!chatId || !newName)
@@ -248,7 +252,7 @@ export async function PUT(req: NextRequest) {
       );
 
     const updated = await db.chat.updateMany({
-      where: { id: chatId, userId: session.user.id },
+      where: { id: chatId, userId: authResult.userId },
       data: { title: newName },
     });
 

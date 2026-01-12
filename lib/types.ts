@@ -82,3 +82,22 @@ export type CoverLetterGenerationInput = {
   recipientName?: string;
   tone?: "professional" | "friendly" | "enthusiastic";
 };
+
+// ATS Analysis Types
+export interface ATSAnalysisResult {
+  scores: {
+    overall: number;
+    keyword: number;
+    format: number;
+    content: number;
+    semantic: number;
+  };
+  matchedKeywords: string[];
+  missingKeywords: string[];
+  criticalMissingKeywords: string[];
+  suggestions: string[];
+  industryFit: number;
+  readabilityScore: number;
+  semanticSimilarity: number;
+  keywordDensity: number;
+}

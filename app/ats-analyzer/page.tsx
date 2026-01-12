@@ -29,24 +29,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logger } from "@/lib/logger";
 import { apiRequest } from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/lib/constants";
-
-interface ATSAnalysisResult {
-  scores: {
-    overall: number;
-    keyword: number;
-    format: number;
-    content: number;
-    semantic: number;
-  };
-  matchedKeywords: string[];
-  missingKeywords: string[];
-  criticalMissingKeywords: string[];
-  suggestions: string[];
-  industryFit: number;
-  readabilityScore: number;
-  semanticSimilarity: number;
-  keywordDensity: number;
-}
+import type { ATSAnalysisResult } from "@/lib/types";
 
 export default function ATSAnalysisPage() {
   const [resumeContent, setResumeContent] = useState("");
