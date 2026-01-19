@@ -62,7 +62,14 @@ export const ChatRequestSchema = z.object({
         website: z.string().max(200).optional().default(""),
       })
       .optional()
-      .default({}),
+      .default({
+        email: "",
+        phone: "",
+        location: "",
+        linkedin: "",
+        github: "",
+        website: "",
+      }),
     summary: z.string().max(2000).optional().default(""),
     experience: z.array(ExperienceSchema).optional().default([]),
     education: z.array(EducationSchema).optional().default([]),
@@ -99,7 +106,14 @@ export const PDFRequestSchema = z.object({
         website: z.string().max(200).optional().default(""),
       })
       .optional()
-      .default({}),
+      .default({
+        email: "",
+        phone: "",
+        location: "",
+        linkedin: "",
+        github: "",
+        website: "",
+      }),
     summary: z.string().max(2000).optional().default(""),
     experience: z.array(ExperienceSchema).optional().default([]),
     education: z.array(EducationSchema).optional().default([]),
