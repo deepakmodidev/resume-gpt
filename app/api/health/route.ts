@@ -22,7 +22,7 @@ interface HealthCheck {
 
 const createHealthStatus = (
   status: "ok" | "error",
-  message?: string
+  message?: string,
 ): HealthStatus => ({
   status,
   ...(message && { message }),

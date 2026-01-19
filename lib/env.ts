@@ -10,7 +10,7 @@ const envSchema = z.object({
   // Required - Database
   DATABASE_URL: z.string().url("Invalid DATABASE_URL format"),
   DIRECT_URL: z.string().url("Invalid DIRECT_URL format").optional(),
-  
+
   // Required - Authentication
   GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID is required"),
   GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_SECRET is required"),

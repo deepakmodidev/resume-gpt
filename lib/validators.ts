@@ -44,9 +44,9 @@ export const ChatRequestSchema = z.object({
         parts: z.array(
           z.object({
             text: z.string().min(1).max(10000),
-          })
+          }),
         ),
-      })
+      }),
     )
     .max(100),
   resumeData: z.object({
@@ -121,7 +121,10 @@ export const PDFRequestSchema = z.object({
     projects: z.array(ProjectSchema).optional().default([]),
     certifications: z.array(CertificationSchema).optional().default([]),
   }),
-  template: z.enum(["classic", "modern", "minimal"]).optional().default("classic"),
+  template: z
+    .enum(["classic", "modern", "minimal"])
+    .optional()
+    .default("classic"),
 });
 
 // Cover Letter validation - flexible for various input formats
@@ -145,7 +148,7 @@ export const InterviewChatRequestSchema = z.object({
       z.object({
         role: z.enum(["user", "model"]),
         content: z.string().min(1).max(10000),
-      })
+      }),
     )
     .min(1)
     .max(100),
@@ -185,7 +188,7 @@ export type ValidationResult<T> = ValidationSuccess<T> | ValidationError;
  */
 export function validateRequest<T>(
   schema: z.ZodSchema<T>,
-  data: unknown
+  data: unknown,
 ): ValidationResult<T> {
   try {
     const validated = schema.parse(data);

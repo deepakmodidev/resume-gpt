@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
           error:
             "No Cartesia API key available. Please add your own key in settings.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       logger.error("Cartesia API error:", errorText);
       return NextResponse.json(
         { error: `TTS failed: ${response.status}` },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     logger.error("TTS proxy error:", error);
     return NextResponse.json(
       { error: "TTS generation failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

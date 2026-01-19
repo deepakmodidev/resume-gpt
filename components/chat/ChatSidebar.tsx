@@ -78,7 +78,7 @@ const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffDays = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   if (diffDays === 0) {
@@ -219,7 +219,7 @@ const ChatListItem = ({
           "flex items-center p-2 rounded-lg group transition-colors",
           isActive
             ? "bg-primary/10 text-primary border border-primary/20"
-            : "hover:bg-muted/50"
+            : "hover:bg-muted/50",
         )}
       >
         {content}
@@ -234,7 +234,7 @@ const ChatListItem = ({
         "flex items-center p-2 rounded-lg cursor-pointer group transition-colors",
         isActive
           ? "bg-primary/10 text-primary border border-primary/20"
-          : "hover:bg-muted/50"
+          : "hover:bg-muted/50",
       )}
     >
       {content}
@@ -270,7 +270,7 @@ const SidebarContent = ({
   useEffect(() => {
     if (currentChatId) {
       // Check if this chat exists in our list, if not, refresh
-      const chatExists = chats.some(chat => chat.id === currentChatId);
+      const chatExists = chats.some((chat) => chat.id === currentChatId);
       if (!chatExists) {
         fetchChats();
       }
@@ -347,8 +347,10 @@ const SidebarContent = ({
 
       setChats((prevChats) =>
         prevChats.map((chat) =>
-          chat.id === editingChatId ? { ...chat, title: editValue.trim() } : chat
-        )
+          chat.id === editingChatId
+            ? { ...chat, title: editValue.trim() }
+            : chat,
+        ),
       );
 
       toast.success("Chat name updated successfully");
@@ -387,8 +389,8 @@ const SidebarContent = ({
 
   const filteredChats = searchQuery
     ? chats.filter((chat) =>
-      chat.title?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+        chat.title?.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
     : chats;
 
   const groupedChats = groupChatsByTimeframe(filteredChats);
@@ -401,7 +403,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
             )}
           >
             <div className="flex items-center gap-2">
@@ -438,7 +440,7 @@ const SidebarContent = ({
           asChild
           className={cn(
             "justify-start bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-xs hover:shadow-md transition-all duration-300 ease-in-out",
-            isCollapsed ? "w-auto px-2" : "w-full"
+            isCollapsed ? "w-auto px-2" : "w-full",
           )}
           size="sm"
           title={isCollapsed ? "New Chat" : undefined}
@@ -448,7 +450,7 @@ const SidebarContent = ({
             <span
               className={cn(
                 "transition-all duration-300 ease-in-out overflow-hidden",
-                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2"
+                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2",
               )}
             >
               New Chat
@@ -461,7 +463,7 @@ const SidebarContent = ({
       <div
         className={cn(
           "border-b transition-all duration-300 ease-in-out overflow-hidden",
-          isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100"
+          isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
         )}
       >
         <div className="p-4">
@@ -490,7 +492,7 @@ const SidebarContent = ({
                 size="icon"
                 className={cn(
                   "w-full h-10 p-0",
-                  currentChatId === chat.id && "bg-primary/10 text-primary"
+                  currentChatId === chat.id && "bg-primary/10 text-primary",
                 )}
                 title={chat.title}
               >
@@ -601,7 +603,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100"
+              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
             )}
           >
             <Button
@@ -626,7 +628,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100"
+              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
             )}
           >
             <div className="shrink-0 bg-border h-px w-full" />
@@ -635,7 +637,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "flex items-center p-2 transition-all duration-300 ease-in-out",
-              isCollapsed ? "justify-center" : "justify-between w-full"
+              isCollapsed ? "justify-center" : "justify-between w-full",
             )}
           >
             <div className="flex items-center">
@@ -651,7 +653,7 @@ const SidebarContent = ({
               <div
                 className={cn(
                   "flex flex-col items-start text-left transition-all duration-300 ease-in-out overflow-hidden",
-                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                  isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
                 )}
               >
                 <p className="ml-2 text-sm font-medium whitespace-nowrap">
@@ -666,7 +668,7 @@ const SidebarContent = ({
             <div
               className={cn(
                 "transition-all duration-300 ease-in-out overflow-hidden",
-                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
               )}
             >
               <Button
@@ -684,7 +686,7 @@ const SidebarContent = ({
           <div
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100"
+              isCollapsed ? "h-0 opacity-0" : "h-auto opacity-100",
             )}
           >
             <div className="shrink-0 bg-border h-px w-full" />
@@ -693,14 +695,14 @@ const SidebarContent = ({
           <div
             className={cn(
               "flex items-center transition-all duration-300 ease-in-out",
-              isCollapsed ? "justify-center" : "justify-start"
+              isCollapsed ? "justify-center" : "justify-start",
             )}
           >
             <ThemeToggle />
             <span
               className={cn(
                 "text-sm text-muted-foreground transition-all duration-300 ease-in-out overflow-hidden",
-                isCollapsed ? "w-0 opacity-0" : "ml-2 w-auto opacity-100"
+                isCollapsed ? "w-0 opacity-0" : "ml-2 w-auto opacity-100",
               )}
             >
               Theme
@@ -777,13 +779,13 @@ export const ChatSidebar = ({
     <div
       className={cn(
         "hidden md:flex h-full border-r bg-card transition-all duration-300 ease-in-out overflow-hidden",
-        isCollapsed ? "w-16" : "w-64"
+        isCollapsed ? "w-16" : "w-64",
       )}
     >
       <div
         className={cn(
           "transition-all duration-300 ease-in-out",
-          isCollapsed ? "w-16" : "w-64"
+          isCollapsed ? "w-16" : "w-64",
         )}
       >
         <SidebarContent

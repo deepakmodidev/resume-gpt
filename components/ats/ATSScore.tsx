@@ -70,14 +70,15 @@ export function ATSScore({
             industry,
             resumeId,
           }),
-        }
+        },
       );
 
       setResult(data.analysis);
       setShowFullAnalysis(true);
       toast.success(`ATS Score: ${data.analysis.scores.overall}%`);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to analyze";
+      const message =
+        error instanceof Error ? error.message : "Failed to analyze";
       logger.error("ATS analysis error", error as Error);
       toast.error(message);
     } finally {

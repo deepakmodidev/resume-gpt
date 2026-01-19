@@ -39,7 +39,7 @@ export const useSpeech = ({
       if (!SpeechRecognition) {
         setIsSupported(false);
         setError(
-          "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari."
+          "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.",
         );
         return;
       }
@@ -153,7 +153,7 @@ export const useSpeech = ({
             const loadedVoices = synthRef.current?.getVoices();
             logger.debug(
               "Voices changed event - loaded:",
-              loadedVoices?.length
+              loadedVoices?.length,
             );
           };
         }
@@ -218,11 +218,11 @@ export const useSpeech = ({
         logger.error("Speech start error:", e);
         if (err.name === "NotAllowedError") {
           setError(
-            "Microphone permission denied. Please enable microphone access in your browser settings."
+            "Microphone permission denied. Please enable microphone access in your browser settings.",
           );
         } else if (err.name === "NotFoundError") {
           setError(
-            "No microphone found. Please connect a microphone and try again."
+            "No microphone found. Please connect a microphone and try again.",
           );
         } else if (err.message && err.message.includes("already started")) {
           logger.debug("⚠️ Recognition already running");
@@ -331,11 +331,11 @@ export const useSpeech = ({
           e.error !== "interrupted"
         ) {
           setError(
-            `Speech error: ${e.error || "unknown"}. Please check your audio settings.`
+            `Speech error: ${e.error || "unknown"}. Please check your audio settings.`,
           );
         } else if (!hasStarted) {
           logger.warn(
-            "⚠️ Error fired but no details - might be Chrome bug, continuing..."
+            "⚠️ Error fired but no details - might be Chrome bug, continuing...",
           );
         }
 
@@ -349,14 +349,14 @@ export const useSpeech = ({
           (v.lang.startsWith("en") && v.name.includes("Google")) ||
           v.name.includes("Samantha") ||
           (v.lang.startsWith("en") && v.name.includes("Microsoft")) ||
-          v.lang === "en-US"
+          v.lang === "en-US",
       );
 
       if (preferredVoice) {
         logger.debug(
           "✅ Using voice:",
           preferredVoice.name,
-          `(${preferredVoice.lang})`
+          `(${preferredVoice.lang})`,
         );
         utterance.voice = preferredVoice;
       } else {

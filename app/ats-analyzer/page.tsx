@@ -40,7 +40,7 @@ export default function ATSAnalysisPage() {
     useState<ATSAnalysisResult | null>(null);
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -84,7 +84,7 @@ export default function ATSAnalysisPage() {
             resumeContent,
             jobDescription,
           }),
-        }
+        },
       );
 
       setAnalysisResult(data.analysis);

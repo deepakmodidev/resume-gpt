@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Disable static generation for auth-protected routes
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Fetch chat data
 async function getChatData(chatId: string, userId: string) {

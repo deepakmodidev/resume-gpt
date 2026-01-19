@@ -27,7 +27,7 @@ export async function requireAuth() {
  * Type guard to check if auth result is authorized
  */
 export function isAuthorized(
-  result: Awaited<ReturnType<typeof requireAuth>>
+  result: Awaited<ReturnType<typeof requireAuth>>,
 ): result is { authorized: true; session: Session; userId: string } {
   return result.authorized;
 }

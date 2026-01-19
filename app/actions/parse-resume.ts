@@ -5,7 +5,7 @@ import mammoth from "mammoth";
 import { logger } from "@/lib/logger";
 
 export async function parseResume(
-  formData: FormData
+  formData: FormData,
 ): Promise<{ text: string; error?: string }> {
   try {
     const file = formData.get("file") as File;

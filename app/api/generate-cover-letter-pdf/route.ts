@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     if (!rawData.data) {
       return NextResponse.json(
         { error: "Cover letter data is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         title: "Cover Letter",
         filename: "cover-letter.pdf",
         customStyles,
-      }
+      },
     );
 
     // Convert Uint8Array to Buffer for NextResponse compatibility
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
         error: "PDF generation failed",
         details: (error as Error).message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

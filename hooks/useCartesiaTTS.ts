@@ -31,7 +31,7 @@ export const useCartesiaTTS = ({
       try {
         // Get user's API key from localStorage (optional - for BYOK)
         userApiKeyRef.current = localStorage.getItem(
-          STORAGE_KEYS.CARTESIA_API_KEY
+          STORAGE_KEYS.CARTESIA_API_KEY,
         );
 
         // Initialize Web Audio API
@@ -96,7 +96,7 @@ export const useCartesiaTTS = ({
       try {
         logger.debug(
           "🗣️ Speaking via server proxy:",
-          text.substring(0, 80) + "..."
+          text.substring(0, 80) + "...",
         );
         setIsSpeaking(true);
         setError(null);
@@ -133,7 +133,7 @@ export const useCartesiaTTS = ({
         const audioBuffer = audioContextRef.current.createBuffer(
           1, // mono
           audioData.length,
-          44100
+          44100,
         );
         audioBuffer.getChannelData(0).set(audioData);
 
@@ -160,7 +160,7 @@ export const useCartesiaTTS = ({
         callback?.();
       }
     },
-    [isInitialized, onStart, onEnd, onError, playNextInQueue]
+    [isInitialized, onStart, onEnd, onError, playNextInQueue],
   );
 
   // Stop speaking

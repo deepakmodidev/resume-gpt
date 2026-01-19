@@ -41,13 +41,13 @@ export async function POST(req: NextRequest) {
     // Perform ATS analysis
     const analysis = await analyzer.analyzeResumeVsJob(
       resumeContent,
-      jobDescription
+      jobDescription,
     );
 
     // Get keyword placement suggestions
     const keywordSuggestions = analyzer.getKeywordSuggestions(
       resumeContent,
-      analysis.missingKeywords.slice(0, 10) // Top 10 missing keywords
+      analysis.missingKeywords.slice(0, 10), // Top 10 missing keywords
     );
 
     // Store analysis results in database if resumeId is provided and user is authenticated
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
             missingKeywords: analysis.missingKeywords,
             suggestions: analysis.suggestions,
             analyzedAt: new Date().toISOString(),
-          })
+          }),
         );
 
         if (existingChat) {
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
         details: errorMessage,
         timestamp: new Date().toISOString(),
       },
-      { status: statusCode }
+      { status: statusCode },
     );
   }
 }
@@ -241,7 +241,7 @@ export async function GET(req: NextRequest) {
     logger.error("Get ATS analyses error:", error);
     return NextResponse.json(
       { error: "Failed to fetch analyses" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

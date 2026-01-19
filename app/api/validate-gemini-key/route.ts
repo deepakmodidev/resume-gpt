@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     if (!apiKey.startsWith("AIza")) {
       return NextResponse.json(
         { error: "Invalid API key format" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -39,4 +39,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
   }
 }
-

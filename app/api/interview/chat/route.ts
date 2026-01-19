@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not available" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -117,7 +117,7 @@ ${currentMessage}
           for await (const chunk of result.stream) {
             const text = chunk.text();
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ text })}\n\n`)
+              encoder.encode(`data: ${JSON.stringify({ text })}\n\n`),
             );
           }
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));

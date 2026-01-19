@@ -40,11 +40,11 @@ export function Header() {
 
   // Auto-trigger sign-in if redirected from protected route
   useEffect(() => {
-    if (typeof window !== 'undefined' && status === 'unauthenticated') {
+    if (typeof window !== "undefined" && status === "unauthenticated") {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('signin') === 'true' && !isSigningIn) {
+      if (params.get("signin") === "true" && !isSigningIn) {
         // Remove the signin param from URL
-        window.history.replaceState({}, '', '/');
+        window.history.replaceState({}, "", "/");
         // Trigger sign-in with client-side redirect
         setIsSigningIn(true);
         signIn("google", { callbackUrl: "/builder/new" });
@@ -52,7 +52,6 @@ export function Header() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, isSigningIn]);
-
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/" });

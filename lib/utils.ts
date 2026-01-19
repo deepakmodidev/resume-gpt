@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const deepMerge = (
   target: Record<string, unknown>,
-  source: Record<string, unknown>
+  source: Record<string, unknown>,
 ): Record<string, unknown> => {
   if (
     !target ||
@@ -24,7 +24,7 @@ export const deepMerge = (
       : value && typeof value === "object"
         ? deepMerge(
             (result[key] as Record<string, unknown>) ?? {},
-            value as Record<string, unknown>
+            value as Record<string, unknown>,
           )
         : value;
   });

@@ -55,7 +55,7 @@ export const CoverLetterGenerator = ({
 }: CoverLetterGeneratorProps) => {
   const [resumeContent, setResumeContent] = useState("");
   const [resumeData, setResumeData] = useState<ResumeData>(
-    initialResumeData || defaultResumeData
+    initialResumeData || defaultResumeData,
   );
   const [jobDescription, setJobDescription] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -72,7 +72,7 @@ export const CoverLetterGenerator = ({
   const [hasGenerated, setHasGenerated] = useState(false);
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -122,7 +122,7 @@ export const CoverLetterGenerator = ({
         trimmedLine.length < 50 &&
         trimmedLine.length > 2 &&
         !/EXPERIENCE|EDUCATION|SKILLS|SUMMARY|PROFILE|PROJECTS|CONTACT/i.test(
-          trimmedLine
+          trimmedLine,
         )
       ) {
         name = trimmedLine;
@@ -189,7 +189,7 @@ export const CoverLetterGenerator = ({
             recipientName: recipientName || undefined,
             tone,
           }),
-        }
+        },
       );
 
       setCoverLetterData(data.coverLetterData);

@@ -122,22 +122,23 @@ export const ResumeContent = ({
                 project.name && (
                   <div key={idx}>
                     <h3 className={styles.projectTitle}>{project.name}</h3>
-                    {Array.isArray(project.techStack) && project.techStack.length > 0 && (
-                      <p className={styles.projectTech}>
-                        {template === "creative"
-                          ? `// ${project.techStack.join(" / ")}`
-                          : template === "techie"
-                            ? `[${project.techStack.join(", ")}]`
-                            : template === "artistic"
-                              ? `✨ ${project.techStack.join(" • ")}`
-                              : project.techStack.join(", ")}
-                      </p>
-                    )}
+                    {Array.isArray(project.techStack) &&
+                      project.techStack.length > 0 && (
+                        <p className={styles.projectTech}>
+                          {template === "creative"
+                            ? `// ${project.techStack.join(" / ")}`
+                            : template === "techie"
+                              ? `[${project.techStack.join(", ")}]`
+                              : template === "artistic"
+                                ? `✨ ${project.techStack.join(" • ")}`
+                                : project.techStack.join(", ")}
+                        </p>
+                      )}
                     <p className={`${styles.text} whitespace-pre-line`}>
                       {typeof project.description === "string"
                         ? project.description
                         : typeof project.description === "object" &&
-                          project.description
+                            project.description
                           ? JSON.stringify(project.description)
                           : String(project.description || "")}
                     </p>
@@ -149,73 +150,76 @@ export const ResumeContent = ({
       )}
 
       {/* Experience Section */}
-      {Array.isArray(data.experience) && data.experience.some((exp) => exp.title) && (
-        <section>
-          <h2 className={styles.sectionHeader}>Experience</h2>
-          <div className="space-y-1">
-            {data.experience.map(
-              (exp, idx) =>
-                exp.title && (
-                  <div key={idx}>
-                    <h3 className={styles.expTitle}>{exp.title}</h3>
-                    <p className={styles.expDetails}>
-                      {template === "professional"
-                        ? `${exp.company} | ${exp.location} | ${exp.period}`
-                        : template === "creative"
-                          ? `${exp.company} // ${exp.location} // ${exp.period}`
-                          : template === "techie"
-                            ? `${exp.company} :: ${exp.location} :: ${exp.period}`
-                            : template === "artistic"
-                              ? `${exp.company} ✦ ${exp.location} ✦ ${exp.period}`
-                              : `${exp.company} - ${exp.location} (${exp.period})`}
-                    </p>
-                    <p className={`${styles.text} whitespace-pre-line`}>
-                      {typeof exp.description === "string"
-                        ? exp.description
-                        : typeof exp.description === "object" && exp.description
-                          ? JSON.stringify(exp.description)
-                          : String(exp.description || "")}
-                    </p>
-                  </div>
-                ),
-            )}
-          </div>
-        </section>
-      )}
+      {Array.isArray(data.experience) &&
+        data.experience.some((exp) => exp.title) && (
+          <section>
+            <h2 className={styles.sectionHeader}>Experience</h2>
+            <div className="space-y-1">
+              {data.experience.map(
+                (exp, idx) =>
+                  exp.title && (
+                    <div key={idx}>
+                      <h3 className={styles.expTitle}>{exp.title}</h3>
+                      <p className={styles.expDetails}>
+                        {template === "professional"
+                          ? `${exp.company} | ${exp.location} | ${exp.period}`
+                          : template === "creative"
+                            ? `${exp.company} // ${exp.location} // ${exp.period}`
+                            : template === "techie"
+                              ? `${exp.company} :: ${exp.location} :: ${exp.period}`
+                              : template === "artistic"
+                                ? `${exp.company} ✦ ${exp.location} ✦ ${exp.period}`
+                                : `${exp.company} - ${exp.location} (${exp.period})`}
+                      </p>
+                      <p className={`${styles.text} whitespace-pre-line`}>
+                        {typeof exp.description === "string"
+                          ? exp.description
+                          : typeof exp.description === "object" &&
+                              exp.description
+                            ? JSON.stringify(exp.description)
+                            : String(exp.description || "")}
+                      </p>
+                    </div>
+                  ),
+              )}
+            </div>
+          </section>
+        )}
 
       {/* Education Section */}
-      {Array.isArray(data.education) && data.education.some((edu) => edu.degree) && (
-        <section>
-          <h2 className={styles.sectionHeader}>Education</h2>
-          <div>
-            {data.education.map(
-              (edu, idx) =>
-                edu.degree && (
-                  <div key={idx}>
-                    <h3 className={styles.eduTitle}>{edu.degree}</h3>
-                    <p
-                      className={
-                        template === "professional"
-                          ? styles.expDetails
-                          : "text-sm text-gray-500"
-                      }
-                    >
-                      {template === "professional"
-                        ? `${edu.institution} | ${edu.year}`
-                        : template === "creative"
-                          ? `${edu.institution} // ${edu.year}`
-                          : template === "techie"
-                            ? `${edu.institution} :: ${edu.year}`
-                            : template === "artistic"
-                              ? `${edu.institution} ✦ ${edu.year}`
-                              : `${edu.institution} (${edu.year})`}
-                    </p>
-                  </div>
-                ),
-            )}
-          </div>
-        </section>
-      )}
+      {Array.isArray(data.education) &&
+        data.education.some((edu) => edu.degree) && (
+          <section>
+            <h2 className={styles.sectionHeader}>Education</h2>
+            <div>
+              {data.education.map(
+                (edu, idx) =>
+                  edu.degree && (
+                    <div key={idx}>
+                      <h3 className={styles.eduTitle}>{edu.degree}</h3>
+                      <p
+                        className={
+                          template === "professional"
+                            ? styles.expDetails
+                            : "text-sm text-gray-500"
+                        }
+                      >
+                        {template === "professional"
+                          ? `${edu.institution} | ${edu.year}`
+                          : template === "creative"
+                            ? `${edu.institution} // ${edu.year}`
+                            : template === "techie"
+                              ? `${edu.institution} :: ${edu.year}`
+                              : template === "artistic"
+                                ? `${edu.institution} ✦ ${edu.year}`
+                                : `${edu.institution} (${edu.year})`}
+                      </p>
+                    </div>
+                  ),
+              )}
+            </div>
+          </section>
+        )}
 
       {/* Achievements Section */}
       {Array.isArray(data.achievements) && data.achievements.length > 0 && (

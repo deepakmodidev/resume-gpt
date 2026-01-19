@@ -10,7 +10,13 @@ import { logger } from "@/lib/logger";
 import { ResumeForm } from "@/components/resume/ResumeForm";
 import { ResumeDisplay } from "@/components/resume/ResumeDisplay";
 import { saveResume } from "@/app/actions/save-resume";
-import { MessageSquare, Edit, Loader2, Check, CircleCheckBig } from "lucide-react";
+import {
+  MessageSquare,
+  Edit,
+  Loader2,
+  Check,
+  CircleCheckBig,
+} from "lucide-react";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ApiKeyNotification } from "@/components/ApiKeyNotification";
 import { GeminiApiKeyModal } from "@/components/GeminiApiKeyModal";
@@ -65,7 +71,6 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
     return true;
   });
 
-
   const {
     messages,
     resumeData,
@@ -77,7 +82,9 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
     setHasInteracted,
   } = useChat({ initialChatData });
 
-  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error" | "idle">(() => {
+  const [saveStatus, setSaveStatus] = useState<
+    "saved" | "saving" | "error" | "idle"
+  >(() => {
     // Show "saved" on load if there's existing data
     return initialChatData ? "saved" : "idle";
   });
@@ -102,7 +109,6 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
     return () => clearTimeout(timer);
   }, [resumeData, id, hasInteracted, autoSaveEnabled]);
 
-
   // Generate and set fallback ID only when user interacts without an existing ID
   useEffect(() => {
     if (!paramsId && hasInteracted && !fallbackId) {
@@ -126,7 +132,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       sendMessage(message, chatId);
       setInputValue(""); // Clear input after sending
     },
-    [sendMessage, id, router]
+    [sendMessage, id, router],
   );
 
   const handleSuggestionClick = useCallback((suggestion: string) => {
@@ -142,7 +148,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       setAutoSaveEnabled(true);
       updateResumeData(updater);
     },
-    [hasInteracted, updateResumeData, setHasInteracted]
+    [hasInteracted, updateResumeData, setHasInteracted],
   );
 
   const toggleSidebarCollapse = useCallback(() => {
@@ -150,7 +156,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       const newState = !prev;
       localStorage.setItem(
         STORAGE_KEYS.SIDEBAR_COLLAPSED,
-        JSON.stringify(newState)
+        JSON.stringify(newState),
       );
       return newState;
     });
@@ -203,38 +209,56 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
           >
             <div className="flex flex-col h-full">
               {hasInteracted && (
-              <div className="px-4 py-2 border-b flex items-center justify-between gap-4">
-                <div className="grid flex-1 grid-cols-2 h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
-                  <button
-                    onClick={() => setActiveTab("chat")}
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "chat" ? "bg-background text-foreground shadow-sm" : ""
+                <div className="px-4 py-2 border-b flex items-center justify-between gap-4">
+                  <div className="grid flex-1 grid-cols-2 h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
+                    <button
+                      onClick={() => setActiveTab("chat")}
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
+                        activeTab === "chat"
+                          ? "bg-background text-foreground shadow-sm"
+                          : ""
                       }`}
-                  >
-                    <MessageSquare className="w-4 h-4 mr-2" /> Chat
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("edit")}
-                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "edit" ? "bg-background text-foreground shadow-sm" : ""
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" /> Chat
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("edit")}
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
+                        activeTab === "edit"
+                          ? "bg-background text-foreground shadow-sm"
+                          : ""
                       }`}
-                  >
-                    <Edit className="w-4 h-4 mr-2" /> Edit
-                  </button>
-                </div>
-                <div className="flex items-center gap-1 w-[110px] justify-end shrink-0">
-                    {saveStatus !== "idle" && (
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${saveStatus === "saved"
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : saveStatus === "saving"
-                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                      : "bg-red-100 text-red-700"
-                    }`}>
-                    {saveStatus === "saving" && <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>}
-                    {saveStatus === "saved" && <><CircleCheckBig className="w-4 h-4" /> Saved</>}
-                    {saveStatus === "error" && "Error"}
+                    >
+                      <Edit className="w-4 h-4 mr-2" /> Edit
+                    </button>
                   </div>
+                  <div className="flex items-center gap-1 w-[110px] justify-end shrink-0">
+                    {saveStatus !== "idle" && (
+                      <div
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                          saveStatus === "saved"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : saveStatus === "saving"
+                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                              : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {saveStatus === "saving" && (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                            Saving...
+                          </>
+                        )}
+                        {saveStatus === "saved" && (
+                          <>
+                            <CircleCheckBig className="w-4 h-4" /> Saved
+                          </>
+                        )}
+                        {saveStatus === "error" && "Error"}
+                      </div>
                     )}
+                  </div>
                 </div>
-              </div>
               )}
 
               {!hasInteracted ? (
@@ -254,24 +278,31 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                 </div>
               ) : (
                 <>
-              <div className={`flex-1 flex-col min-h-0 mt-0 overflow-hidden ${activeTab === "chat" ? "flex" : "hidden"}`}>
-                <ChatMessages
-                  messages={messages}
-                  isGenerating={isGenerating}
-                  hasInteracted={hasInteracted}
-                  onSuggestionClick={handleSuggestionClick}
-                />
-                <ChatInput
-                  onSendMessage={handleSendMessage}
-                  isGenerating={isGenerating}
-                  inputValue={inputValue}
-                  onInputChange={setInputValue}
-                />
-              </div>
+                  <div
+                    className={`flex-1 flex-col min-h-0 mt-0 overflow-hidden ${activeTab === "chat" ? "flex" : "hidden"}`}
+                  >
+                    <ChatMessages
+                      messages={messages}
+                      isGenerating={isGenerating}
+                      hasInteracted={hasInteracted}
+                      onSuggestionClick={handleSuggestionClick}
+                    />
+                    <ChatInput
+                      onSendMessage={handleSendMessage}
+                      isGenerating={isGenerating}
+                      inputValue={inputValue}
+                      onInputChange={setInputValue}
+                    />
+                  </div>
 
-              <div className={`flex-1 min-h-0 mt-0 overflow-hidden h-full flex-col ${activeTab === "edit" ? "flex" : "hidden"}`}>
-                    <ResumeForm data={resumeData} handleDataChange={handleResumeDataChange} />
-              </div>
+                  <div
+                    className={`flex-1 min-h-0 mt-0 overflow-hidden h-full flex-col ${activeTab === "edit" ? "flex" : "hidden"}`}
+                  >
+                    <ResumeForm
+                      data={resumeData}
+                      handleDataChange={handleResumeDataChange}
+                    />
+                  </div>
                 </>
               )}
             </div>

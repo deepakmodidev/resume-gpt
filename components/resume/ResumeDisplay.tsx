@@ -5,7 +5,13 @@ import { logger } from "@/lib/logger";
 import { TemplateModal } from "./TemplateModal";
 import { ResumeContent } from "./ResumeContent";
 import { ATSScore } from "@/components/ats/ATSScore";
-import { LoaderPinwheelIcon, Target, FileText, LayoutTemplate, Download } from "lucide-react";
+import {
+  LoaderPinwheelIcon,
+  Target,
+  FileText,
+  LayoutTemplate,
+  Download,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -112,10 +118,11 @@ export const ResumeDisplay = ({
               <button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
-                className={`inline-flex items-center justify-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${isDownloading
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
-                  }`}
+                className={`inline-flex items-center justify-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${
+                  isDownloading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
+                }`}
               >
                 {isDownloading ? (
                   <LoaderPinwheelIcon className="w-4 h-4 shrink-0 animate-spin" />

@@ -89,7 +89,7 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
           : EMPTY_RESUME.education,
         skills: Array.isArray(data.skills)
           ? data.skills.map((skill: any) =>
-              typeof skill === "string" ? skill : String(skill)
+              typeof skill === "string" ? skill : String(skill),
             )
           : EMPTY_RESUME.skills,
         projects: Array.isArray(data.projects)
@@ -103,14 +103,14 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
                     : "",
               techStack: Array.isArray(proj?.techStack)
                 ? proj.techStack.map((tech: any) =>
-                    typeof tech === "string" ? tech : String(tech)
+                    typeof tech === "string" ? tech : String(tech),
                   )
                 : [],
             }))
           : EMPTY_RESUME.projects,
         achievements: Array.isArray(data.achievements)
           ? data.achievements.map((ach: any) =>
-              typeof ach === "string" ? ach : String(ach)
+              typeof ach === "string" ? ach : String(ach),
             )
           : EMPTY_RESUME.achievements,
       };
@@ -133,7 +133,7 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
             part &&
             typeof part === "object" &&
             "text" in part &&
-            typeof part.text === "string"
+            typeof part.text === "string",
         )
       );
     };
@@ -150,13 +150,13 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
 
       // Debug log for invalid messages
       const invalidMessages = flatMessages.filter(
-        (msg) => !isValidChatMessage(msg)
+        (msg) => !isValidChatMessage(msg),
       );
 
       if (invalidMessages.length > 0) {
         logger.warn("Found invalid message structures:", invalidMessages);
         logger.warn(
-          "These messages will be filtered out to prevent rendering errors"
+          "These messages will be filtered out to prevent rendering errors",
         );
       }
 
@@ -172,15 +172,15 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
   }, [initialChatData]);
 
   const [messages, setMessages] = useState<ChatMessage[]>(
-    initialState.messages
+    initialState.messages,
   );
   const [resumeData, setResumeData] = useState<ResumeData>(
-    initialState.resumeData
+    initialState.resumeData,
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [showResume, setShowResume] = useState(initialState.showResume);
   const [hasInteracted, setHasInteracted] = useState(
-    initialState.hasInteracted
+    initialState.hasInteracted,
   );
 
   const cleanMessage = useCallback((text: string) => {
@@ -292,7 +292,7 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
       hasInteracted,
       showResume,
       cleanMessage,
-    ]
+    ],
   );
 
   const updateResumeData = useCallback(
@@ -303,7 +303,7 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
         return updated;
       });
     },
-    []
+    [],
   );
 
   return {

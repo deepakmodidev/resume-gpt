@@ -104,8 +104,8 @@ export const InterviewSession = ({
   const speak = cartesiaInitialized
     ? cartesiaSpeak
     : () => {
-      logger.warn("Cartesia not initialized");
-    };
+        logger.warn("Cartesia not initialized");
+      };
   const isSpeaking = cartesiaIsSpeaking;
   const cancelSpeech = cartesiaStop;
 
@@ -131,8 +131,7 @@ export const InterviewSession = ({
           body: JSON.stringify({
             messages: newMessages,
             resumeText: messages.length === 0 ? resumeText : undefined,
-            jobDescription:
-              messages.length === 0 ? jobDescription : undefined,
+            jobDescription: messages.length === 0 ? jobDescription : undefined,
             userApiKey,
           }),
         });
@@ -207,7 +206,7 @@ export const InterviewSession = ({
         ]);
       }
     },
-    [messages, resumeText, jobDescription, speak, startListening, status]
+    [messages, resumeText, jobDescription, speak, startListening, status],
   );
 
   const toggleMic = useCallback(() => {
@@ -321,7 +320,7 @@ export const InterviewSession = ({
     const transcript = messages
       .map(
         (msg) =>
-          `${msg.role === "user" ? "You" : "Interviewer"}: ${msg.content}`
+          `${msg.role === "user" ? "You" : "Interviewer"}: ${msg.content}`,
       )
       .join("\n\n");
 
@@ -527,10 +526,11 @@ export const InterviewSession = ({
         {/* Main Action Button */}
         <Button
           size="lg"
-          className={`rounded-full h-20 w-20 shadow-2xl transition-all duration-300 ${status === "listening"
-            ? "bg-red-600 hover:bg-red-700 animate-pulse"
-            : "bg-white text-black hover:bg-gray-200"
-            }`}
+          className={`rounded-full h-20 w-20 shadow-2xl transition-all duration-300 ${
+            status === "listening"
+              ? "bg-red-600 hover:bg-red-700 animate-pulse"
+              : "bg-white text-black hover:bg-gray-200"
+          }`}
           onClick={toggleMic}
           disabled={status === "processing"}
         >
@@ -564,10 +564,11 @@ export const InterviewSession = ({
                       {msg.role === "user" ? "You" : "AI Interviewer"}
                     </span>
                     <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === "user"
-                        ? "bg-cyan-600 text-white"
-                        : "bg-gray-800 text-gray-200"
-                        }`}
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
+                        msg.role === "user"
+                          ? "bg-cyan-600 text-white"
+                          : "bg-gray-800 text-gray-200"
+                      }`}
                     >
                       {msg.content}
                     </div>

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     const validation = validateRequest(
       CoverLetterRequestSchema,
-      validationData
+      validationData,
     );
     if (!validation.success) {
       const { error } = validation;
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -58,12 +58,18 @@ export async function POST(req: NextRequest) {
     const hasJobDescription = jobDescription && jobDescription.trim();
 
     // Use rawContent if available, otherwise format resume data cleanly
-    const resumeText = resumeData.rawContent || `
-Name: ${resumeData.name || 'Not provided'}
-Skills: ${resumeData.skills?.join(', ') || 'Not provided'}
-Experience: ${resumeData.experience?.map((exp: any) =>
-      `${exp.title || ''} at ${exp.company || ''} - ${exp.description || ''}`.trim()
-    ).join('; ') || 'Not provided'}
+    const resumeText =
+      resumeData.rawContent ||
+      `
+Name: ${resumeData.name || "Not provided"}
+Skills: ${resumeData.skills?.join(", ") || "Not provided"}
+Experience: ${
+        resumeData.experience
+          ?.map((exp: any) =>
+            `${exp.title || ""} at ${exp.company || ""} - ${exp.description || ""}`.trim(),
+          )
+          .join("; ") || "Not provided"
+      }
 `.trim();
 
     const prompt = hasJobDescription
@@ -137,8 +143,7 @@ NOTE: No specific job description was provided. Generate a generalized cover let
             ? error.message
             : "Failed to generate cover letter",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

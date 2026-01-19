@@ -23,7 +23,7 @@ export const ApiKeyNotification = ({
 
       // Show notification if no API key (will show on every refresh)
       const isDismissed = localStorage.getItem(
-        "api-key-notification-dismissed"
+        "api-key-notification-dismissed",
       );
 
       // Show notification if no API key AND not dismissed

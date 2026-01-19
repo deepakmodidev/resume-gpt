@@ -3,7 +3,7 @@ export class APIError extends Error {
   constructor(
     message: string,
     public statusCode: number = 500,
-    public code?: string
+    public code?: string,
   ) {
     super(message);
     this.name = "APIError";
@@ -22,12 +22,12 @@ export class APIError extends Error {
  */
 export async function apiRequest<T>(
   endpoint: string,
-  options?: RequestInit & { timeout?: number }
+  options?: RequestInit & { timeout?: number },
 ): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
-    options?.timeout || 30000 // 30 second default timeout
+    options?.timeout || 30000, // 30 second default timeout
   );
 
   try {
@@ -45,7 +45,7 @@ export async function apiRequest<T>(
       throw new APIError(
         error.error || `Request failed with status ${response.status}`,
         response.status,
-        error.code
+        error.code,
       );
     }
 

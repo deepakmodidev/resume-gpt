@@ -25,12 +25,12 @@ export async function saveResume(chatId: string, resumeData: ResumeData) {
       });
     } else {
       // Create new chat if it doesn't exist (e.g., when user edits form without chatting)
-      const title = resumeData.name 
-        ? `${resumeData.name}'s Resume` 
-        : resumeData.title 
-        ? `Resume for ${resumeData.title}` 
-        : "New Resume";
-      
+      const title = resumeData.name
+        ? `${resumeData.name}'s Resume`
+        : resumeData.title
+          ? `Resume for ${resumeData.title}`
+          : "New Resume";
+
       await db.chat.create({
         data: {
           id: chatId,
@@ -42,7 +42,7 @@ export async function saveResume(chatId: string, resumeData: ResumeData) {
         },
       });
     }
-    
+
     return { success: true };
   } catch (error) {
     logger.error("Failed to save resume:", error);

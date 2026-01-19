@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       {
         title: "Resume",
         filename: "resume.pdf",
-      }
+      },
     );
 
     // Convert Uint8Array to Buffer for NextResponse compatibility
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         error: "PDF generation failed",
         details: (error as Error).message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

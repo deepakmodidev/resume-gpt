@@ -80,7 +80,7 @@ const upsertChat = async (
   message: string,
   userMsg: unknown,
   modelMsg: unknown,
-  resumeData: unknown
+  resumeData: unknown,
 ) => {
   const chat = await db.chat.findUnique({ where: { id: chatId, userId } }); // 🎯 RAG: Database Retrieval - Gets stored conversation context
 
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not available" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
       message,
       userMsg,
       modelMsg,
-      mergedData // 🎯 RAG: Database Storage - Stores context for future retrieval
+      mergedData, // 🎯 RAG: Database Storage - Stores context for future retrieval
     );
     return NextResponse.json({ response });
   } catch (error) {
@@ -246,7 +246,7 @@ export async function PUT(req: NextRequest) {
     if (!chatId || !newName)
       return NextResponse.json(
         { error: "Chat ID and name required" },
-        { status: 400 }
+        { status: 400 },
       );
 
     const updated = await db.chat.updateMany({
