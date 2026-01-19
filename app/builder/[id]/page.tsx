@@ -4,10 +4,11 @@ import db from "@/prisma/prisma";
 import { redirect } from "next/navigation";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-// Cached function for fetching chat data
+// Disable static generation for auth-protected routes
+export const dynamic = 'force-dynamic';
+
+// Fetch chat data
 async function getChatData(chatId: string, userId: string) {
-  "use cache";
-  
   return await db.chat.findUnique({
     where: {
       id: chatId,

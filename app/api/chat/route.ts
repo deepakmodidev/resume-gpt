@@ -188,10 +188,8 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Cached function for fetching user chats
+// Fetch user chats
 async function getUserChats(userId: string) {
-  "use cache";
-  
   return await db.chat.findMany({
     where: { userId },
     select: { id: true, title: true },
