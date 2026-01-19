@@ -1,6 +1,6 @@
 import React from "react";
 import { CoverLetterData } from "@/lib/types";
-import { coverLetterStyles } from "@/constants/coverLetterStyles";
+import { coverLetterStyles } from "@/lib/constants/cover-letter-styles";
 
 interface CoverLetterContentProps {
   data: CoverLetterData;

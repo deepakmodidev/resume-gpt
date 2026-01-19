@@ -18,7 +18,7 @@ import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/useChat";
 import { STORAGE_KEYS } from "@/lib/constants";
-import { ANIMATION_VARIANTS } from "@/constants/resume";
+import { ANIMATION_VARIANTS } from "@/lib/constants/templates";
 import { Sparkles, X } from "lucide-react";
 import type { Session } from "next-auth";
 import type { JsonValue } from "@prisma/client/runtime/library";

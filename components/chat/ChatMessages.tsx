@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { User, Bot, Loader2 } from "lucide-react";
 import { ChatMessage } from "@/lib/types";
-import { ANIMATION_VARIANTS } from "@/constants/resume";
+import { ANIMATION_VARIANTS } from "@/lib/constants/templates";
 
 const WelcomeOverlay = memo(
   ({

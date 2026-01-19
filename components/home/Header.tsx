@@ -12,7 +12,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { handleGoogleSignIn } from "@/actions/auth-actions";
+import { handleGoogleSignIn } from "@/app/actions/auth-actions";
 import { useSession, signOut, signIn } from "next-auth/react";
 import {
   DropdownMenu,

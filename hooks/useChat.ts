@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { ChatMessage, InitialChatData } from "@/lib/types";
 import { ResumeData } from "@/lib/types";
-import { EMPTY_RESUME } from "@/constants/resume";
+import { EMPTY_RESUME } from "@/lib/constants/templates";
 import { apiRequest } from "@/lib/api-client";
 import { API_ENDPOINTS, STORAGE_KEYS, TIMEOUTS } from "@/lib/constants";
 import { logger } from "@/lib/logger";

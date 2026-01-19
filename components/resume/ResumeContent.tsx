@@ -1,6 +1,6 @@
 import React from "react";
 import { ResumeData } from "@/lib/types";
-import { templateStyles } from "@/constants/templateStyles";
+import { templateStyles } from "@/lib/constants/template-styles";
 
 interface ResumeContentProps {
   data: ResumeData;
