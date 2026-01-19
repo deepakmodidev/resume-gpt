@@ -33,7 +33,7 @@ export default async function page({
 
   // It's good practice to double-check auth even if layout does
   if (!session?.user?.id) {
-    redirect("/");
+    redirect("/?signin=true");
   }
 
   // Handle "new" route - don't try to fetch from database

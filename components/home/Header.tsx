@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { handleGoogleSignIn } from "@/actions/auth-actions";
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signOut, signIn } from "next-auth/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,17 +27,31 @@ export function Header() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const { data: session, status } = useSession();
 
-
   const handleSignInClick = async () => {
     try {
       setIsSigningIn(true);
-      await handleGoogleSignIn();
+      // Use client-side signIn for better redirect handling
+      await signIn("google", { callbackUrl: "/builder/new" });
     } catch (error) {
       logger.error("Sign in failed:", error);
-    } finally {
       setIsSigningIn(false);
     }
   };
+
+  // Auto-trigger sign-in if redirected from protected route
+  useEffect(() => {
+    if (typeof window !== 'undefined' && status === 'unauthenticated') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('signin') === 'true' && !isSigningIn) {
+        // Remove the signin param from URL
+        window.history.replaceState({}, '', '/');
+        // Trigger sign-in with client-side redirect
+        setIsSigningIn(true);
+        signIn("google", { callbackUrl: "/builder/new" });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, isSigningIn]);
 
 
   const handleSignOut = async () => {

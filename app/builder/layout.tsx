@@ -16,7 +16,8 @@ export default async function BuilderLayout({
   const session = await auth();
 
   if (!session?.user?.id) {
-    redirect("/");
+    // Redirect to homepage with a callbackUrl to return after login
+    redirect("/?signin=true");
   }
 
   return <>{children}</>;
