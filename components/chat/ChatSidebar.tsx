@@ -389,8 +389,8 @@ const SidebarContent = ({
 
   const filteredChats = searchQuery
     ? chats.filter((chat) =>
-        chat.title?.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
+      chat.title?.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
     : chats;
 
   const groupedChats = groupChatsByTimeframe(filteredChats);
@@ -445,7 +445,7 @@ const SidebarContent = ({
           size="sm"
           title={isCollapsed ? "New Chat" : undefined}
         >
-          <Link href="/builder/new" className="flex items-center">
+          <Link href="/builder" className="flex items-center">
             <Plus className="h-4 w-4 shrink-0" />
             <span
               className={cn(

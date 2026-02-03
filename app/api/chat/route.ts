@@ -145,7 +145,8 @@ export async function POST(req: NextRequest) {
     }
     const { userId } = authResult;
 
-    const apiKey = userApiKey || process.env.GEMINI_KEY;
+    const headerApiKey = req.headers.get("x-gemini-api-key");
+    const apiKey = headerApiKey || userApiKey || process.env.GEMINI_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not available" },

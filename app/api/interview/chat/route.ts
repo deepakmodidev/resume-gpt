@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     const userId = session?.user?.id;
 
-    const apiKey = userApiKey || env.GEMINI_KEY;
+    const headerApiKey = req.headers.get("x-gemini-api-key");
+    const apiKey = headerApiKey || userApiKey || env.GEMINI_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not available" },

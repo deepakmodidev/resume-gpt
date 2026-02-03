@@ -5,7 +5,11 @@ import db from "@/prisma/prisma";
 import { ResumeData } from "@/lib/types";
 import { logger } from "@/lib/logger";
 
-export async function saveResume(chatId: string, resumeData: ResumeData) {
+export async function saveResume(
+  chatId: string,
+  resumeData: ResumeData,
+  messages?: any[],
+) {
   const session = await auth();
   if (!session?.user?.id) {
     return { error: "Unauthorized" };
@@ -21,10 +25,13 @@ export async function saveResume(chatId: string, resumeData: ResumeData) {
       // Update existing chat
       await db.chat.update({
         where: { id: chatId, userId: session.user.id },
-        data: { resumeData: resumeData as any },
+        data: {
+          resumeData: resumeData as any,
+          ...(messages ? { messages: messages as any } : {}),
+        },
       });
     } else {
-      // Create new chat if it doesn't exist (e.g., when user edits form without chatting)
+      // Create new chat if it doesn't exist
       const title = resumeData.name
         ? `${resumeData.name}'s Resume`
         : resumeData.title
@@ -36,7 +43,7 @@ export async function saveResume(chatId: string, resumeData: ResumeData) {
           id: chatId,
           userId: session.user.id,
           title,
-          messages: [],
+          messages: (messages || []) as any,
           resumeData: resumeData as any,
           resumeTemplate: "classic",
         },

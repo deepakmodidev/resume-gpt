@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
+import { toast } from "sonner";
 import { ChatMessage, InitialChatData } from "@/lib/types";
 import { ResumeData } from "@/lib/types";
 import { EMPTY_RESUME } from "@/lib/constants/templates";
@@ -8,9 +9,10 @@ import { logger } from "@/lib/logger";
 
 interface UseChatProps {
   initialChatData?: InitialChatData;
+  onApiKeyError?: () => void;
 }
 
-export const useChat = ({ initialChatData }: UseChatProps) => {
+export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
   const initialState = useMemo(() => {
     if (!initialChatData) {
       return {
@@ -273,14 +275,46 @@ export const useChat = ({ initialChatData }: UseChatProps) => {
           if (error.name === "AbortError") {
             errorMessage = "Request timed out. Please try again.";
           } else {
-            errorMessage = error.message;
+            // Use the actual error message for better debugging
+            errorMessage = error.message || "An unexpected error occurred.";
           }
         }
 
-        setMessages((prev) => [
-          ...prev,
-          { role: "model", parts: [{ text: `⚠️ Error: ${errorMessage}` }] },
-        ]);
+        // Check for specific API Key errors to trigger the modal
+        const errorString =
+          errorMessage.toLowerCase() +
+          (error instanceof Error ? error.message.toLowerCase() : "");
+
+        if (
+          errorString.includes("api key") ||
+          errorString.includes("expired") ||
+          errorString.includes("quota") ||
+          errorString.includes("429") ||
+          errorString.includes("400 bad request")
+        ) {
+          errorMessage =
+            "The AI service is currently unavailable due to an API key or quota issue.";
+          if (onApiKeyError) onApiKeyError();
+
+          // Add a persistent message to the chat history so it saves to the DB
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "model",
+              parts: [
+                {
+                  text: "⚠️ API limit reached or key is invalid. Please add your own Gemini API key in settings and try again.",
+                },
+              ],
+            },
+          ]);
+        }
+
+        // Show toast for immediate visibility
+        toast.error(errorMessage);
+
+        // Optional: Remove the user's last message if you want to "undo" the failed attempt?
+        // For now, keeping it is better so they can copy-paste it again.
       } finally {
         setIsGenerating(false);
       }
