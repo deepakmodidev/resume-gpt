@@ -168,7 +168,6 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
     return {
       messages: processedMessages,
       resumeData: sanitizeResumeData(chatResumeData),
-      showResume: processedMessages.length > 0,
       hasInteracted: false, // Always false on load - only true after user action in this session
     };
   }, [initialChatData]);
@@ -180,7 +179,6 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
     initialState.resumeData,
   );
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showResume, setShowResume] = useState(initialState.showResume);
   const [hasInteracted, setHasInteracted] = useState(
     initialState.hasInteracted,
   );
@@ -222,7 +220,7 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
       setIsGenerating(true);
 
       if (!hasInteracted) setHasInteracted(true);
-      if (!showResume) setShowResume(true);
+      if (!hasInteracted) setHasInteracted(true);
 
       try {
         // Get user's API key from localStorage
@@ -324,7 +322,7 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
       resumeData,
       isGenerating,
       hasInteracted,
-      showResume,
+      hasInteracted,
       cleanMessage,
     ],
   );
@@ -344,7 +342,6 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
     messages,
     resumeData,
     isGenerating,
-    showResume,
     hasInteracted,
     sendMessage,
     updateResumeData,

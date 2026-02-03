@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { motion, AnimatePresence } from "framer-motion";
@@ -74,7 +74,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
     messages,
     resumeData,
     isGenerating,
-    showResume,
+
     hasInteracted,
     sendMessage,
     updateResumeData,
@@ -97,17 +97,9 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   const [activeTab, setActiveTab] = useState<"chat" | "edit">("chat");
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
 
-  // Track if this is the initial mount to avoid saving unchanged data on refresh
-  const isInitialMount = useRef(true);
-
+  // Auto-save when user interacts and data changes
   useEffect(() => {
-    // Skip the first render (initial hydration from server)
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    // Only save if we have an ID, data, and the user has interacted with the app
+    // Only save if we have an ID, data, and the user has interacted
     if (!id || !resumeData || !hasInteracted) return;
 
     setSaveStatus("saving");
@@ -328,7 +320,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                 className="hidden md:flex flex-col h-full min-h-0 overflow-hidden bg-card border-l border-border md:w-3/5"
               >
                 <ScrollArea className="flex-1 min-h-0">
-                  {showResume ? (
+                  {messages.length > 0 ? (
                     <ResumeDisplay
                       data={resumeData}
                       handleDataChange={handleResumeDataChange}
