@@ -61,18 +61,16 @@ const MessageBubble = memo(
     <motion.div
       key={index}
       {...ANIMATION_VARIANTS.message}
-      className={`w-full max-w-[85%] flex items-start gap-3 ${
-        message.role === "user"
+      className={`w-full max-w-[85%] flex items-start gap-3 ${message.role === "user"
           ? "ml-auto flex-row-reverse text-right"
           : "mr-auto flex-row text-left"
-      }`}
+        }`}
     >
       <div
-        className={`flex items-center justify-center rounded-full w-8 h-8 shrink-0 ${
-          message.role === "user"
+        className={`flex items-center justify-center rounded-full w-8 h-8 shrink-0 ${message.role === "user"
             ? "bg-blue-100 dark:bg-blue-900"
             : "bg-blue-100 dark:bg-blue-900"
-        }`}
+          }`}
       >
         {message.role === "user" ? (
           <User className="h-4 w-4 text-blue-600 dark:text-blue-300" />
@@ -84,11 +82,10 @@ const MessageBubble = memo(
         {message.parts.map((part, i) => (
           <div
             key={i}
-            className={`whitespace-pre-wrap text-sm backdrop-blur-md p-4 rounded-2xl shadow-xs ${
-              message.role === "user"
+            className={`whitespace-pre-wrap text-sm backdrop-blur-md p-4 rounded-2xl shadow-xs ${message.role === "user"
                 ? "bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100"
                 : "bg-card text-card-foreground border border-border"
-            }`}
+              }`}
           >
             {part.text}
           </div>
@@ -141,7 +138,7 @@ export const ChatMessages = ({
   return (
     <div className="flex-1 relative bg-background min-h-0 overflow-hidden">
       <AnimatePresence>
-        {!hasInteracted && (
+        {!hasInteracted && messages.length === 0 && (
           <WelcomeOverlay onSuggestionClick={onSuggestionClick} />
         )}
       </AnimatePresence>

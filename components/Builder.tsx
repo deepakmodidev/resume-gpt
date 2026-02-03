@@ -84,6 +84,10 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
     onApiKeyError: () => setShowApiKeyModal(true)
   });
 
+  // Determine if we should show the resume layout (existing chat with messages OR user interacted)
+  // This is separate from hasInteracted which is used for auto-save triggering
+  const showResumeLayout = messages.length > 0 || hasInteracted;
+
   const [saveStatus, setSaveStatus] = useState<
     "saved" | "saving" | "error" | "idle"
   >(() => {
@@ -217,10 +221,10 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
         {/* Chat and Resume Layout */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           <div
-            className={`flex flex-col h-full min-h-0 transition-all duration-300 ${hasInteracted ? "md:w-2/5" : "md:w-full"}`}
+            className={`flex flex-col h-full min-h-0 transition-all duration-300 ${showResumeLayout ? "md:w-2/5" : "md:w-full"}`}
           >
             <div className="flex flex-col h-full">
-              {hasInteracted && (
+              {showResumeLayout && (
                 <div className="px-4 py-2 border-b flex items-center justify-between gap-4">
                   <div className="grid flex-1 grid-cols-2 h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
                     <button
@@ -270,7 +274,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                 </div>
               )}
 
-              {!hasInteracted ? (
+              {!showResumeLayout ? (
                 <div className="flex-1 flex-col min-h-0 mt-0 overflow-hidden flex">
                   <ChatMessages
                     messages={messages}
@@ -318,7 +322,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
           </div>
 
           <AnimatePresence>
-            {hasInteracted && (
+            {showResumeLayout && (
               <motion.div
                 {...ANIMATION_VARIANTS.resume}
                 className="hidden md:flex flex-col h-full min-h-0 overflow-hidden bg-card border-l border-border md:w-3/5"

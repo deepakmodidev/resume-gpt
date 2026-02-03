@@ -102,6 +102,36 @@ const truncateText = (text: string, maxLength: number) => {
   return text.slice(0, maxLength).trim() + "...";
 };
 
+// New Chat button with forced refresh for clean state
+const NewChatButton = ({ isCollapsed }: { isCollapsed?: boolean }) => {
+  const handleNewChat = () => {
+    // Hard navigation guarantees completely fresh state
+    window.location.href = "/builder";
+  };
+
+  return (
+    <Button
+      onClick={handleNewChat}
+      className={cn(
+        "justify-start bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-xs hover:shadow-md transition-all duration-300 ease-in-out",
+        isCollapsed ? "w-auto px-2" : "w-full",
+      )}
+      size="sm"
+      title={isCollapsed ? "New Chat" : undefined}
+    >
+      <Plus className="h-4 w-4 shrink-0" />
+      <span
+        className={cn(
+          "transition-all duration-300 ease-in-out overflow-hidden",
+          isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2",
+        )}
+      >
+        New Chat
+      </span>
+    </Button>
+  );
+};
+
 const ChatListItem = ({
   chat,
   isActive,
@@ -381,6 +411,11 @@ const SidebarContent = ({
 
       setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
       toast.success("Chat deleted successfully");
+
+      // If we deleted the current chat, redirect to new chat
+      if (chatId === currentChatId) {
+        window.location.href = "/builder";
+      }
     } catch (error) {
       logger.error("Failed to delete chat", error as Error);
       toast.error("Failed to delete chat");
@@ -436,27 +471,7 @@ const SidebarContent = ({
           </div>
         </div>
 
-        <Button
-          asChild
-          className={cn(
-            "justify-start bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-xs hover:shadow-md transition-all duration-300 ease-in-out",
-            isCollapsed ? "w-auto px-2" : "w-full",
-          )}
-          size="sm"
-          title={isCollapsed ? "New Chat" : undefined}
-        >
-          <Link href="/builder" className="flex items-center">
-            <Plus className="h-4 w-4 shrink-0" />
-            <span
-              className={cn(
-                "transition-all duration-300 ease-in-out overflow-hidden",
-                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2",
-              )}
-            >
-              New Chat
-            </span>
-          </Link>
-        </Button>
+        <NewChatButton isCollapsed={isCollapsed} />
       </div>
 
       {/* Search - Hide when collapsed */}
