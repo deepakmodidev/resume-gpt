@@ -65,7 +65,7 @@ export default function NotFound() {
           </Link>
 
           <Link
-            href="/builder/new"
+            href="/builder"
             className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-card border-2 border-border text-foreground font-semibold rounded-xl hover:border-primary hover:bg-primary/5 transition-all duration-300"
           >
             <svg
@@ -106,7 +106,7 @@ export default function NotFound() {
             </Link>
             <span className="text-border">•</span>
             <Link
-              href="/builder/new"
+              href="/builder"
               className="text-sm text-primary hover:underline hover:text-primary/80 transition-colors"
             >
               Resume Builder

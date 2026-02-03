@@ -31,13 +31,17 @@ export async function apiRequest<T>(
   );
 
   try {
+    const apiKey = localStorage.getItem("gemini-api-key");
+    const headers = {
+      "Content-Type": "application/json",
+      ...(apiKey ? { "x-gemini-api-key": apiKey } : {}),
+      ...options?.headers,
+    };
+
     const response = await fetch(endpoint, {
       ...options,
       signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
+      headers,
     });
 
     if (!response.ok) {

@@ -31,7 +31,7 @@ export function Header() {
     try {
       setIsSigningIn(true);
       // Use client-side signIn for better redirect handling
-      await signIn("google", { callbackUrl: "/builder/new" });
+      await signIn("google", { callbackUrl: "/builder" });
     } catch (error) {
       logger.error("Sign in failed:", error);
       setIsSigningIn(false);
@@ -47,7 +47,7 @@ export function Header() {
         window.history.replaceState({}, "", "/");
         // Trigger sign-in with client-side redirect
         setIsSigningIn(true);
-        signIn("google", { callbackUrl: "/builder/new" });
+        signIn("google", { callbackUrl: "/builder" });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,13 +135,13 @@ export function Header() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem asChild>
-                      <Link href="/builder/new">
+                      <Link href="/builder">
                         <Plus className="mr-2 h-4 w-4" />
                         <span>New Resume</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/builder/new">
+                      <Link href="/builder">
                         <MessageSquare className="mr-2 h-4 w-4" />
                         <span>Go to Chat</span>
                       </Link>

@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { logger } from "@/lib/logger";
-
 import { ResumeForm } from "@/components/resume/ResumeForm";
 import { ResumeDisplay } from "@/components/resume/ResumeDisplay";
 import { saveResume } from "@/app/actions/save-resume";
@@ -80,7 +79,10 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
     sendMessage,
     updateResumeData,
     setHasInteracted,
-  } = useChat({ initialChatData });
+  } = useChat({
+    initialChatData,
+    onApiKeyError: () => setShowApiKeyModal(true)
+  });
 
   const [saveStatus, setSaveStatus] = useState<
     "saved" | "saving" | "error" | "idle"
@@ -91,14 +93,23 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   const [activeTab, setActiveTab] = useState<"chat" | "edit">("chat");
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
 
+  // Track if this is the initial mount to avoid saving unchanged data on refresh
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
-    if (!autoSaveEnabled) return;
+    // Skip the first render (initial hydration from server)
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Only save if we have an ID, data, and the user has interacted with the app
     if (!id || !resumeData || !hasInteracted) return;
 
     setSaveStatus("saving");
     const timer = setTimeout(async () => {
       try {
-        await saveResume(id, resumeData);
+        await saveResume(id, resumeData, messages);
         setSaveStatus("saved");
       } catch (error) {
         logger.error("Auto-save failed:", error);
@@ -107,16 +118,17 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [resumeData, id, hasInteracted, autoSaveEnabled]);
+  }, [resumeData, messages, id, hasInteracted]);
 
-  // Generate and set fallback ID only when user interacts without an existing ID
+  // Redirect to the new URL only after we have successfully saved the data
+  // This prevents loading a "blank" chat if the initial API call fails
   useEffect(() => {
-    if (!paramsId && hasInteracted && !fallbackId) {
-      const newId = uuidv4();
-      setFallbackId(newId);
-      router.replace(`/builder/${newId}`, { scroll: false });
+    if (!paramsId && fallbackId && saveStatus === "saved") {
+      // Use shallow replace if possible, but for App Router simply replacing URL is fine
+      // once we know the data is in the DB.
+      window.history.replaceState(null, "", `/builder/${fallbackId}`);
     }
-  }, [paramsId, hasInteracted, fallbackId, router]);
+  }, [paramsId, fallbackId, saveStatus]);
 
   const handleSendMessage = useCallback(
     (message: string) => {
@@ -125,14 +137,14 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       if (!chatId) {
         chatId = uuidv4();
         setFallbackId(chatId);
-        router.replace(`/builder/${chatId}`, { scroll: false });
+        // Don't redirect immediately. Wait for auto-save to confirm data persistence.
+        // The useEffect below will handle the redirect once we are confident.
       }
 
-      setAutoSaveEnabled(true);
       sendMessage(message, chatId);
       setInputValue(""); // Clear input after sending
     },
-    [sendMessage, id, router],
+    [sendMessage, id],
   );
 
   const handleSuggestionClick = useCallback((suggestion: string) => {
@@ -213,21 +225,19 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                   <div className="grid flex-1 grid-cols-2 h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
                     <button
                       onClick={() => setActiveTab("chat")}
-                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
-                        activeTab === "chat"
-                          ? "bg-background text-foreground shadow-sm"
-                          : ""
-                      }`}
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "chat"
+                        ? "bg-background text-foreground shadow-sm"
+                        : ""
+                        }`}
                     >
                       <MessageSquare className="w-4 h-4 mr-2" /> Chat
                     </button>
                     <button
                       onClick={() => setActiveTab("edit")}
-                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
-                        activeTab === "edit"
-                          ? "bg-background text-foreground shadow-sm"
-                          : ""
-                      }`}
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "edit"
+                        ? "bg-background text-foreground shadow-sm"
+                        : ""
+                        }`}
                     >
                       <Edit className="w-4 h-4 mr-2" /> Edit
                     </button>
@@ -235,13 +245,12 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                   <div className="flex items-center gap-1 w-[110px] justify-end shrink-0">
                     {saveStatus !== "idle" && (
                       <div
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                          saveStatus === "saved"
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                            : saveStatus === "saving"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                              : "bg-red-100 text-red-700"
-                        }`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${saveStatus === "saved"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          : saveStatus === "saving"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                            : "bg-red-100 text-red-700"
+                          }`}
                       >
                         {saveStatus === "saving" && (
                           <>

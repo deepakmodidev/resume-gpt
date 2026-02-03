@@ -27,26 +27,35 @@ async function getChatData(chatId: string, userId: string) {
 export default async function page({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id?: string[] }>;
 }) {
   const session = await auth(); // Still needed for auth check and potentially BuilderPage
-  const { id } = await params; // Destructure the id here after params is ready
+  const resolvedParams = await params;
+
+  // Extract ID from catch-all array (e.g. ['uuid'] or undefined)
+  const chatId = resolvedParams.id?.[0] || "";
+
+  // Explicitly redirect /builder/new to /builder to enforce canonical URL
+  if (chatId === "new") {
+    redirect("/builder");
+  }
 
   // It's good practice to double-check auth even if layout does
   if (!session?.user?.id) {
     redirect("/?signin=true");
   }
 
-  // Handle "new" route - don't try to fetch from database
+  // Handle new chat (empty root) - don't try to fetch from database
   let chat = null;
-  if (id !== "new") {
+  // If specific ID, fetch data
+  if (chatId) {
     // --- Fetch ONLY the specific chat data here using cached function ---
-    chat = await getChatData(id, session.user.id);
+    chat = await getChatData(chatId, session.user.id);
   }
 
   // Ensure we have a valid ID to pass to the Builder
   const validParams = {
-    id: id === "new" ? "" : id, // Pass empty string for new chats
+    id: chatId, // Pass ID directly (empty string for root)
   };
 
   return (

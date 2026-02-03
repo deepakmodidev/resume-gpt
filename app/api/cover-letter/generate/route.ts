@@ -38,7 +38,9 @@ export async function POST(req: NextRequest) {
     const recipientName = rawData.recipientName;
     const tone = rawData.tone || "professional";
 
-    const apiKey = process.env.GEMINI_KEY;
+    const headerApiKey = req.headers.get("x-gemini-api-key");
+    const apiKey = headerApiKey || rawData.userApiKey || process.env.GEMINI_KEY;
+
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not configured" },
