@@ -49,8 +49,20 @@ export default async function page({
   let chat = null;
   // If specific ID, fetch data
   if (chatId) {
+    // Validate UUID format (basic check)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(chatId)) {
+      // Invalid ID format, redirect to new chat
+      redirect("/builder");
+    }
+
     // --- Fetch ONLY the specific chat data here using cached function ---
     chat = await getChatData(chatId, session.user.id);
+
+    // If chat doesn't exist in DB, redirect to new chat
+    if (!chat) {
+      redirect("/builder");
+    }
   }
 
   // Ensure we have a valid ID to pass to the Builder
@@ -60,7 +72,12 @@ export default async function page({
 
   return (
     <ErrorBoundary>
-      <Builder session={session} params={validParams} initialChatData={chat} />
+      <Builder
+        key={chatId || "new-chat"}
+        session={session}
+        params={validParams}
+        initialChatData={chat}
+      />
     </ErrorBoundary>
   );
 }

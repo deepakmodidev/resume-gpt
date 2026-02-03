@@ -83,26 +83,55 @@ const upsertChat = async (
   resumeData: unknown,
 ) => {
   const chat = await db.chat.findUnique({ where: { id: chatId, userId } }); // 🎯 RAG: Database Retrieval - Gets stored conversation context
+  const newTitle = message.slice(0, 30) || "New ResumeGPT Chat";
 
   if (chat) {
+    // Check if title is generic and should be updated with actual content
+    const isGenericTitle =
+      !chat.title ||
+      chat.title === "New Resume" ||
+      chat.title === "New ResumeGPT Chat";
+
     await db.chat.update({
       where: { id: chatId, userId },
       data: {
         messages: { push: [userMsg, modelMsg] as never }, // 🎯 RAG: Memory Extension - Appends to conversation history
         resumeData: resumeData as never, // 🎯 RAG: Context Update - Updates stored resume context
+        // Update title only if it's currently generic
+        ...(isGenericTitle && { title: newTitle }),
       },
     });
   } else {
-    await db.chat.create({
-      data: {
-        id: chatId,
-        userId,
-        title: message.slice(0, 30) || "New ResumeGPT Chat",
-        messages: [userMsg, modelMsg] as never,
-        resumeData: resumeData as never,
-        resumeTemplate: "classic",
-      },
-    });
+    // Handle race condition: saveResume might have created the chat between our check and create
+    try {
+      await db.chat.create({
+        data: {
+          id: chatId,
+          userId,
+          title: newTitle,
+          messages: [userMsg, modelMsg] as never,
+          resumeData: resumeData as never,
+          resumeTemplate: "classic",
+        },
+      });
+    } catch (error: unknown) {
+      // If unique constraint error, the chat was created by saveResume - update instead
+      if (
+        error instanceof Error &&
+        error.message.includes("Unique constraint")
+      ) {
+        await db.chat.update({
+          where: { id: chatId, userId },
+          data: {
+            messages: { push: [userMsg, modelMsg] as never },
+            resumeData: resumeData as never,
+            title: newTitle,
+          },
+        });
+      } else {
+        throw error; // Re-throw other errors
+      }
+    }
   }
 };
 

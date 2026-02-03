@@ -169,7 +169,7 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
       messages: processedMessages,
       resumeData: sanitizeResumeData(chatResumeData),
       showResume: processedMessages.length > 0,
-      hasInteracted: processedMessages.length > 0,
+      hasInteracted: false, // Always false on load - only true after user action in this session
     };
   }, [initialChatData]);
 
