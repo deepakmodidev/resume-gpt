@@ -3,12 +3,10 @@
 import { useState } from "react";
 import { InterviewSetup } from "@/components/interview/InterviewSetup";
 import { InterviewSession } from "@/components/interview/InterviewSession";
-import { BrowserCompatibilityCheck } from "@/components/interview/BrowserCompatibilityCheck";
 import { Header } from "@/components/home/Header";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function InterviewPage() {
-  const [hasCheckedCompatibility, setHasCheckedCompatibility] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [resumeData, setResumeData] = useState({ text: "", jd: "" });
 
@@ -24,13 +22,6 @@ export default function InterviewPage() {
 
   return (
     <ErrorBoundary>
-      {/* Show compatibility check first */}
-      {!hasCheckedCompatibility ? (
-        <BrowserCompatibilityCheck
-          onContinue={() => setHasCheckedCompatibility(true)}
-        />
-      ) : null}
-
       {/* Show interview session */}
       {hasStarted ? (
         <InterviewSession
@@ -41,7 +32,7 @@ export default function InterviewPage() {
       ) : null}
 
       {/* Show setup */}
-      {!hasStarted && hasCheckedCompatibility ? (
+      {!hasStarted ? (
         <div className="min-h-screen bg-background flex flex-col">
           <Header />
           <div className="flex-1">

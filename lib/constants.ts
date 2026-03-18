@@ -12,13 +12,10 @@ export const API_ENDPOINTS = {
   INTERVIEW: "/api/interview/chat",
   VALIDATE_KEY: "/api/validate-gemini-key",
   HEALTH: "/api/health",
-  TTS: "/api/tts",
   PARSE_RESUME: "/actions/parse-resume",
 } as const;
 
-export const EXTERNAL_APIS = {
-  CARTESIA_TTS: "https://api.cartesia.ai/tts/bytes",
-} as const;
+export const EXTERNAL_APIS = {} as const;
 
 export const TIMEOUTS = {
   API_REQUEST: 30000, // 30 seconds
@@ -63,7 +60,6 @@ export const SESSION_CONFIG = {
 
 export const STORAGE_KEYS = {
   GEMINI_API_KEY: "gemini-api-key",
-  CARTESIA_API_KEY: "cartesia-api-key",
   SIDEBAR_COLLAPSED: "sidebar-collapsed",
   GENAI_DISMISSED: "genai-notification-dismissed",
   RESUME_TEMPLATE: "resume-template",

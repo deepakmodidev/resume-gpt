@@ -21,10 +21,8 @@ const envSchema = z.object({
 
   // Optional - API Keys
   GEMINI_KEY: z.string().min(1).optional(),
-  CARTESIA_API_KEY: z.string().optional(),
 
   // Optional - Deployment Environment
-  AWS_LAMBDA_FUNCTION_NAME: z.string().optional(),
   VERCEL: z.string().optional(),
   NODE_ENV: z
     .enum(["development", "production", "test"])

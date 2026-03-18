@@ -14,7 +14,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Mic, ArrowRight, FileText, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { CartesiaApiKeyModal } from "@/components/CartesiaApiKeyModal";
 
 interface InterviewSetupProps {
   onStart: (resume: string, jd: string) => void;
@@ -249,18 +248,10 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
               >
                 Start Interview <ArrowRight className="h-5 w-5" />
               </Button>
-
-              {/* Cartesia Fast Voice Option */}
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  Want 10x faster voice?
-                </span>
-                <CartesiaApiKeyModal />
-              </div>
             </div>
 
             {/* Quick Tips */}
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
+            {/* <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
               <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">
                 💡 Quick Tips:
               </p>
@@ -270,7 +261,7 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
                 <li>The AI will respond automatically</li>
                 <li>Use a quiet environment for best results</li>
               </ul>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
       </div>
