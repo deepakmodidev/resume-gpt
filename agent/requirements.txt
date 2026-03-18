@@ -1,3 +1,4 @@
 livekit-agents[openai]~=1.4
 livekit-plugins-sarvam
+livekit-plugins-silero
 python-dotenv~=1.0

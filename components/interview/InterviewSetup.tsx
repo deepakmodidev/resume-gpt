@@ -1,5 +1,6 @@
 "use client";
 
+import { parseResume } from "@/app/actions/parse-resume"; // static import — not dynamic
 import { logger } from "@/lib/logger";
 import { useState, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
@@ -35,10 +36,7 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
       const formData = new FormData();
       formData.append("file", file);
 
-      // Dynamically import the server action if needed, or just standard import
-      // Since this is a client component, we import the server action directly
-      const { parseResume } = await import("@/app/actions/parse-resume");
-
+      // Static import at top — no dynamic import waterfall
       const result = await parseResume(formData);
 
       if (result.error) {
@@ -55,8 +53,15 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
       setFileName("");
     } finally {
       setIsUploadingFile(false);
-      e.target.value = ""; // Reset input
+      e.target.value = ""; // Reset file input
     }
+  };
+
+  // Clear resume text when switching tabs so stale data doesn't persist silently
+  const handleTabSwitch = (tab: "upload" | "paste") => {
+    setResumeTab(tab);
+    setResumeText("");
+    setFileName("");
   };
 
   return (
@@ -67,9 +72,7 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
               Ace Your Next <br />
-              <span className="text-blue-600 dark:text-blue-400">
-                Interview
-              </span>
+              <span className="text-blue-600 dark:text-blue-400">Interview</span>
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed">
               Practice with an AI recruiter that speaks, listens, and adapts to
@@ -114,7 +117,7 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pt-4">
-            {/* Resume Section with Tabs */}
+            {/* Resume Section */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -122,34 +125,33 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
                 </Label>
                 <div className="flex bg-muted/50 p-1 rounded-lg">
                   <button
-                    onClick={() => setResumeTab("upload")}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
-                      resumeTab === "upload"
+                    onClick={() => handleTabSwitch("upload")}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${resumeTab === "upload"
                         ? "bg-background shadow-xs text-foreground"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     Upload
                   </button>
                   <button
-                    onClick={() => setResumeTab("paste")}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
-                      resumeTab === "paste"
+                    onClick={() => handleTabSwitch("paste")}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${resumeTab === "paste"
                         ? "bg-background shadow-xs text-foreground"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     Paste Text
                   </button>
                 </div>
               </div>
 
-              <div className="min-h-[8px]">
+              {/* Fixed: was min-h-[8px] typo — now min-h-[80px] */}
+              <div className="min-h-[80px]">
                 {resumeTab === "upload" ? (
                   <div className="relative group h-full">
                     <input
                       type="file"
-                      accept=".txt,.pdf,.rtf"
+                      accept=".txt,.pdf,.rtf,.doc,.docx"
                       onChange={handleFileUpload}
                       className="hidden"
                       id="resume-upload"
@@ -157,13 +159,12 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
                     />
                     <label
                       htmlFor="resume-upload"
-                      className={`flex flex-row items-center justify-start gap-4 px-4 h-full min-h-[80px] border-2 border-dashed rounded-xl transition-all duration-200 ${
-                        isUploadingFile
+                      className={`flex flex-row items-center justify-start gap-4 px-4 h-full min-h-[80px] border-2 border-dashed rounded-xl transition-all duration-200 ${isUploadingFile
                           ? "cursor-not-allowed opacity-50 bg-muted/50 border-muted-foreground/25"
                           : fileName
                             ? "border-green-500/50 bg-green-50/50 dark:bg-green-900/10 cursor-pointer hover:bg-green-100/50 dark:hover:bg-green-900/20"
                             : "border-muted-foreground/25 cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/20 hover:border-blue-500/50 hover:shadow-inner"
-                      }`}
+                        }`}
                     >
                       {isUploadingFile ? (
                         <>
@@ -199,7 +200,7 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
                               Click to Upload
                             </p>
                             <p className="text-[10px] text-muted-foreground">
-                              PDF, TXT, RTF
+                              PDF, TXT, RTF, DOC, DOCX
                             </p>
                           </div>
                         </>
@@ -220,7 +221,7 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
               </div>
             </div>
 
-            {/* Job Description Section */}
+            {/* Job Description */}
             <div className="space-y-2">
               <Label
                 htmlFor="jd"
@@ -239,29 +240,14 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
               />
             </div>
 
-            <div className="space-y-3">
-              <Button
-                className="w-full text-lg font-semibold gap-2 shadow-lg hover:shadow-blue-500/20 transition-all transform active:scale-[0.98]"
-                size="lg"
-                onClick={() => onStart(resumeText, jdText)}
-                disabled={!resumeText.trim()}
-              >
-                Start Interview <ArrowRight className="h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Quick Tips */}
-            {/* <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
-              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                💡 Quick Tips:
-              </p>
-              <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1 ml-4 list-disc">
-                <li>Speak clearly and naturally</li>
-                <li>Click the mic button to stop speaking</li>
-                <li>The AI will respond automatically</li>
-                <li>Use a quiet environment for best results</li>
-              </ul>
-            </div> */}
+            <Button
+              className="w-full text-lg font-semibold gap-2 shadow-lg hover:shadow-blue-500/20 transition-all transform active:scale-[0.98]"
+              size="lg"
+              onClick={() => onStart(resumeText, jdText)}
+              disabled={!resumeText.trim()}
+            >
+              Start Interview <ArrowRight className="h-5 w-5" />
+            </Button>
           </CardContent>
         </Card>
       </div>

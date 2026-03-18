@@ -48,6 +48,24 @@ export async function POST(req: Request) {
       canSubscribe: true,
     });
 
+    // 6. Auto-Dispatch the Python Agent
+    // This tells the LiveKit Cloud to wake up our python worker and put them in this room.
+    // We also pass the resume data directly to the agent's metadata here.
+    at.roomConfig = {
+      name: roomName,
+      emptyTimeout: 10 * 60, // 10 minutes
+      maxParticipants: 2,
+      agents: [
+        {
+          agentName: "interview-agent",
+          metadata: JSON.stringify({
+            resumeText: resumeText.substring(0, 4000), 
+            jobDescription: jobDescription?.substring(0, 2000) || "",
+          }),
+        },
+      ],
+    } as any;
+
     // 6. Generate the JWT string
     const token = await at.toJwt();
 

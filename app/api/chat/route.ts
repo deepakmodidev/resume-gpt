@@ -1,293 +1,64 @@
-import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
-import db from "@/prisma/prisma";
-import { validateRequest, ChatRequestSchema } from "@/lib/validators";
-import { logger } from "@/lib/logger";
-import { AI_MODELS, AI_GENERATION_CONFIGS } from "@/lib/constants";
+import {
+  AccessToken,
+  RoomAgentDispatch,
+  RoomConfiguration,
+} from "livekit-server-sdk";
+import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 
-import { RESUME_BUILDER_PROMPT } from "@/lib/prompts";
-import { deepMerge } from "@/lib/utils";
-
-// Types
-interface ParsedResponse {
-  acknowledgement: string;
-  updatedSection: Record<string, unknown>;
-}
-
-const parseResponse = (text: string): ParsedResponse => {
-  const cleanAndParse = (input: string) => {
-    try {
-      // Remove markdown and trim
-      const cleaned = input
-        .replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1")
-        .trim();
-      return JSON.parse(cleaned);
-    } catch {
-      return null;
-    }
-  };
-
-  // 1. Attempt standard parsing
-  let parsed = cleanAndParse(text);
-
-  // 2. Fallback: Try regex extraction if standard parse failed
-  if (!parsed) {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) parsed = cleanAndParse(jsonMatch[0]);
-  }
-
-  // 3. Construct result
-  if (parsed) {
-    let ack = parsed.acknowledgement || parsed.response;
-
-    // Handle edge case: acknowledgement is an object/array
-    if (typeof ack === "object") {
-      try {
-        ack = JSON.stringify(ack);
-      } catch {
-        ack = "";
-      }
-    }
-
-    // Handle edge case: acknowledgement is empty
-    if (!ack || typeof ack !== "string" || !ack.trim()) {
-      ack = "Error: AI response text was empty.";
-    }
-
-    return {
-      acknowledgement: ack,
-      updatedSection: parsed.updatedSection || parsed.data || {},
-    };
-  }
-
-  // 4. Final Fallback: Return raw text (assuming AI failed to JSON-ify)
-  // If it looks like code/malformed JSON, show error
-  if (text.trim().startsWith("{") || text.includes('{"')) {
-    return {
-      acknowledgement: "Error: Invalid JSON response from AI.",
-      updatedSection: {},
-    };
-  }
-
-  return { acknowledgement: text, updatedSection: {} };
-};
-
-const upsertChat = async (
-  chatId: string,
-  userId: string,
-  message: string,
-  userMsg: unknown,
-  modelMsg: unknown,
-  resumeData: unknown,
-) => {
-  const chat = await db.chat.findUnique({ where: { id: chatId, userId } }); // 🎯 RAG: Database Retrieval - Gets stored conversation context
-  const newTitle = message.slice(0, 30) || "New ResumeGPT Chat";
-
-  if (chat) {
-    // Check if title is generic and should be updated with actual content
-    const isGenericTitle =
-      !chat.title ||
-      chat.title === "New Resume" ||
-      chat.title === "New ResumeGPT Chat";
-
-    await db.chat.update({
-      where: { id: chatId, userId },
-      data: {
-        messages: { push: [userMsg, modelMsg] as never }, // 🎯 RAG: Memory Extension - Appends to conversation history
-        resumeData: resumeData as never, // 🎯 RAG: Context Update - Updates stored resume context
-        // Update title only if it's currently generic
-        ...(isGenericTitle && { title: newTitle }),
-      },
-    });
-  } else {
-    // Handle race condition: saveResume might have created the chat between our check and create
-    try {
-      await db.chat.create({
-        data: {
-          id: chatId,
-          userId,
-          title: newTitle,
-          messages: [userMsg, modelMsg] as never,
-          resumeData: resumeData as never,
-          resumeTemplate: "classic",
-        },
-      });
-    } catch (error: unknown) {
-      // If unique constraint error, the chat was created by saveResume - update instead
-      if (
-        error instanceof Error &&
-        error.message.includes("Unique constraint")
-      ) {
-        await db.chat.update({
-          where: { id: chatId, userId },
-          data: {
-            messages: { push: [userMsg, modelMsg] as never },
-            resumeData: resumeData as never,
-            title: newTitle,
-          },
-        });
-      } else {
-        throw error; // Re-throw other errors
-      }
-    }
-  }
-};
-
-const handleError = (error: unknown, defaultStatus = 500) => {
-  const message = error instanceof Error ? error.message : "Unknown error";
-  const status = [
-    "Invalid history",
-    "Missing chat ID",
-    "Missing message or resume data",
-  ].includes(message)
-    ? 400
-    : defaultStatus;
-  return NextResponse.json({ error: message }, { status });
-};
-
-// Handlers
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const rawData = await req.json();
+    const { resumeText, jobDescription } = await req.json();
 
-    // Validate request with Zod
-    const validation = validateRequest(ChatRequestSchema, rawData);
-    if (!validation.success) {
-      const { error } = validation;
-      logger.warn("Chat validation failed", { error });
-      return NextResponse.json({ error }, { status: 400 });
-    }
-
-    // TypeScript now knows validation.data exists
-    const { history, resumeData, chatId, userApiKey } = validation.data;
-    const message = history[history.length - 1]?.parts?.[0]?.text;
-
-    if (!message) {
-      return NextResponse.json({ error: "Missing message" }, { status: 400 });
-    }
-
-    const authResult = await requireAuth();
-    if (!isAuthorized(authResult)) {
-      return authResult.response;
-    }
-    const { userId } = authResult;
-
-    const headerApiKey = req.headers.get("x-gemini-api-key");
-    const apiKey = headerApiKey || userApiKey || process.env.GEMINI_KEY;
-    if (!apiKey) {
+    if (!resumeText?.trim()) {
       return NextResponse.json(
-        { error: "API key not available" },
-        { status: 500 },
-      );
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: AI_MODELS.GEMINI_FLASH,
-      systemInstruction: `${RESUME_BUILDER_PROMPT}\n\nCURRENT RESUME DATA:\n${JSON.stringify(resumeData)}`,
-    });
-    const chat = model.startChat({
-      generationConfig: AI_GENERATION_CONFIGS.RESUME_CHAT,
-      history,
-    });
-    const result = await chat.sendMessage(message);
-    const response = parseResponse(result.response.text());
-
-    const acknowledgement =
-      response?.acknowledgement || "Error: AI response empty.";
-    const updatedSection = response?.updatedSection || {};
-
-    const mergedData = deepMerge(resumeData, updatedSection); // 🎯 RAG: Context Merging - Combines retrieved data with new updates
-
-    const userMsg = { role: "user", parts: [{ text: message }] };
-    const modelMsg = { role: "model", parts: [{ text: acknowledgement }] };
-
-    await upsertChat(
-      chatId,
-      userId,
-      message,
-      userMsg,
-      modelMsg,
-      mergedData, // 🎯 RAG: Database Storage - Stores context for future retrieval
-    );
-    return NextResponse.json({ response });
-  } catch (error) {
-    return handleError(error);
-  }
-}
-
-// Fetch user chats
-async function getUserChats(userId: string) {
-  return await db.chat.findMany({
-    where: { userId },
-    select: { id: true, title: true },
-    orderBy: { createdAt: "desc" },
-  });
-}
-
-export async function GET() {
-  try {
-    const authResult = await requireAuth();
-    if (!isAuthorized(authResult)) {
-      return authResult.response;
-    }
-
-    const chats = await getUserChats(authResult.userId);
-
-    return NextResponse.json({ chats });
-  } catch (error) {
-    return handleError(error);
-  }
-}
-
-export async function DELETE(req: NextRequest) {
-  try {
-    const authResult = await requireAuth();
-    if (!isAuthorized(authResult)) {
-      return authResult.response;
-    }
-
-    const { chatId } = await req.json();
-    if (!chatId)
-      return NextResponse.json({ error: "Chat ID required" }, { status: 400 });
-
-    const deleted = await db.chat.deleteMany({
-      where: { id: chatId, userId: authResult.userId },
-    });
-    if (!deleted.count)
-      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
-
-    return NextResponse.json({ message: "Chat deleted successfully" });
-  } catch (error) {
-    return handleError(error);
-  }
-}
-
-export async function PUT(req: NextRequest) {
-  try {
-    const authResult = await requireAuth();
-    if (!isAuthorized(authResult)) {
-      return authResult.response;
-    }
-
-    const { chatId, newName } = await req.json();
-    if (!chatId || !newName)
-      return NextResponse.json(
-        { error: "Chat ID and name required" },
+        { error: "Resume text is required to start an interview" },
         { status: 400 },
       );
+    }
 
-    const updated = await db.chat.updateMany({
-      where: { id: chatId, userId: authResult.userId },
-      data: { title: newName },
+    const roomName = `interview-${Date.now()}`;
+
+    // This JSON string flows to ctx.job.metadata in the Python agent
+    const agentMetadata = JSON.stringify({
+      resumeText: resumeText.substring(0, 4000),
+      jobDescription: jobDescription?.substring(0, 2000) || "",
     });
 
-    if (!updated.count)
-      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
-    return NextResponse.json({ message: "Chat updated successfully" });
+    const at = new AccessToken(env.LIVEKIT_API_KEY, env.LIVEKIT_API_SECRET, {
+      identity: `user-${Date.now()}`,
+    });
+
+    at.addGrant({
+      roomJoin: true,
+      room: roomName,
+      canPublish: true,
+      canPublishData: true,
+      canSubscribe: true,
+    });
+
+    // RoomAgentDispatch.metadata → ctx.job.metadata in Python agent
+    // Using proper typed imports — no `as any` cast needed
+    at.roomConfig = new RoomConfiguration({
+      agents: [
+        new RoomAgentDispatch({
+          agentName: "interview-agent",
+          metadata: agentMetadata,
+        }),
+      ],
+    });
+
+    const token = await at.toJwt();
+
+    return NextResponse.json({
+      token,
+      url: env.NEXT_PUBLIC_LIVEKIT_URL,
+    });
   } catch (error) {
-    return handleError(error);
+    console.error("Error generating LiveKit token:", error);
+    return NextResponse.json(
+      { error: "Failed to generate interview room" },
+      { status: 500 },
+    );
   }
 }
