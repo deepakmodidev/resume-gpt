@@ -41,3 +41,10 @@ next-env.d.ts
 .prettierignore
 
 .vscode
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
