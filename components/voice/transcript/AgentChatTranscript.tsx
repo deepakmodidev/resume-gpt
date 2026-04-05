@@ -4,7 +4,7 @@ import React from 'react';
 import type { AgentState, ReceivedMessage } from '@livekit/components-react';
 import { Conversation, ConversationContent, ConversationScrollButton } from './Conversation';
 import { Message, MessageContent, MessageResponse } from './Message';
-import { AgentChatIndicator } from './AgentChatIndicator';
+import { cn } from '@/lib/utils';
 
 export interface AgentChatTranscriptProps {
   /**
@@ -27,9 +27,9 @@ export function AgentChatTranscript({
   className 
 }: AgentChatTranscriptProps) {
   return (
-    <div className={className}>
-      <Conversation className="h-full bg-secondary/5 border border-border/50 rounded-2xl shadow-inner overflow-hidden">
-        <ConversationContent className="p-6 transition-all duration-300">
+    <div className={cn("relative h-full", className)}>
+      <Conversation className="h-full bg-transparent border-none overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_8%,black_92%,transparent)]">
+        <ConversationContent className="p-8 pt-10 pb-20 transition-all duration-300">
           {messages.map((receivedMessage) => {
             const { id, timestamp, from, message } = receivedMessage;
             const messageOrigin = from?.isLocal ? 'user' : 'assistant';
@@ -38,11 +38,11 @@ export function AgentChatTranscript({
 
             return (
               <Message key={id} from={messageOrigin}>
-                <div className="flex items-center gap-2 mb-1 px-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">
+                <div className="flex items-center gap-2 mb-1 px-1 opacity-80">
+                  <span className="text-[10px] uppercase tracking-widest">
                     {messageOrigin === 'user' ? 'Candidate' : 'Interviewer'}
                   </span>
-                  <span className="text-[10px] opacity-20">{time}</span>
+                  <span className="text-[10px] tracking-widest">{time}</span>
                 </div>
                 <MessageContent>
                   <MessageResponse>{message}</MessageResponse>
@@ -50,12 +50,6 @@ export function AgentChatTranscript({
               </Message>
             );
           })}
-          
-          {agentState === 'thinking' && (
-            <div className="mt-4 px-1 opacity-100">
-              <AgentChatIndicator size="sm" />
-            </div>
-          )}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>

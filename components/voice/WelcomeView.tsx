@@ -1,85 +1,245 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { Paperclip, Mic, Loader2 } from 'lucide-react';
+import {
+  Mic,
+  ArrowRight,
+  FileText,
+  Loader2,
+  Upload
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import { WelcomeViewProps } from '@/types/voice';
 
-interface WelcomeViewProps {
-  onStart: () => void;
-  onFileChange: (file: File) => void;
-  isConnecting: boolean;
-  selectedFile?: File | null;
-  isResumeReady: boolean;
-}
-
-export function WelcomeView({ 
-  onStart, 
-  onFileChange, 
-  isConnecting, 
+export function WelcomeView({
+  onStart,
+  onFileChange,
+  isConnecting,
+  isExtracting = false,
   selectedFile,
-  isResumeReady
+  isResumeReady,
+  resumeText,
+  setResumeText,
+  jdText,
+  setJdText
 }: WelcomeViewProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [resumeTab, setResumeTab] = useState<"upload" | "paste">("upload");
 
-  // Button should be disabled if:
-  // 1. No file selected
-  // 2. File is currently being extracted (isConnecting is true in parent during extraction)
-  // 3. Resume text is not yet ready/parsed
-  const isStartDisabled = !selectedFile || isConnecting || !isResumeReady;
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    onFileChange(file);
+    e.target.value = ""; // Reset input
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-12 p-12 bg-secondary/5 border border-border/20 rounded-[32px] backdrop-blur-sm shadow-xl animate-in fade-in zoom-in-95 duration-500">
-      <div className="relative group">
-        <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shadow-[0_0_40px_rgba(31,213,249,0.1)] transition-transform duration-700 group-hover:scale-110">
-          <Mic className="w-10 h-10 text-primary" />
+    <div className="w-full flex items-center justify-center">
+      <div className="max-w-5xl w-full grid md:grid-cols-2 gap-12">
+
+        {/* Left Side: Pitch */}
+        <div className="space-y-6 flex flex-col justify-center">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+              Ace Your Next <br />
+              <span className="text-blue-600 dark:text-blue-400">
+                Interview
+              </span>
+            </h1>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Practice with an AI recruiter that speaks, listens, and adapts to
+              your specific job role. Prepare for behavioral and technical
+              questions in a realistic voice environment.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl border">
+              <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
+                <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">Context-Aware</h3>
+                <p className="text-xs text-muted-foreground">
+                  Tailored questions based on your resume
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl border">
+              <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full">
+                <Mic className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm">Voice Interaction</h3>
+                <p className="text-xs text-muted-foreground">
+                  Speak naturally, no typing required
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="absolute inset-0 rounded-full border border-primary/10 animate-ping opacity-30" />
-      </div>
 
-      <div className="text-center gap-4 max-w-md flex flex-col items-center">
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text">
-          AI Voice Interview
-        </h1>
-        <p className="text-muted-foreground leading-relaxed">
-          Ready to practice? Upload your resume to give the AI agent more context about your experience.
-        </p>
-      </div>
+        {/* Right Side: Form */}
+        <Card className="border-2 relative overflow-hidden bg-card">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+          <CardHeader className="space-y-1 pb-2">
+            <CardTitle className="text-2xl">Setup Interview Context</CardTitle>
+            <CardDescription className="text-base">
+              Provide your details so the AI can simulate a relevant interview.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-4">
+            {/* Resume Section with Tabs */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  1. Resume Context
+                </Label>
+                <div className="flex bg-muted/50 p-1 rounded-lg">
+                  <button
+                    onClick={() => setResumeTab("upload")}
+                    className={cn(
+                      "px-3 py-1 text-xs font-medium rounded-md",
+                      resumeTab === "upload"
+                        ? "bg-background text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Upload
+                  </button>
+                  <button
+                    onClick={() => setResumeTab("paste")}
+                    className={cn(
+                      "px-3 py-1 text-xs font-medium rounded-md",
+                      resumeTab === "paste"
+                        ? "bg-background text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Paste Text
+                  </button>
+                </div>
+              </div>
 
-      <div className="flex flex-col items-center gap-6 w-full max-w-sm">
-        <input 
-          type="file" 
-          ref={fileInputRef}
-          className="hidden" 
-          accept=".pdf"
-          onChange={(e) => e.target.files?.[0] && onFileChange(e.target.files[0])}
-        />
+              <div className="min-h-[8px]">
+                {resumeTab === "upload" ? (
+                  <div className="relative group h-full">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="resume-upload"
+                      ref={fileInputRef}
+                      disabled={isConnecting}
+                    />
+                    <label
+                      htmlFor="resume-upload"
+                      className={cn(
+                        "flex flex-row items-center justify-start gap-4 px-4 h-full min-h-[80px] border-2 border-dashed rounded-xl",
+                        isConnecting
+                          ? "cursor-not-allowed opacity-50 bg-muted/50 border-muted-foreground/25"
+                          : selectedFile
+                            ? "border-green-500/50 bg-green-50/50 dark:bg-green-900/10 cursor-pointer hover:bg-green-100/50 dark:hover:bg-green-900/20"
+                            : "border-muted-foreground/25 cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/20 hover:border-blue-500/50"
+                      )}
+                    >
+                      {isExtracting ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                          <span className="text-sm font-medium text-muted-foreground">
+                            Processing Resume...
+                          </span>
+                        </>
+                      ) : selectedFile ? (
+                        <>
+                          <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                            <FileText className="w-5 h-5 text-green-600 dark:text-green-400" />
+                          </div>
+                          <div className="text-left flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">
+                              {selectedFile.name}
+                            </p>
+                            <p className="text-[10px] text-green-600 dark:text-green-400 font-medium">
+                              Ready for interview
+                            </p>
+                          </div>
+                          <div className="bg-background/50 p-1.5 rounded-md text-xs text-muted-foreground border">
+                            Replace
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <Upload className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div className="text-left">
+                            <p className="text-sm font-medium text-foreground">
+                              Click to Upload
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">
+                              PDF (Max 5MB)
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                ) : (
+                  <Textarea
+                    id="resume"
+                    placeholder="Paste your full resume content here..."
+                    className="h-full min-h-[80px] resize-none text-sm bg-muted/30 focus:bg-background transition-colors"
+                    value={resumeText}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                      setResumeText(e.target.value)
+                    }
+                  />
+                )}
+              </div>
+            </div>
 
-        <div className="flex items-center gap-4 w-full">
-          <Button 
-            variant="outline" 
-            className="flex-1 h-12 border-dashed border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-colors rounded-2xl"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isConnecting}
-          >
-            <Paperclip className="w-4 h-4 mr-2 text-primary/70" />
-            <span className="truncate max-w-[150px] font-medium">
-              {selectedFile ? selectedFile.name : "Attach Resume (PDF)"}
-            </span>
-          </Button>
+            {/* Job Description Section */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="jd"
+                className="block mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                2. Job Description (Optional)
+              </Label>
+              <Textarea
+                id="jd"
+                placeholder="Paste the job description..."
+                className="min-h-[80px] h-[80px] resize-none text-sm bg-muted/30 focus:bg-background transition-colors"
+                value={jdText}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                  setJdText(e.target.value)
+                }
+              />
+            </div>
 
-          <Button 
-            className="h-12 px-10 rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform"
-            onClick={onStart}
-            disabled={isStartDisabled}
-          >
-            {isConnecting ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            ) : (
-              <Mic className="w-4 h-4 mr-2" />
-            )}
-            Start
-          </Button>
-        </div>
+            <div className="space-y-3">
+              <Button
+                className="w-full text-lg font-semibold gap-2 transition-colors"
+                onClick={onStart}
+                disabled={(!resumeText.trim() && !isResumeReady) || isConnecting}
+              >
+                Start Interview
+                {isConnecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="h-5 w-5" />}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

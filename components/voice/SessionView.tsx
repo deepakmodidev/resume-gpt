@@ -1,16 +1,23 @@
-"use client";
-
-import React, { useMemo } from 'react';
 import { 
-  useVoiceAssistant, 
   RoomAudioRenderer,
+  useAgent,
+  useLocalParticipant,
+  useMediaDeviceSelect,
+  useMultibandTrackVolume,
   useSessionContext,
   useSessionMessages,
-  useAgent,
-  BarVisualizer,
-  useMediaDeviceSelect,
+  useVoiceAssistant,
+  type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react';
-import { Mic, LogOut } from 'lucide-react';
+import { Track } from 'livekit-client';
+import { 
+  Mic, 
+  LogOut, 
+  Ear, 
+  Brain, 
+  Volume2, 
+  Zap,
+} from "lucide-react";
 import { AuraVisualizer } from './AuraVisualizer';
 import { AgentChatTranscript } from './transcript/AgentChatTranscript';
 import { 
@@ -18,125 +25,138 @@ import {
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
-  SelectValue 
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 /**
- * 🛠️ HELPER: Standard Glass Pill Wrapper (Borderless)
+ * 📊 CANDIDATE VISUALIZER (Replicated from Interview GPT)
  */
-const ControlPill = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-  <div className={cn(
-    "flex items-center gap-1 p-2 px-3 rounded-full bg-background/40",
-    "backdrop-blur-3xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.4)]",
-    "transition-colors hover:bg-background/60",
-    className
-  )}>
-    {children}
-  </div>
-);
+const CandidateVisualizer = ({ trackRef }: { trackRef: TrackReferenceOrPlaceholder | undefined }) => {
+  const bands = useMultibandTrackVolume(trackRef, { 
+    bands: 3, 
+    loPass: 5,   
+    hiPass: 80, // Concentrated range for better balance
+    analyserOptions: { smoothingTimeConstant: 0.15 }
+  });
+  
+  return (
+    <div className="flex items-center gap-[2px] h-4">
+      {bands.map((band, i) => {
+        // Reduced multipliers to restore "bounce" and reactivity
+        const multiplier = i === 0 ? 80 : i === 1 ? 120 : 200;
+        return (
+          <div 
+            key={i} 
+            className="w-[3px] bg-primary rounded-full transition-all duration-75 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+            style={{ height: `${Math.max(30, Math.min(100, band * multiplier))}%` }}
+          />
+        );
+      })}
+    </div>
+  );
+};
 
 /**
- * 🚦 HELPER: State-Aware Status Pulse
+ * 🚦 STATUS PULSE
  */
 const StatusPulse = ({ state }: { state: string }) => {
   const config = {
-    speaking: { color: "bg-emerald-400 shadow-emerald-400/50", label: "Agent Speaking" },
-    listening: { color: "bg-blue-400 shadow-blue-400/50", label: "Listening" },
-    thinking: { color: "bg-amber-400 shadow-amber-400/50", label: "Processing..." },
-    default: { color: "bg-muted-foreground/30 shadow-transparent", label: "Ready" }
+    speaking: { icon: Volume2, label: "Agent Speaking" },
+    listening: { icon: Ear, label: "Listening" },
+    thinking: { icon: Brain, label: "Thinking..." },
+    default: { icon: Zap, label: "Ready" }
   };
-  const { color, label } = config[state as keyof typeof config] || config.default;
+  const { icon: Icon, label } = config[state as keyof typeof config] || config.default;
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background/20 backdrop-blur-md">
-      <div className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_8px] transition-colors duration-500 animate-pulse", color)} />
-      <span className="text-[11px] font-semibold text-muted-foreground/80 tracking-wide">{label}</span>
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/80 backdrop-blur-md border border-border/50 transition-all duration-500">
+      <Icon className={cn("w-3.5 h-3.5 text-foreground")} />
+      <span className="text-[10px] font-medium text-foreground tracking-wider uppercase">{label}</span>
     </div>
   );
 };
 
 export function SessionView() {
-  const { state, audioTrack } = useVoiceAssistant();
+  const { state, audioTrack: agentAudioTrack } = useVoiceAssistant();
   const session = useSessionContext();
   const { messages } = useSessionMessages(session);
   const { state: agentState } = useAgent();
+  const { microphoneTrack, localParticipant } = useLocalParticipant();
   const { devices, activeDeviceId, setActiveMediaDevice } = useMediaDeviceSelect({ kind: 'audioinput' });
 
-  const activeLabel = useMemo(() => 
-    devices.find(d => d.deviceId === activeDeviceId)?.label || "Select Microphone",
-  [devices, activeDeviceId]);
+  const activeMicLabel = devices.find(d => d.deviceId === activeDeviceId)?.label || "Microphone";
 
   return (
     <div className="flex flex-col h-[75vh] w-full max-w-6xl mx-auto gap-8 px-4 lg:px-0">
       <RoomAudioRenderer />
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-0">
-        {/* Left: Interactive Aura Visualization (Borderless) */}
-        <div className="relative flex items-center justify-center bg-secondary/5 rounded-[32px] overflow-hidden p-12 backdrop-blur-sm shadow-[inset_0_0_80px_rgba(31,213,249,0.03)] group transition-colors duration-700 hover:bg-secondary/10">
-          <div className="relative w-full aspect-square flex items-center justify-center max-w-sm">
-            <AuraVisualizer state={state} audioTrack={audioTrack} className="w-full h-full scale-110" />
-            
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-              <span className="text-[10px] font-bold tracking-[.25em] text-muted-foreground/30 uppercase">System Status</span>
-              <StatusPulse state={state} />
-            </div>
+        {/* Left: AI Interviewer */}
+        <div className="relative flex items-center justify-center bg-muted/40 rounded-[32px] overflow-hidden p-12 backdrop-blur-sm border border-black/5 dark:border-white/5">
+          <div className="relative w-full aspect-square flex items-center justify-center max-w-[300px]">
+            <AuraVisualizer state={state} audioTrack={agentAudioTrack} className="w-full h-full" />
+          </div>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+            <StatusPulse state={state} />
           </div>
         </div>
 
-        {/* Right: Message Transcript (Borderless) */}
+        {/* Right: Transcript */}
         <div className="flex flex-col min-h-0">
           <AgentChatTranscript 
             messages={messages} 
             agentState={agentState} 
-            className="flex-1 min-h-0 rounded-[32px] bg-secondary/5 overflow-hidden shadow-xl" 
+            className="flex-1 min-h-0 rounded-[32px] bg-muted/40 border border-black/5 dark:border-white/5 overflow-hidden" 
           />
         </div>
       </div>
 
-      {/* 🚀 DECOUPLED PREMIUM CONTROLS */}
-      <div className="flex justify-center items-center gap-4 shrink-0 py-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-        
-        {/* Pill A: Media Management */}
-        <ControlPill>
-          <Select value={activeDeviceId} onValueChange={setActiveMediaDevice}>
-            <SelectTrigger className="w-fit h-10 bg-secondary/10 border-none focus:ring-0 text-sm font-semibold hover:bg-secondary/20 rounded-full transition-colors flex gap-3 px-4 shadow-none">
-              <Mic className="w-4 h-4 text-primary/80 shrink-0" />
-              <div className="text-left whitespace-nowrap">
-                <SelectValue placeholder={activeLabel} />
-              </div>
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl border-border/50 backdrop-blur-3xl bg-background/80">
-              {devices.map((device) => (
-                <SelectItem key={device.deviceId} value={device.deviceId} className="rounded-xl cursor-pointer hover:bg-primary/10">
-                  {device.label || `Mic ${device.deviceId.slice(0, 5)}...`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <div className="h-8 w-[80px] flex items-center justify-center px-1 mr-1">
-             <BarVisualizer trackRef={audioTrack} barCount={12} className="h-full w-full opacity-60" />
+      {/* 🚀 COMPACT CONTROL BAR */}
+      <div className="flex justify-center items-center py-6">
+        <div className="flex items-center p-1.5 rounded-full bg-background/80 backdrop-blur-3xl border border-border shadow-lg">
+          
+          {/* User Mic & Visualizer */}
+          <div className="flex items-center gap-3 pl-4 pr-1 h-8">
+            <div className="flex items-center gap-3 text-primary/80">
+              <Mic className="w-4 h-4" />
+              <CandidateVisualizer 
+                trackRef={microphoneTrack ? { 
+                  publication: microphoneTrack,
+                  participant: localParticipant,
+                  source: Track.Source.Microphone
+                } : undefined} 
+              />
+            </div>
+            
+            <Select value={activeDeviceId} onValueChange={setActiveMediaDevice}>
+              <SelectTrigger className="flex items-center gap-1.5 h-full bg-transparent border-none focus:ring-0 text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors px-2 shadow-none max-w-[160px]">
+                <span className="truncate max-w-[110px]">{activeMicLabel}</span>
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-border backdrop-blur-3xl bg-background/90 shadow-2xl">
+                {devices.map((device) => (
+                  <SelectItem key={device.deviceId} value={device.deviceId} className="rounded-xl text-xs">
+                    {device.label || `Device ${device.deviceId.slice(0, 4)}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </ControlPill>
 
-        {/* Pill B: Disconnect Session */}
-        <ControlPill>
+          <div className="w-px h-4 bg-border mx-2" />
+
+          {/* End Interview */}
           <Button 
-            variant="destructive" size="sm" onClick={() => session.end()}
-            className="h-10 px-7 rounded-full font-bold shadow-lg shadow-destructive/20 hover:scale-[1.03] active:scale-[0.98] transition-transform flex gap-2.5 bg-destructive/90 hover:bg-destructive"
+            variant="ghost" 
+            size="sm" 
+            onClick={() => session.end()}
+            className="h-8 px-5 rounded-full text-xs font-medium text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all flex gap-2"
           >
-            <LogOut className="w-4 h-4" />
-            Disconnect
+            <LogOut className="w-3.5 h-3.5" />
+            END SESSION
           </Button>
-        </ControlPill>
+        </div>
       </div>
     </div>
   );
 }
-
-
-
-
-

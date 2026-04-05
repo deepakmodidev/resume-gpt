@@ -15,8 +15,8 @@ export async function POST(req: Request) {
     */
     const userId = "guest-" + Math.random().toString(36).slice(2, 7);
 
-    // 2. Parse request body for resume context
-    const { resume } = await req.json();
+    // 2. Parse request body for resume & jd context
+    const { resume, jd } = await req.json();
 
     if (!resume) {
       return NextResponse.json(
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     const participantIdentity = `user-${userId}`;
 
     // 4. Dispatch the Agent (Official 2026 Pattern)
-    // We pass the resume context through Job Metadata to decouple it from JWT limits.
+    // We pass the resume & jd context through Job Metadata to decouple it from JWT limits.
     const dispatchClient = new AgentDispatchClient(
       env.LIVEKIT_URL,
       env.LIVEKIT_API_KEY,
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     console.log(`--- Dispatching agent for room: ${roomName} ---`);
     await dispatchClient.createDispatch(roomName, "interview-gpt", {
-      metadata: JSON.stringify({ resume }),
+      metadata: JSON.stringify({ resume, jd: jd || "" }),
     });
 
     // 5. Generate Access Token for the User

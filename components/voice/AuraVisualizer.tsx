@@ -1,18 +1,31 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { ShaderToy } from './ShaderToy';
+import { useTheme } from 'next-themes';
 import { useAuraVisualizer } from '@/hooks/useAuraVisualizer';
+import { type TrackReferenceOrPlaceholder } from '@livekit/components-react';
+import { ShaderToy } from './ShaderToy';
 
-const DEFAULT_COLOR = '#1FD5F9';
+const DEFAULT_COLOR = '#3B82F6';
 
-function hexToRgb(hexColor: string) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hexColor);
-  return result ? [
-    parseInt(result[1], 16) / 255,
-    parseInt(result[2], 16) / 255,
-    parseInt(result[3], 16) / 255
-  ] : [0, 0.7, 1];
+function hexToRgb(colorStr: string) {
+  if (typeof window === 'undefined') return [0.23, 0.51, 0.96];
+  
+  // Create a temporary element to let the browser resolve the theme color (hex, hsl, or rgb)
+  const temp = document.createElement('div');
+  temp.style.color = colorStr;
+  document.body.appendChild(temp);
+  const color = getComputedStyle(temp).color;
+  document.body.removeChild(temp);
+  
+  const matches = color.match(/\d+(\.\d+)?/g);
+  if (!matches) return [0.23, 0.51, 0.96];
+  
+  return [
+    parseInt(matches[0]) / 255,
+    parseInt(matches[1]) / 255,
+    parseInt(matches[2]) / 255
+  ];
 }
 
 const auraShader = `
@@ -142,17 +155,48 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
   pp *= 1.0 / ITERATIONS;
   vec3 bloom = bloomSource / (bloomSource + 2e4);
-  vec3 color = (-pp + bloom * 3.0 * uBloom) * 1.2;
-  color += (randFibo(fragCoord).x - 0.5) / 255.0; // Dither
-  color = Tonemap(color);
   
-  float alpha = luma(color) * uMix;
-  fragColor = vec4(color * uMix, clamp(alpha, 0.1, 0.9));
+  // Theme-aware color adjustment: Increase intensity and darken slightly in light mode
+  float bloomStrength = mix(3.0, 1.5, uMode); // Less white-out bloom in light mode
+  vec3 baseColor = (-pp + bloom * bloomStrength * uBloom) * 1.25;
+  
+  if(uMode == 1.0) {
+    baseColor.r *= 0.05; // Kill red to prevent violet
+    baseColor.g *= 0.8;  // Bring back green for cyan shimmers
+    baseColor.b *= 2.2;  // High blue saturation
+    baseColor = pow(baseColor, vec3(1.7)); // Deepen the shadows for a "rich" feel
+    baseColor *= 1.4;     // Final intensity punch
+  }
+  
+  baseColor += (randFibo(fragCoord).x - 0.5) / 255.0; // Dither
+  vec3 finalColor = Tonemap(baseColor);
+  
+  float alpha = luma(finalColor) * uMix;
+  if(uMode == 1.0) alpha = pow(alpha, 0.7) * 1.2; // Thicken the alpha for better solid feel
+  
+  // Apply a radial mask to ensure absolute transparency at the square corners
+  vec2 maskPos = fragCoord / iResolution.xy - 0.5;
+  float mask = smoothstep(0.5, 0.4, length(maskPos));
+  
+  fragColor = vec4(finalColor * uMix, alpha * mask);
 }`;
 
-export function AuraVisualizer({ state, audioTrack, className }: { state?: string, audioTrack?: any, className?: string }) {
+export function AuraVisualizer({ 
+  state, 
+  audioTrack, 
+  className, 
+  color = DEFAULT_COLOR 
+}: { 
+  state?: string, 
+  audioTrack?: TrackReferenceOrPlaceholder | undefined, 
+  className?: string,
+  color?: string
+}) {
   const { speed, scale, amplitude, frequency, brightness } = useAuraVisualizer(state, audioTrack);
-  const rgbColor = useMemo(() => hexToRgb(DEFAULT_COLOR), []);
+  const { resolvedTheme } = useTheme();
+  
+  const rgbColor = useMemo(() => hexToRgb(color), [color]);
+  const isLightMode = resolvedTheme === 'light';
 
   const uniforms = useMemo(() => ({
     uSpeed: { type: '1f', value: speed },
@@ -161,16 +205,15 @@ export function AuraVisualizer({ state, audioTrack, className }: { state?: strin
     uFrequency: { type: '1f', value: frequency },
     uMix: { type: '1f', value: brightness },
     uColor: { type: '3fv', value: rgbColor },
-    // 1:1 Parameter Additions
-    uShape: { type: '1f', value: 1.0 }, // Circle
+    uShape: { type: '1f', value: 1.0 }, 
     uBlur: { type: '1f', value: 0.2 },
     uBloom: { type: '1f', value: 0.05 },
     uSpacing: { type: '1f', value: 0.5 },
     uColorShift: { type: '1f', value: 0.05 },
     uVariance: { type: '1f', value: 0.1 },
-    uSmoothing: { type: '1f', value: 1.0 },
-    uMode: { type: '1f', value: 0.0 }, // Dark mode
-  }), [speed, scale, amplitude, frequency, brightness, rgbColor]);
+    uSmoothing: { type: '1f', value: 1.25 },
+    uMode: { type: '1f', value: isLightMode ? 1.0 : 0.0 }, // Dynamic theme uniform
+  }), [speed, scale, amplitude, frequency, brightness, rgbColor, isLightMode]);
 
   return (
     <div className={className}>
