@@ -9,7 +9,6 @@ export const API_ENDPOINTS = {
   COVER_LETTER: "/api/cover-letter/generate",
   COVER_LETTER_PDF: "/api/generate-cover-letter-pdf",
   PDF: "/api/generate-pdf",
-  INTERVIEW: "/api/interview/chat",
   VALIDATE_KEY: "/api/validate-gemini-key",
   HEALTH: "/api/health",
   PARSE_RESUME: "/actions/parse-resume",
@@ -38,11 +37,6 @@ export const AI_GENERATION_CONFIGS = {
     temperature: 0.7,
     topP: 0.9,
     maxOutputTokens: 2048,
-  },
-  INTERVIEW: {
-    temperature: 0.7,
-    topP: 0.8,
-    maxOutputTokens: 150, // Very short responses for faster speech
   },
 } as const;
 

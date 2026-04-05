@@ -87,12 +87,6 @@ export function Header() {
               Cover Letter
             </Link>
             <Link
-              href="/interview"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
-            >
-              Interview Prep
-            </Link>
-            <Link
               href="/"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >

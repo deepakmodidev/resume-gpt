@@ -14,7 +14,6 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 - **Google OAuth authentication**
 - **Chat-based resume building**
 - **Real-time ATS scoring with optimization suggestions**
-- **AI Interview Prep** _[Experimental - WIP]_
 
 ## Tech Stack
 
