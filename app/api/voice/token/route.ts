@@ -60,10 +60,11 @@ export async function POST(req: Request) {
       canSubscribe: true,
     });
 
-    const token = await at.toJwt();
+    const participantToken = await at.toJwt();
 
     return NextResponse.json({
-      token,
+      participantToken,
+      participantName: "Candidate",
       roomName,
       serverUrl: env.LIVEKIT_URL,
     });

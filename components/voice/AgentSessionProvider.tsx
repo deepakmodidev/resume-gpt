@@ -1,0 +1,50 @@
+"use client";
+
+import React from 'react';
+import { Room } from 'livekit-client';
+import {
+  RoomAudioRenderer,
+  type RoomAudioRendererProps,
+  SessionProvider,
+  type SessionProviderProps,
+  type UseSessionReturn,
+} from '@livekit/components-react';
+
+/**
+ * Props for the AgentSessionProvider component.
+ * Combines SessionProviderProps with RoomAudioRendererProps.
+ */
+export type AgentSessionProviderProps = SessionProviderProps &
+  RoomAudioRendererProps & {
+    /**
+     * The room to provide.
+     */
+    room?: Room;
+    /**
+     * The session to provide.
+     */
+    session: UseSessionReturn;
+    /**
+     * The children to render.
+     */
+    children: React.ReactNode;
+  };
+
+/**
+ * A provider component for agent sessions that wraps SessionProvider
+ * and includes RoomAudioRenderer for audio playback.
+ * 
+ * Ported from interview-gpt to resolve "outside of SessionProvider" error.
+ */
+export function AgentSessionProvider({
+  session,
+  children,
+  ...roomAudioRendererProps
+}: AgentSessionProviderProps) {
+  return (
+    <SessionProvider session={session}>
+      {children}
+      <RoomAudioRenderer {...roomAudioRendererProps} />
+    </SessionProvider>
+  );
+}
