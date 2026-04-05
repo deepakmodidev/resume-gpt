@@ -75,6 +75,12 @@ export function Header() {
           {/* Navigation Links - Center (Hidden on Mobile) */}
           <nav className="hidden md:flex items-center justify-center gap-8">
             <Link
+              href="/voice-interview"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
+            >
+              AI Interview
+            </Link>
+            <Link
               href="/ats-analyzer"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
             >
@@ -85,18 +91,6 @@ export function Header() {
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
             >
               Cover Letter
-            </Link>
-            <Link
-              href="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Features
-            </Link>
-            <Link
-              href="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              About
             </Link>
           </nav>
 

@@ -21,7 +21,12 @@ const envSchema = z.object({
 
   // Optional - API Keys
   GEMINI_KEY: z.string().min(1).optional(),
-  
+  GROQ_API_KEY: z.string().min(1).optional(),
+
+  // Required - LiveKit
+  LIVEKIT_API_KEY: z.string().min(1, "LIVEKIT_API_KEY is required"),
+  LIVEKIT_API_SECRET: z.string().min(1, "LIVEKIT_API_SECRET is required"),
+  LIVEKIT_URL: z.string().url("Invalid LIVEKIT_URL format"),
 
   // Optional - Deployment Environment
   VERCEL: z.string().optional(),
