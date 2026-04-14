@@ -106,7 +106,7 @@ export function Footer() {
             </p>
             <nav className="flex gap-4">
               <Link
-                href="https://deepakmodi.tech"
+                href="https://deepakmodi.dev"
                 target="_blank"
                 className="text-base text-muted-foreground hover:text-blue-500 transition-colors duration-300 hover:font-medium"
               >

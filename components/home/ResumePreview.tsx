@@ -70,7 +70,7 @@ export function ResumePreview() {
                   </div>
                   <div className="hidden md:flex items-center gap-1 justify-end">
                     <Globe className="h-3 w-3" />
-                    <span>deepakmodi.tech</span>
+                    <span>deepakmodi.dev</span>
                   </div>
                 </div>
               </div>

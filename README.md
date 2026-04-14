@@ -39,7 +39,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/decodewithdeepak/resume-gpt.git
+   git clone https://github.com/deepakmodidev/resume-gpt.git
    cd resume-gpt
    ```
 2. Install dependencies:

@@ -86,22 +86,14 @@ function VoiceInterviewContent({
 
   // Connection timeout: 12 seconds to find an agent
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    const isRoomConnecting = session.connectionState === 'connecting' || session.connectionState === 'connected';
-    
-    // If room is connected/connecting but interviewer is not ready
-    if (isRoomConnecting && !isInterviewerReady) {
-      timeoutId = setTimeout(() => {
+    if (session.connectionState === 'connected' && !isInterviewerReady) {
+      const timeout = setTimeout(() => {
         setIsTimedOut(true);
-        toast.error(
-          "Interviewer process not detected. Please run 'npx tsx agent.ts dev' in your terminal.",
-          { duration: 8000 }
-        );
+        toast.error("Interviewer process not detected. Check your terminal.");
         session.disconnect();
-      }, 15000); // 15s for extra buffer
+      }, 15000);
+      return () => clearTimeout(timeout);
     }
-
-    return () => clearTimeout(timeoutId);
   }, [session.connectionState, isInterviewerReady, session]);
 
   // View Switching Logic: Stay in WelcomeView until agent is TRULY READY

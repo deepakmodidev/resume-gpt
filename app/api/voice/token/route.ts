@@ -5,15 +5,7 @@ import { requireAuth } from "@/lib/auth-middleware";
 
 export async function POST(req: Request) {
   try {
-    // 1. Authenticate (Optional toggled via requireAuth)
-    // For now, mirroring the "interview-gpt" style where focus is on functionality.
-    // Uncomment the lines below to enforce auth in production.
-    /*
-    const auth = await requireAuth();
-    if (!auth.authorized) return auth.response;
-    const userId = auth.userId;
-    */
-    const userId = "guest-" + Math.random().toString(36).slice(2, 7);
+    const userId = crypto.randomUUID().slice(0, 8);
 
     // 2. Parse request body for resume & jd context
     const { resume, jd } = await req.json();

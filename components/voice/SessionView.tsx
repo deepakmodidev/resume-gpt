@@ -57,17 +57,18 @@ const CandidateVisualizer = ({ trackRef }: { trackRef: TrackReferenceOrPlacehold
   );
 };
 
+const PULSE_CONFIG = {
+  speaking: { icon: Volume2, label: "Agent Speaking" },
+  listening: { icon: Ear, label: "Listening" },
+  thinking: { icon: Brain, label: "Thinking..." },
+  default: { icon: Zap, label: "Ready" }
+} as const;
+
 /**
  * 🚦 STATUS PULSE
  */
 const StatusPulse = ({ state }: { state: string }) => {
-  const config = {
-    speaking: { icon: Volume2, label: "Agent Speaking" },
-    listening: { icon: Ear, label: "Listening" },
-    thinking: { icon: Brain, label: "Thinking..." },
-    default: { icon: Zap, label: "Ready" }
-  };
-  const { icon: Icon, label } = config[state as keyof typeof config] || config.default;
+  const { icon: Icon, label } = PULSE_CONFIG[state as keyof typeof PULSE_CONFIG] || PULSE_CONFIG.default;
 
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/80 backdrop-blur-md border border-border/50 transition-all duration-500">

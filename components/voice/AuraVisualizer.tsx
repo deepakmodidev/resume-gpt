@@ -8,24 +8,15 @@ import { ShaderToy } from './ShaderToy';
 
 const DEFAULT_COLOR = '#3B82F6';
 
-function hexToRgb(colorStr: string) {
-  if (typeof window === 'undefined') return [0.23, 0.51, 0.96];
-  
-  // Create a temporary element to let the browser resolve the theme color (hex, hsl, or rgb)
-  const temp = document.createElement('div');
-  temp.style.color = colorStr;
-  document.body.appendChild(temp);
-  const color = getComputedStyle(temp).color;
-  document.body.removeChild(temp);
-  
-  const matches = color.match(/\d+(\.\d+)?/g);
-  if (!matches) return [0.23, 0.51, 0.96];
-  
-  return [
-    parseInt(matches[0]) / 255,
-    parseInt(matches[1]) / 255,
-    parseInt(matches[2]) / 255
-  ];
+function parseColorToRgb(color: string): [number, number, number] {
+  if (color.startsWith('#')) {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+    return [r, g, b];
+  }
+  return [0.23, 0.51, 0.96]; // Default LiveKit Blue
 }
 
 const auraShader = `
@@ -195,7 +186,7 @@ export function AuraVisualizer({
   const { speed, scale, amplitude, frequency, brightness } = useAuraVisualizer(state, audioTrack);
   const { resolvedTheme } = useTheme();
   
-  const rgbColor = useMemo(() => hexToRgb(color), [color]);
+  const rgbColor = useMemo(() => parseColorToRgb(color), [color]);
   const isLightMode = resolvedTheme === 'light';
 
   const uniforms = useMemo(() => ({

@@ -64,28 +64,20 @@ export function WelcomeView({
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl border">
-              <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
-                <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
+            {[
+              { icon: FileText, title: "Context-Aware", desc: "Tailored questions based on your resume", color: "text-green-600 dark:text-green-400", bg: "bg-green-100 dark:bg-green-900/30" },
+              { icon: Mic, title: "Voice Interaction", desc: "Speak naturally, no typing required", color: "text-red-600 dark:text-red-400", bg: "bg-red-100 dark:bg-red-900/30" }
+            ].map((feature, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl border">
+                <div className={cn(feature.bg, "p-3 rounded-full")}>
+                  <feature.icon className={cn("h-6 w-6", feature.color)} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">{feature.title}</h3>
+                  <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-sm">Context-Aware</h3>
-                <p className="text-xs text-muted-foreground">
-                  Tailored questions based on your resume
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl border">
-              <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full">
-                <Mic className="h-6 w-6 text-red-600 dark:text-red-400" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm">Voice Interaction</h3>
-                <p className="text-xs text-muted-foreground">
-                  Speak naturally, no typing required
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
