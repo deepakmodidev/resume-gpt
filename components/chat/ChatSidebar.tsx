@@ -31,7 +31,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { GeminiApiKeyModal } from "@/components/GeminiApiKeyModal";
+import { ApiKeyModal } from "@/components/ApiKeyModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -317,7 +317,7 @@ const SidebarContent = ({
   }, []);
 
   const checkUserApiKey = () => {
-    const userApiKey = localStorage.getItem(STORAGE_KEYS.GEMINI_API_KEY);
+    const userApiKey = localStorage.getItem(STORAGE_KEYS.GROQ_API_KEY);
     setHasUserApiKey(!!userApiKey);
   };
 
@@ -346,7 +346,7 @@ const SidebarContent = ({
     signOut({ redirectTo: "/" });
   };
 
-  const handleGeminiApiKey = () => {
+  const handleApiKey = () => {
     setShowApiKeyModal(true);
   };
 
@@ -623,13 +623,13 @@ const SidebarContent = ({
           >
             <Button
               variant="outline"
-              onClick={handleGeminiApiKey}
+              onClick={handleApiKey}
               className="w-full justify-start gap-2"
               size="sm"
             >
               <Settings className="h-4 w-4" />
               <span>
-                {hasUserApiKey ? "Update Gemini API Key" : "Add Gemini API Key"}
+                {hasUserApiKey ? "Update Groq API Key" : "Add Groq API Key"}
               </span>
               {hasUserApiKey && (
                 <div
@@ -726,8 +726,8 @@ const SidebarContent = ({
         </div>
       </div>
 
-      {/* Gemini API Key Modal */}
-      <GeminiApiKeyModal
+      {/* API Key Modal */}
+      <ApiKeyModal
         isOpen={showApiKeyModal}
         onClose={handleApiKeyModalClose}
       />

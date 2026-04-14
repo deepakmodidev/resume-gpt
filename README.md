@@ -4,7 +4,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 
 ## Features
 
-- **AI-powered resume content suggestions** (Gemini)
+- **AI-powered resume content suggestions** (Groq)
 - **AI Cover Letter Generator** - Create tailored cover letters instantly
 - **Advanced ATS compatibility analysis** with RAG and NLP
 - **Smart skill extraction and matching** using semantic analysis
@@ -21,7 +21,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 - **Tailwind CSS**
 - **Prisma ORM** (PostgreSQL)
 - **NextAuth.js** (Auth.js)
-- **Gemini AI API**
+- **Groq AI API** (using Llama 3.3)
 - **Natural Language Processing** (NLP) for skill extraction
 - **TF-IDF** for keyword importance analysis
 - **Jaro-Winkler algorithm** for fuzzy string matching
@@ -53,7 +53,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
    NEXTAUTH_SECRET=your-nextauth-secret
    DATABASE_URL=your-postgres-url
    DIRECT_URL=your-postgres-direct-url
-   GEMINI_KEY=your-gemini-api-key
+   GROQ_API_KEY=your-groq-api-key
    ```
 4. Run database migrations:
    ```bash
@@ -109,4 +109,4 @@ Contributions are welcome! Please follow these steps:
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Prisma](https://www.prisma.io/)
 - [NextAuth.js](https://next-auth.js.org/)
-- [Gemini AI](https://ai.google.dev/gemini)
+- [Groq](https://groq.com/)

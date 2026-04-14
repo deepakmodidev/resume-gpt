@@ -257,7 +257,7 @@ export function ResumePreview() {
                         React
                       </span>
                       <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-                        Gemini API
+                        Groq API
                       </span>
                       <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
                         Node.js

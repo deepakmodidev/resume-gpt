@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ApiKeyNotification } from "@/components/ApiKeyNotification";
-import { GeminiApiKeyModal } from "@/components/GeminiApiKeyModal";
+import { ApiKeyModal } from "@/components/ApiKeyModal";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/useChat";
@@ -340,8 +340,8 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       {/* API Key Notification */}
       <ApiKeyNotification onManageKey={handleApiKeyModal} />
 
-      {/* Gemini API Key Modal */}
-      <GeminiApiKeyModal
+      {/* API Key Modal */}
+      <ApiKeyModal
         isOpen={showApiKeyModal}
         onClose={handleApiKeyModalClose}
       />

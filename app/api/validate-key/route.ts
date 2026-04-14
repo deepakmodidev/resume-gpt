@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { OpenAI } from "openai";
 import { validateRequest, ValidateKeyRequestSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
-import { AI_MODELS } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,19 +17,21 @@ export async function POST(req: NextRequest) {
 
     const { apiKey } = validation.data;
 
-    if (!apiKey.startsWith("AIza")) {
+    if (!apiKey.startsWith("gsk_")) {
       return NextResponse.json(
-        { error: "Invalid API key format" },
+        { error: "Invalid Groq API key format. Should start with 'gsk_'" },
         { status: 400 },
       );
     }
 
-    // Test the API key by making a simple request
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: AI_MODELS.GEMINI_FLASH });
+    // Test the Groq API key by making a simple request
+    const client = new OpenAI({
+      apiKey: apiKey,
+      baseURL: "https://api.groq.com/openai/v1",
+    });
 
-    // Test with a simple prompt
-    await model.generateContent("Test");
+    // Test with a very simple request
+    await client.models.list();
 
     // If we get here without throwing, the key is valid
     return NextResponse.json({ valid: true });

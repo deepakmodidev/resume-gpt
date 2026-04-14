@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Key, AlertTriangle } from "lucide-react";
+import { X, Key, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { STORAGE_KEYS } from "@/lib/constants";
 
@@ -17,14 +17,10 @@ export const ApiKeyNotification = ({
 
   useEffect(() => {
     const checkApiKey = () => {
-      const userApiKey = localStorage.getItem(STORAGE_KEYS.GEMINI_API_KEY);
-
+      const userApiKey = localStorage.getItem(STORAGE_KEYS.GROQ_API_KEY);
       setHasApiKey(!!userApiKey);
 
-      // Show notification if no API key (will show on every refresh)
-      const isDismissed = localStorage.getItem(
-        "api-key-notification-dismissed",
-      );
+      const isDismissed = localStorage.getItem(STORAGE_KEYS.API_KEY_NOTIFICATION_DISMISSED);
 
       // Show notification if no API key AND not dismissed
       if (!userApiKey && !isDismissed) {
@@ -34,7 +30,6 @@ export const ApiKeyNotification = ({
 
     checkApiKey();
 
-    // Listen for storage changes
     const handleStorageChange = () => {
       checkApiKey();
     };
@@ -54,44 +49,41 @@ export const ApiKeyNotification = ({
 
   return (
     <div className="fixed top-4 right-4 z-50 max-w-sm">
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 shadow-lg">
+      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 shadow-lg animate-in fade-in slide-in-from-top-4 duration-300">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+          <Zap className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-200 text-sm">
-              Using Shared API Key
+            <h3 className="font-semibold text-purple-900 dark:text-purple-200 text-sm">
+              Using Shared Groq Key
             </h3>
-            <p className="text-blue-800 dark:text-blue-300 text-sm mt-1">
-              Add your own Gemini API key to avoid rate limits and get better
-              performance.
+            <p className="text-purple-800 dark:text-purple-300 text-sm mt-1 leading-relaxed">
+              Add your own <strong>Groq API key</strong> for even faster responses and unlimited resume builds.
             </p>
             <div className="flex gap-2 mt-3">
               <Button
                 onClick={onManageKey}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-purple-600 hover:bg-purple-700 text-white h-8"
               >
                 <Key className="h-4 w-4 mr-1" />
-                Add API Key
+                Manage Key
               </Button>
               <Button
                 onClick={handleDismiss}
                 variant="outline"
                 size="sm"
-                className="text-blue-700 border-blue-300 hover:bg-blue-100 dark:text-blue-300 dark:border-blue-700 dark:hover:bg-blue-900/30"
+                className="h-8 border-purple-200 hover:bg-purple-100 text-purple-700"
               >
                 Dismiss
               </Button>
             </div>
           </div>
-          <Button
+          <button
             onClick={handleDismiss}
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-purple-400 hover:text-purple-600 transition-colors"
           >
             <X className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
       </div>
     </div>

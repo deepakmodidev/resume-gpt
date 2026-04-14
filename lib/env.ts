@@ -20,7 +20,7 @@ const envSchema = z.object({
   NEXTAUTH_URL: z.string().url("Invalid NEXTAUTH_URL format"),
 
   // Optional - API Keys
-  GEMINI_KEY: z.string().min(1).optional(),
+
   GROQ_API_KEY: z.string().min(1).optional(),
 
   // Required - LiveKit
@@ -43,7 +43,7 @@ export type Env = z.infer<typeof envSchema>;
  *
  * @example
  * import { env } from "@/lib/env";
- * const apiKey = env.GEMINI_KEY;
+ * const apiKey = env.GROQ_API_KEY;
  */
 let env: Env;
 

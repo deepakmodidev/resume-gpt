@@ -9,7 +9,7 @@ export const API_ENDPOINTS = {
   COVER_LETTER: "/api/cover-letter/generate",
   COVER_LETTER_PDF: "/api/generate-cover-letter-pdf",
   PDF: "/api/generate-pdf",
-  VALIDATE_KEY: "/api/validate-gemini-key",
+  VALIDATE_KEY: "/api/validate-key",
   HEALTH: "/api/health",
   PARSE_RESUME: "/actions/parse-resume",
 } as const;
@@ -23,13 +23,12 @@ export const TIMEOUTS = {
 } as const;
 
 export const AI_MODELS = {
-  GEMINI_FLASH: "gemini-3-flash-preview",
+  GROQ_PRIMARY: "meta-llama/llama-4-scout-17b-16e-instruct",
 } as const;
 
 export const AI_GENERATION_CONFIGS = {
   RESUME_CHAT: {
-    temperature: 0.6,
-    topP: 0.9,
+    temperature: 0.1, // Groq works better with low temperature for JSON
     maxOutputTokens: 2048,
     responseMimeType: "application/json",
   },
@@ -53,7 +52,8 @@ export const SESSION_CONFIG = {
 } as const;
 
 export const STORAGE_KEYS = {
-  GEMINI_API_KEY: "gemini-api-key",
+
+  GROQ_API_KEY: "groq-api-key",
   SIDEBAR_COLLAPSED: "sidebar-collapsed",
   GENAI_DISMISSED: "genai-notification-dismissed",
   RESUME_TEMPLATE: "resume-template",

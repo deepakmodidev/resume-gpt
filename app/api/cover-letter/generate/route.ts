@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { OpenAI } from "openai";
 import { validateRequest, CoverLetterRequestSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
-import { env } from "@/lib/env";
 import { COVER_LETTER_PROMPT } from "@/lib/prompts";
-import { AI_GENERATION_CONFIGS } from "@/lib/constants";
+import { AI_GENERATION_CONFIGS, AI_MODELS } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,17 +37,21 @@ export async function POST(req: NextRequest) {
     const recipientName = rawData.recipientName;
     const tone = rawData.tone || "professional";
 
-    const headerApiKey = req.headers.get("x-gemini-api-key");
-    const apiKey = headerApiKey || rawData.userApiKey || process.env.GEMINI_KEY;
+    // Key Resolution: Headers -> Body -> ENV
+    const headerApiKey = req.headers.get("x-groq-api-key");
+    const apiKey = headerApiKey || rawData.userApiKey || process.env.GROQ_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "API key not configured" },
+        { error: "Groq API key not configured" },
         { status: 500 },
       );
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const client = new OpenAI({
+      apiKey,
+      baseURL: "https://api.groq.com/openai/v1",
+    });
 
     const currentDate = new Date().toLocaleDateString("en-US", {
       year: "numeric",
@@ -56,10 +59,8 @@ export async function POST(req: NextRequest) {
       day: "numeric",
     });
 
-    // Build prompt based on whether job description is provided
     const hasJobDescription = jobDescription && jobDescription.trim();
 
-    // Use rawContent if available, otherwise format resume data cleanly
     const resumeText =
       resumeData.rawContent ||
       `
@@ -74,7 +75,7 @@ Experience: ${
       }
 `.trim();
 
-    const prompt = hasJobDescription
+    const userPrompt = hasJobDescription
       ? `
 Generate a cover letter with the following details:
 
@@ -109,31 +110,29 @@ NOTE: No specific job description was provided. Generate a generalized cover let
 4. Remains professional and compelling without referencing specific job requirements
 `;
 
-    // Put resume data in systemInstruction like chat does (more reliable)
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview",
-      systemInstruction: `${COVER_LETTER_PROMPT}\n\nAPPLICANT RESUME:\n${resumeText}`,
+    const chatCompletion = await client.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: `${COVER_LETTER_PROMPT}\n\nAPPLICANT RESUME:\n${resumeText}`,
+        },
+        {
+          role: "user",
+          content: userPrompt,
+        },
+      ],
+      model: AI_MODELS.GROQ_PRIMARY,
+      temperature: 0.1, // Low temperature for consistent JSON
+      response_format: { type: "json_object" },
     });
 
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        ...AI_GENERATION_CONFIGS.COVER_LETTER,
-        responseMimeType: "application/json",
-      },
-    });
+    const responseText = chatCompletion.choices[0].message.content;
 
-    const responseText = result.response.text();
-
-    // Parse the JSON response
-    const cleaned = responseText.replace(/```json\n?|\n?```/g, "").trim();
-    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
-      throw new Error("Failed to parse AI response");
+    if (!responseText) {
+      throw new Error("Failed to generate cover letter (empty response)");
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    const parsed = JSON.parse(responseText);
 
     return NextResponse.json(parsed);
   } catch (error) {
