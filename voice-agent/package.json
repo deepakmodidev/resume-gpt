@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "node dist/agent.js",
+    "start": "node dist/agent.js start",
     "download-files": "echo \"No additional files to download\""
   },
   "keywords": [],
