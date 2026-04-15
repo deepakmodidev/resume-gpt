@@ -25,12 +25,14 @@ import { useChat } from "@/hooks/useChat";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { ANIMATION_VARIANTS } from "@/lib/constants/templates";
 import { Sparkles, X } from "lucide-react";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 import type { Session } from "next-auth";
 import type { JsonValue } from "@prisma/client/runtime/library";
 import type { ResumeData } from "@/lib/types";
 
 export interface BuilderProps {
-  session: Session;
+  session: Session | null;
   params: { id: string };
   initialChatData: {
     id: string;
@@ -42,11 +44,8 @@ export interface BuilderProps {
 }
 
 export function Builder({ session, params, initialChatData }: BuilderProps) {
-  // Note: Auth is already handled in the server component (app/builder/[id]/page.tsx)
-  // This is a safety fallback - should never actually render null
-  if (!session) {
-    return null;
-  }
+  // We no longer return null here to support the "Teaser" pattern.
+  // Edits are allowed, but Chat and Save are protected.
 
   const { id: paramsId } = params;
   // Only generate fallback ID when actually needed (lazy initialization)
@@ -128,6 +127,12 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
 
   const handleSendMessage = useCallback(
     (message: string) => {
+      if (!session) {
+        toast.info("Please sign in to chat with AI.");
+        signIn("google", { callbackUrl: window.location.href });
+        return;
+      }
+
       // Generate ID if needed before sending message
       let chatId = id;
       if (!chatId) {

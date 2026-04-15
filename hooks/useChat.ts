@@ -220,7 +220,6 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
       setIsGenerating(true);
 
       if (!hasInteracted) setHasInteracted(true);
-      if (!hasInteracted) setHasInteracted(true);
 
       try {
         // Get user's API key from localStorage
@@ -321,7 +320,6 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
       messages,
       resumeData,
       isGenerating,
-      hasInteracted,
       hasInteracted,
       cleanMessage,
     ],

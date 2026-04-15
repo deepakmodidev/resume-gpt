@@ -3,11 +3,18 @@ import OpenAI from "openai";
 import { RESUME_BUILDER_PROMPT } from "@/lib/prompts";
 import { AI_MODELS } from "@/lib/constants";
 import { logger } from "@/lib/logger";
+import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
+    // Authentication required for AI Chat
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
+
     const body = await req.json();
     const { history, resumeData, userApiKey } = body;
 

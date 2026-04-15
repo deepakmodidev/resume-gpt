@@ -1,6 +1,7 @@
 "use client";
 
-import { useSession, SessionProvider, useAgent } from "@livekit/components-react";
+import { useSession as useLiveKitSession, SessionProvider, useAgent } from "@livekit/components-react";
+import { useSession as useAuthSession, signIn } from "next-auth/react";
 import { TokenSource } from "livekit-client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
@@ -51,7 +52,9 @@ export default function VoiceInterviewPage() {
     });
   }, [resumeText, jdText]);
 
-  const session = useSession(tokenSource);
+  const session = useLiveKitSession(tokenSource);
+  const { status } = useAuthSession();
+  const isAuthenticated = status === "authenticated";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -67,6 +70,7 @@ export default function VoiceInterviewPage() {
             jdText={jdText}
             setJdText={setJdText}
             onFileChange={handleFileChange}
+            isAuthenticated={isAuthenticated}
           />
         </SessionProvider>
       </main>
@@ -79,7 +83,7 @@ export default function VoiceInterviewPage() {
  * Only switches when the AGENT is actually detected in the room.
  */
 function VoiceInterviewContent({ 
-  session, isExtracting, selectedFile, resumeText, setResumeText, jdText, setJdText, onFileChange 
+  session, isExtracting, selectedFile, resumeText, setResumeText, jdText, setJdText, onFileChange, isAuthenticated 
 }: any) {
   const { isConnected: isInterviewerReady, state: agentState } = useAgent();
   const [isTimedOut, setIsTimedOut] = useState(false);
@@ -105,6 +109,11 @@ function VoiceInterviewContent({
       <div key="welcome" className="opacity-100 transition-all duration-500 transform-gpu w-full max-w-7xl mx-auto px-4">
         <WelcomeView 
           onStart={() => {
+            if (!isAuthenticated) {
+              toast.info("Please sign in to start the interview.");
+              signIn("google", { callbackUrl: window.location.href });
+              return;
+            }
             setIsTimedOut(false); // Reset timeout on new attempt
             session.start();
           }}
@@ -117,6 +126,7 @@ function VoiceInterviewContent({
           setResumeText={setResumeText}
           jdText={jdText}
           setJdText={setJdText}
+          isAuthenticated={isAuthenticated}
         />
       </div>
     );

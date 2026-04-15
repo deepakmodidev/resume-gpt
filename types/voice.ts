@@ -11,6 +11,7 @@ export interface WelcomeViewProps {
   setResumeText: (text: string) => void;
   jdText: string;
   setJdText: (text: string) => void;
+  isAuthenticated: boolean;
 }
 
 export type SessionState = "idle" | "connecting" | "connected" | "disconnected" | "error";

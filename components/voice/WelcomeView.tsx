@@ -7,7 +7,8 @@ import {
   ArrowRight,
   FileText,
   Loader2,
-  Upload
+  Upload,
+  Lock
 } from 'lucide-react';
 import {
   Card,
@@ -31,7 +32,8 @@ export function WelcomeView({
   resumeText,
   setResumeText,
   jdText,
-  setJdText
+  setJdText,
+  isAuthenticated
 }: WelcomeViewProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [resumeTab, setResumeTab] = useState<"upload" | "paste">("upload");
@@ -222,12 +224,18 @@ export function WelcomeView({
 
             <div className="space-y-3">
               <Button
-                className="w-full text-lg font-semibold gap-2 transition-colors"
+                className="w-full text-lg font-semibold gap-2 transition-colors py-6"
                 onClick={onStart}
                 disabled={(!resumeText.trim() && !isResumeReady) || isConnecting}
               >
                 Start Interview
-                {isConnecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="h-5 w-5" />}
+                {isConnecting ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : isAuthenticated ? (
+                  <ArrowRight className="h-5 w-5" />
+                ) : (
+                  <Lock className="h-5 w-5 opacity-80" />
+                )}
               </Button>
             </div>
           </CardContent>

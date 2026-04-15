@@ -1,10 +1,16 @@
 import { AccessToken, AgentDispatchClient } from "livekit-server-sdk";
 import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
-import { requireAuth } from "@/lib/auth-middleware";
+import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 
 export async function POST(req: Request) {
   try {
+    // Authentication required for Voice Interview
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
+
     const userId = crypto.randomUUID().slice(0, 8);
 
     // 2. Parse request body for resume & jd context
@@ -13,7 +19,7 @@ export async function POST(req: Request) {
     if (!resume) {
       return NextResponse.json(
         { error: "Resume context is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,7 +32,7 @@ export async function POST(req: Request) {
     const dispatchClient = new AgentDispatchClient(
       env.LIVEKIT_URL,
       env.LIVEKIT_API_KEY,
-      env.LIVEKIT_API_SECRET
+      env.LIVEKIT_API_SECRET,
     );
 
     console.log(`--- Dispatching agent for room: ${roomName} ---`);
@@ -35,14 +41,10 @@ export async function POST(req: Request) {
     });
 
     // 5. Generate Access Token for the User
-    const at = new AccessToken(
-      env.LIVEKIT_API_KEY,
-      env.LIVEKIT_API_SECRET,
-      {
-        identity: participantIdentity,
-        name: "Candidate",
-      }
-    );
+    const at = new AccessToken(env.LIVEKIT_API_KEY, env.LIVEKIT_API_SECRET, {
+      identity: participantIdentity,
+      name: "Candidate",
+    });
 
     at.addGrant({
       roomJoin: true,
@@ -60,12 +62,11 @@ export async function POST(req: Request) {
       roomName,
       serverUrl: env.LIVEKIT_URL,
     });
-
   } catch (error) {
     console.error("❌ Voice Token Error:", error);
     return NextResponse.json(
       { error: "Failed to initialize voice session" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

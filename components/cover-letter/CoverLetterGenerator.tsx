@@ -15,6 +15,8 @@ import {
   Briefcase,
   Upload,
   Mic,
+  Lock,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -29,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useSession, signIn } from "next-auth/react";
 
 interface CoverLetterGeneratorProps {
   initialResumeData?: ResumeData;
@@ -70,6 +73,7 @@ export const CoverLetterGenerator = ({
   const [coverLetterData, setCoverLetterData] =
     useState<CoverLetterData | null>(null);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const { status } = useSession();
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -157,6 +161,12 @@ export const CoverLetterGenerator = ({
   };
 
   const handleGenerate = async () => {
+    if (status !== "authenticated") {
+      toast.info("Please sign in to generate a cover letter.");
+      signIn("google", { callbackUrl: window.location.href });
+      return;
+    }
+
     if (!companyName.trim()) {
       setError("Please enter the company name");
       return;
@@ -207,7 +217,7 @@ export const CoverLetterGenerator = ({
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
       {/* Left Panel - Form (2/5 width) */}
-      <div className="flex flex-col h-full min-h-0 w-full md:w-2/5">
+      <div className="flex flex-col h-full min-h-0 w-full md:w-2/5 overflow-hidden">
         <ScrollArea className="flex-1">
           <div className="p-6 space-y-5">
             {/* Header */}
@@ -397,18 +407,15 @@ export const CoverLetterGenerator = ({
               <Button
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="w-full h-9 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium text-sm shadow-md shadow-blue-500/20"
+                className="w-full h-11 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold text-lg shadow-md shadow-blue-500/20 gap-2 transition-all"
               >
+                Generate Cover Letter
                 {isGenerating ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Generating...
-                  </>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : status === "authenticated" ? (
+                  <ArrowRight className="h-5 w-5" />
                 ) : (
-                  <>
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Generate Cover Letter
-                  </>
+                  <Lock className="h-5 w-5 opacity-80" />
                 )}
               </Button>
             </div>

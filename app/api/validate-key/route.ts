@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { validateRequest, ValidateKeyRequestSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
+import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 
 export async function POST(req: NextRequest) {
   try {
+    // Authentication required for API Key validation
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
+
     const rawData = await req.json();
 
     // Validate request body

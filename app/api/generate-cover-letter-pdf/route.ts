@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 import { generatePDF } from "@/lib/pdf-service";
+import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 
 const {
   CoverLetterContent,
@@ -8,6 +9,12 @@ const {
 
 export async function POST(request: Request) {
   try {
+    // Authentication required for PDF Generation
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
+
     const rawData = await request.json();
 
     if (!rawData.data) {

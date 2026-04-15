@@ -2,11 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { validateRequest, CoverLetterRequestSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
+import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 import { COVER_LETTER_PROMPT } from "@/lib/prompts";
 import { AI_GENERATION_CONFIGS, AI_MODELS } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
+    // Authentication required for AI Cover Letter Generation
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
+
     const rawData = await req.json();
 
     // Build validation data - handle undefined/null and field name mapping
@@ -39,7 +46,8 @@ export async function POST(req: NextRequest) {
 
     // Key Resolution: Headers -> Body -> ENV
     const headerApiKey = req.headers.get("x-groq-api-key");
-    const apiKey = headerApiKey || rawData.userApiKey || process.env.GROQ_API_KEY;
+    const apiKey =
+      headerApiKey || rawData.userApiKey || process.env.GROQ_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(

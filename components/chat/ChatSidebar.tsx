@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { Session } from "next-auth";
-import { signOut } from "next-auth/react";
+import { signOut, signIn } from "next-auth/react";
 import { apiRequest, APIError } from "@/lib/api-client";
 import { API_ENDPOINTS, STORAGE_KEYS } from "@/lib/constants";
 import { logger } from "@/lib/logger";
@@ -42,7 +42,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 interface ChatSidebarProps {
-  session: Session;
+  session: Session | null;
   currentChatId?: string;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -278,7 +278,7 @@ const SidebarContent = ({
   isCollapsed = false,
   onToggleCollapse,
 }: {
-  session: Session;
+  session: Session | null;
   currentChatId?: string;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -343,6 +343,10 @@ const SidebarContent = ({
   };
 
   const handleSignOut = () => {
+    if (!session) {
+      signIn("google", { callbackUrl: window.location.href });
+      return;
+    }
     signOut({ redirectTo: "/" });
   };
 
@@ -656,12 +660,12 @@ const SidebarContent = ({
             )}
           >
             <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                 <Image
-                  src={session?.user.image || "/default-avatar.png"}
-                  height={24}
-                  width={24}
-                  className="w-6 h-6 rounded-full object-cover"
+                  src={session?.user?.image || "/default-avatar.png"}
+                  height={32}
+                  width={32}
+                  className="w-full h-full object-cover"
                   alt="User Avatar"
                 />
               </div>
@@ -672,10 +676,10 @@ const SidebarContent = ({
                 )}
               >
                 <p className="ml-2 text-sm font-medium whitespace-nowrap">
-                  {truncateText(session?.user.name || "", 15)}
+                  {session ? truncateText(session.user.name || "", 15) : "Guest User"}
                 </p>
                 <p className="ml-2 text-xs text-muted-foreground whitespace-nowrap">
-                  {truncateText(session?.user.email || "", 15)}
+                  {session ? truncateText(session.user.email || "", 15) : "Sign in to save progress"}
                 </p>
               </div>
             </div>
@@ -686,15 +690,27 @@ const SidebarContent = ({
                 isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
               )}
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 p-4"
-                title="Sign Out"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              {session ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 p-2 h-9 w-9"
+                  title="Sign Out"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => signIn("google", { callbackUrl: window.location.href })}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 p-2 h-9 w-9"
+                  title="Sign In"
+                >
+                  <PanelLeftOpen className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
 
