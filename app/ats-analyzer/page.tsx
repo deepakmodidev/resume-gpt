@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { ATSResults } from "@/components/ats/ATSResults";
 import { DotPattern } from "@/components/ui/dot-pattern";
 import { Header } from "@/components/home/Header";
+import { useSession, signIn } from "next-auth/react";
 import { Footer } from "@/components/home/Footer";
 import { motion } from "framer-motion";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -38,6 +39,7 @@ export default function ATSAnalysisPage() {
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [analysisResult, setAnalysisResult] =
     useState<ATSAnalysisResult | null>(null);
+  const { status } = useSession();
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -69,8 +71,12 @@ export default function ATSAnalysisPage() {
   };
 
   const handleAnalysis = async () => {
-    if (!resumeContent.trim() || !jobDescription.trim()) {
-      toast.error("Please fill in all required fields");
+    if (resumeContent.trim().length < 10) {
+      toast.error("Resume content must be at least 10 characters");
+      return;
+    }
+    if (jobDescription.trim().length < 10) {
+      toast.error("Job description must be at least 10 characters");
       return;
     }
 
@@ -241,19 +247,17 @@ export default function ATSAnalysisPage() {
                         onClick={handleAnalysis}
                         disabled={
                           isAnalyzing ||
-                          !resumeContent.trim() ||
-                          !jobDescription.trim()
+                          resumeContent.trim().length < 10 ||
+                          jobDescription.trim().length < 10
                         }
-                        className="w-full bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                        className="w-full bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white gap-2"
                         size="lg"
                       >
+                        Analyze ATS Compatibility
                         {isAnalyzing ? (
-                          "Analyzing..."
+                          <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
-                          <>
-                            Analyze ATS Compatibility
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </>
+                          <ArrowRight className="w-5 h-5" />
                         )}
                       </Button>
                     </CardContent>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { Session } from "next-auth";
-import { signOut } from "next-auth/react";
+import { signOut, signIn } from "next-auth/react";
 import { apiRequest, APIError } from "@/lib/api-client";
 import { API_ENDPOINTS, STORAGE_KEYS } from "@/lib/constants";
 import { logger } from "@/lib/logger";
@@ -21,8 +21,8 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  NotepadTextDashed,
 } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -31,7 +31,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { GeminiApiKeyModal } from "@/components/GeminiApiKeyModal";
+import { ApiKeyModal } from "@/components/ApiKeyModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,8 +42,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 interface ChatSidebarProps {
-  session: Session;
+  session: Session | null;
   currentChatId?: string;
+  isNewChat?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -275,11 +276,13 @@ const ChatListItem = ({
 const SidebarContent = ({
   session,
   currentChatId,
+  isNewChat = false,
   isCollapsed = false,
   onToggleCollapse,
 }: {
-  session: Session;
+  session: Session | null;
   currentChatId?: string;
+  isNewChat?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }) => {
@@ -290,6 +293,8 @@ const SidebarContent = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [hasUserApiKey, setHasUserApiKey] = useState(false);
+  const normalizedCurrentChatId = currentChatId ?? "";
+  const shouldRetryForNewChat = Boolean(isNewChat);
 
   useEffect(() => {
     fetchChats();
@@ -298,14 +303,32 @@ const SidebarContent = ({
 
   // Refresh chat list when currentChatId changes (e.g., when a new chat is created)
   useEffect(() => {
-    if (currentChatId) {
+    if (normalizedCurrentChatId) {
       // Check if this chat exists in our list, if not, refresh
-      const chatExists = chats.some((chat) => chat.id === currentChatId);
+      const chatExists = chats.some(
+        (chat) => chat.id === normalizedCurrentChatId,
+      );
       if (!chatExists) {
         fetchChats();
+
+        // New chats are saved asynchronously; retry briefly so the sidebar updates quickly.
+        if (shouldRetryForNewChat) {
+          let attempts = 0;
+          const maxAttempts = 5;
+          const interval = setInterval(() => {
+            attempts += 1;
+            fetchChats();
+
+            if (attempts >= maxAttempts) {
+              clearInterval(interval);
+            }
+          }, 700);
+
+          return () => clearInterval(interval);
+        }
       }
     }
-  }, [currentChatId]);
+  }, [normalizedCurrentChatId, shouldRetryForNewChat, chats]);
 
   // Periodic refresh to catch updates from manual edits (every 30 seconds)
   useEffect(() => {
@@ -317,7 +340,7 @@ const SidebarContent = ({
   }, []);
 
   const checkUserApiKey = () => {
-    const userApiKey = localStorage.getItem(STORAGE_KEYS.GEMINI_API_KEY);
+    const userApiKey = localStorage.getItem(STORAGE_KEYS.GROQ_API_KEY);
     setHasUserApiKey(!!userApiKey);
   };
 
@@ -343,10 +366,14 @@ const SidebarContent = ({
   };
 
   const handleSignOut = () => {
+    if (!session) {
+      signIn("google", { callbackUrl: window.location.href });
+      return;
+    }
     signOut({ redirectTo: "/" });
   };
 
-  const handleGeminiApiKey = () => {
+  const handleApiKey = () => {
     setShowApiKeyModal(true);
   };
 
@@ -443,7 +470,7 @@ const SidebarContent = ({
           >
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <NotepadTextDashed className="h-5 w-5 text-white drop-shadow-lg" />
+                <Logo size={20} className="text-white drop-shadow-lg" />
               </div>
               <h1 className="font-bold text-xl tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent whitespace-nowrap">
                 ResumeGPT
@@ -623,13 +650,13 @@ const SidebarContent = ({
           >
             <Button
               variant="outline"
-              onClick={handleGeminiApiKey}
+              onClick={handleApiKey}
               className="w-full justify-start gap-2"
               size="sm"
             >
               <Settings className="h-4 w-4" />
               <span>
-                {hasUserApiKey ? "Update Gemini API Key" : "Add Gemini API Key"}
+                {hasUserApiKey ? "Update Groq API Key" : "Add Groq API Key"}
               </span>
               {hasUserApiKey && (
                 <div
@@ -656,12 +683,12 @@ const SidebarContent = ({
             )}
           >
             <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                 <Image
-                  src={session?.user.image || "/default-avatar.png"}
-                  height={24}
-                  width={24}
-                  className="w-6 h-6 rounded-full object-cover"
+                  src={session?.user?.image || "/default-avatar.png"}
+                  height={32}
+                  width={32}
+                  className="w-full h-full object-cover"
                   alt="User Avatar"
                 />
               </div>
@@ -672,10 +699,10 @@ const SidebarContent = ({
                 )}
               >
                 <p className="ml-2 text-sm font-medium whitespace-nowrap">
-                  {truncateText(session?.user.name || "", 15)}
+                  {session ? truncateText(session.user.name || "", 15) : "Guest User"}
                 </p>
                 <p className="ml-2 text-xs text-muted-foreground whitespace-nowrap">
-                  {truncateText(session?.user.email || "", 15)}
+                  {session ? truncateText(session.user.email || "", 15) : "Sign in to save progress"}
                 </p>
               </div>
             </div>
@@ -686,15 +713,27 @@ const SidebarContent = ({
                 isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
               )}
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 p-4"
-                title="Sign Out"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              {session ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 p-2 h-9 w-9"
+                  title="Sign Out"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => signIn("google", { callbackUrl: window.location.href })}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 p-2 h-9 w-9"
+                  title="Sign In"
+                >
+                  <PanelLeftOpen className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
 
@@ -726,8 +765,8 @@ const SidebarContent = ({
         </div>
       </div>
 
-      {/* Gemini API Key Modal */}
-      <GeminiApiKeyModal
+      {/* API Key Modal */}
+      <ApiKeyModal
         isOpen={showApiKeyModal}
         onClose={handleApiKeyModalClose}
       />
@@ -738,6 +777,7 @@ const SidebarContent = ({
 export const ChatSidebar = ({
   session,
   currentChatId,
+  isNewChat = false,
   isCollapsed = false,
   onToggleCollapse,
 }: ChatSidebarProps) => {
@@ -769,6 +809,7 @@ export const ChatSidebar = ({
                 <SidebarContent
                   session={session}
                   currentChatId={currentChatId}
+                  isNewChat={isNewChat}
                   isCollapsed={false}
                   onToggleCollapse={undefined}
                 />
@@ -776,7 +817,7 @@ export const ChatSidebar = ({
             </Sheet>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <NotepadTextDashed className="h-5 w-5 text-white drop-shadow-lg" />
+                <Logo size={20} className="text-white drop-shadow-lg" />
               </div>
               <h1 className="font-bold text-lg tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                 ResumeGPT
@@ -806,6 +847,7 @@ export const ChatSidebar = ({
         <SidebarContent
           session={session}
           currentChatId={currentChatId}
+          isNewChat={isNewChat}
           isCollapsed={isCollapsed}
           onToggleCollapse={onToggleCollapse}
         />

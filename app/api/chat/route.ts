@@ -1,267 +1,128 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
+import { RESUME_BUILDER_PROMPT } from "@/lib/prompts";
+import { AI_MODELS } from "@/lib/constants";
+import { logger } from "@/lib/logger";
 import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 import db from "@/prisma/prisma";
-import { validateRequest, ChatRequestSchema } from "@/lib/validators";
-import { logger } from "@/lib/logger";
-import { AI_MODELS, AI_GENERATION_CONFIGS } from "@/lib/constants";
-import { env } from "@/lib/env";
 
-import { RESUME_BUILDER_PROMPT } from "@/lib/prompts";
-import { deepMerge } from "@/lib/utils";
+export const dynamic = "force-dynamic";
 
-// Types
-interface ParsedResponse {
-  acknowledgement: string;
-  updatedSection: Record<string, unknown>;
-}
-
-const parseResponse = (text: string): ParsedResponse => {
-  const cleanAndParse = (input: string) => {
-    try {
-      // Remove markdown and trim
-      const cleaned = input
-        .replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1")
-        .trim();
-      return JSON.parse(cleaned);
-    } catch {
-      return null;
-    }
-  };
-
-  // 1. Attempt standard parsing
-  let parsed = cleanAndParse(text);
-
-  // 2. Fallback: Try regex extraction if standard parse failed
-  if (!parsed) {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) parsed = cleanAndParse(jsonMatch[0]);
-  }
-
-  // 3. Construct result
-  if (parsed) {
-    let ack = parsed.acknowledgement || parsed.response;
-
-    // Handle edge case: acknowledgement is an object/array
-    if (typeof ack === "object") {
-      try {
-        ack = JSON.stringify(ack);
-      } catch {
-        ack = "";
-      }
-    }
-
-    // Handle edge case: acknowledgement is empty
-    if (!ack || typeof ack !== "string" || !ack.trim()) {
-      ack = "Error: AI response text was empty.";
-    }
-
-    return {
-      acknowledgement: ack,
-      updatedSection: parsed.updatedSection || parsed.data || {},
-    };
-  }
-
-  // 4. Final Fallback: Return raw text (assuming AI failed to JSON-ify)
-  // If it looks like code/malformed JSON, show error
-  if (text.trim().startsWith("{") || text.includes('{"')) {
-    return {
-      acknowledgement: "Error: Invalid JSON response from AI.",
-      updatedSection: {},
-    };
-  }
-
-  return { acknowledgement: text, updatedSection: {} };
-};
-
-const upsertChat = async (
-  chatId: string,
-  userId: string,
-  message: string,
-  userMsg: unknown,
-  modelMsg: unknown,
-  resumeData: unknown,
-) => {
-  const chat = await db.chat.findUnique({ where: { id: chatId, userId } }); // 🎯 RAG: Database Retrieval - Gets stored conversation context
-  const newTitle = message.slice(0, 30) || "New ResumeGPT Chat";
-
-  if (chat) {
-    // Check if title is generic and should be updated with actual content
-    const isGenericTitle =
-      !chat.title ||
-      chat.title === "New Resume" ||
-      chat.title === "New ResumeGPT Chat";
-
-    await db.chat.update({
-      where: { id: chatId, userId },
-      data: {
-        messages: { push: [userMsg, modelMsg] as never }, // 🎯 RAG: Memory Extension - Appends to conversation history
-        resumeData: resumeData as never, // 🎯 RAG: Context Update - Updates stored resume context
-        // Update title only if it's currently generic
-        ...(isGenericTitle && { title: newTitle }),
-      },
-    });
-  } else {
-    // Handle race condition: saveResume might have created the chat between our check and create
-    try {
-      await db.chat.create({
-        data: {
-          id: chatId,
-          userId,
-          title: newTitle,
-          messages: [userMsg, modelMsg] as never,
-          resumeData: resumeData as never,
-          resumeTemplate: "classic",
-        },
-      });
-    } catch (error: unknown) {
-      // If unique constraint error, the chat was created by saveResume - update instead
-      if (
-        error instanceof Error &&
-        error.message.includes("Unique constraint")
-      ) {
-        await db.chat.update({
-          where: { id: chatId, userId },
-          data: {
-            messages: { push: [userMsg, modelMsg] as never },
-            resumeData: resumeData as never,
-            title: newTitle,
-          },
-        });
-      } else {
-        throw error; // Re-throw other errors
-      }
-    }
-  }
-};
-
-const handleError = (error: unknown, defaultStatus = 500) => {
-  const message = error instanceof Error ? error.message : "Unknown error";
-  const status = [
-    "Invalid history",
-    "Missing chat ID",
-    "Missing message or resume data",
-  ].includes(message)
-    ? 400
-    : defaultStatus;
-  return NextResponse.json({ error: message }, { status });
-};
-
-// Handlers
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const rawData = await req.json();
-
-    // Validate request with Zod
-    const validation = validateRequest(ChatRequestSchema, rawData);
-    if (!validation.success) {
-      const { error } = validation;
-      logger.warn("Chat validation failed", { error });
-      return NextResponse.json({ error }, { status: 400 });
-    }
-
-    // TypeScript now knows validation.data exists
-    const { history, resumeData, chatId, userApiKey } = validation.data;
-    const message = history[history.length - 1]?.parts?.[0]?.text;
-
-    if (!message) {
-      return NextResponse.json({ error: "Missing message" }, { status: 400 });
-    }
-
+    // Authentication required
     const authResult = await requireAuth();
     if (!isAuthorized(authResult)) {
       return authResult.response;
     }
-    const { userId } = authResult;
 
-    const headerApiKey = req.headers.get("x-gemini-api-key");
-    const apiKey = headerApiKey || userApiKey || process.env.GEMINI_KEY;
-    if (!apiKey) {
+    const userId = authResult.userId;
+    if (!userId) {
       return NextResponse.json(
-        { error: "API key not available" },
-        { status: 500 },
+        { error: "User ID not found" },
+        { status: 401 }
       );
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: AI_MODELS.GEMINI_FLASH,
-      systemInstruction: `${RESUME_BUILDER_PROMPT}\n\nCURRENT RESUME DATA:\n${JSON.stringify(resumeData)}`,
+    // Fetch chats for the authenticated user
+    const chats = await db.chat.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
-    const chat = model.startChat({
-      generationConfig: AI_GENERATION_CONFIGS.RESUME_CHAT,
-      history,
-    });
-    const result = await chat.sendMessage(message);
-    const response = parseResponse(result.response.text());
-
-    const acknowledgement =
-      response?.acknowledgement || "Error: AI response empty.";
-    const updatedSection = response?.updatedSection || {};
-
-    const mergedData = deepMerge(resumeData, updatedSection); // 🎯 RAG: Context Merging - Combines retrieved data with new updates
-
-    const userMsg = { role: "user", parts: [{ text: message }] };
-    const modelMsg = { role: "model", parts: [{ text: acknowledgement }] };
-
-    await upsertChat(
-      chatId,
-      userId,
-      message,
-      userMsg,
-      modelMsg,
-      mergedData, // 🎯 RAG: Database Storage - Stores context for future retrieval
-    );
-    return NextResponse.json({ response });
-  } catch (error) {
-    return handleError(error);
-  }
-}
-
-// Fetch user chats
-async function getUserChats(userId: string) {
-  return await db.chat.findMany({
-    where: { userId },
-    select: { id: true, title: true },
-    orderBy: { createdAt: "desc" },
-  });
-}
-
-export async function GET() {
-  try {
-    const authResult = await requireAuth();
-    if (!isAuthorized(authResult)) {
-      return authResult.response;
-    }
-
-    const chats = await getUserChats(authResult.userId);
 
     return NextResponse.json({ chats });
-  } catch (error) {
-    return handleError(error);
+  } catch (error: any) {
+    logger.error("Chat Fetch Error:", error);
+
+    const statusCode = error.status || 500;
+    const message = error.message || "An error occurred while fetching chats.";
+
+    return NextResponse.json(
+      { error: message },
+      { status: statusCode }
+    );
   }
 }
 
-export async function DELETE(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
+    // Authentication required for AI Chat
     const authResult = await requireAuth();
     if (!isAuthorized(authResult)) {
       return authResult.response;
     }
 
-    const { chatId } = await req.json();
-    if (!chatId)
-      return NextResponse.json({ error: "Chat ID required" }, { status: 400 });
+    const body = await req.json();
+    const { history, resumeData, userApiKey } = body;
 
-    const deleted = await db.chat.deleteMany({
-      where: { id: chatId, userId: authResult.userId },
+    // API Key resolution logic:
+    // 1. x-groq-api-key header
+    // 2. userApiKey from request body
+    // 3. process.env.GROQ_API_KEY
+    const apiKey =
+      req.headers.get("x-groq-api-key") ||
+      userApiKey ||
+      process.env.GROQ_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: "Groq API Key is missing. Please provide one in settings." },
+        { status: 401 }
+      );
+    }
+
+    const client = new OpenAI({
+      apiKey: apiKey,
+      baseURL: "https://api.groq.com/openai/v1",
     });
-    if (!deleted.count)
-      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
 
-    return NextResponse.json({ message: "Chat deleted successfully" });
-  } catch (error) {
-    return handleError(error);
+    // Format history for OpenAI
+    // Frontend history uses { role: "user" | "model", parts: [{ text: string }] }
+    const messages = history.map((msg: any) => ({
+      role: msg.role === "model" ? "assistant" : msg.role,
+      content: msg.parts[0].text,
+    }));
+
+    const systemMessage = {
+      role: "system",
+      content: `${RESUME_BUILDER_PROMPT}\n\nCURRENT RESUME DATA:\n${JSON.stringify(resumeData, null, 2)}`,
+    };
+
+    const response = await client.chat.completions.create({
+      model: AI_MODELS.GROQ_PRIMARY,
+      messages: [systemMessage, ...messages],
+      response_format: { type: "json_object" },
+      temperature: 0.1, // Keep it precise for resume building
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error("Empty response from Groq");
+    }
+
+    const parsedContent = JSON.parse(content);
+
+    // Return in the format expected by useChat.ts
+    return NextResponse.json({
+      response: parsedContent
+    });
+
+  } catch (error: any) {
+    logger.error("Groq Chat Error:", error);
+
+    const statusCode = error.status || 500;
+    const message = error.message || "An error occurred during the chat request.";
+
+    return NextResponse.json(
+      { error: message },
+      { status: statusCode }
+    );
   }
 }
 
@@ -272,22 +133,92 @@ export async function PUT(req: NextRequest) {
       return authResult.response;
     }
 
-    const { chatId, newName } = await req.json();
-    if (!chatId || !newName)
+    const userId = authResult.userId;
+    const body = await req.json();
+    const { chatId, newName } = body ?? {};
+
+    if (!chatId || typeof chatId !== "string") {
+      return NextResponse.json({ error: "chatId is required" }, { status: 400 });
+    }
+
+    if (!newName || typeof newName !== "string" || !newName.trim()) {
       return NextResponse.json(
-        { error: "Chat ID and name required" },
+        { error: "newName is required" },
         { status: 400 },
       );
+    }
 
-    const updated = await db.chat.updateMany({
-      where: { id: chatId, userId: authResult.userId },
-      data: { title: newName },
+    const existingChat = await db.chat.findFirst({
+      where: {
+        id: chatId,
+        userId,
+      },
+      select: { id: true },
     });
 
-    if (!updated.count)
+    if (!existingChat) {
       return NextResponse.json({ error: "Chat not found" }, { status: 404 });
-    return NextResponse.json({ message: "Chat updated successfully" });
-  } catch (error) {
-    return handleError(error);
+    }
+
+    const updatedChat = await db.chat.update({
+      where: { id: chatId },
+      data: { title: newName.trim() },
+      select: {
+        id: true,
+        title: true,
+        updatedAt: true,
+      },
+    });
+
+    return NextResponse.json({ chat: updatedChat });
+  } catch (error: any) {
+    logger.error("Chat Rename Error:", error);
+
+    const statusCode = error.status || 500;
+    const message = error.message || "An error occurred while renaming chat.";
+
+    return NextResponse.json({ error: message }, { status: statusCode });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
+
+    const userId = authResult.userId;
+    const body = await req.json();
+    const { chatId } = body ?? {};
+
+    if (!chatId || typeof chatId !== "string") {
+      return NextResponse.json({ error: "chatId is required" }, { status: 400 });
+    }
+
+    const existingChat = await db.chat.findFirst({
+      where: {
+        id: chatId,
+        userId,
+      },
+      select: { id: true },
+    });
+
+    if (!existingChat) {
+      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
+    }
+
+    await db.chat.delete({
+      where: { id: chatId },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    logger.error("Chat Delete Error:", error);
+
+    const statusCode = error.status || 500;
+    const message = error.message || "An error occurred while deleting chat.";
+
+    return NextResponse.json({ error: message }, { status: statusCode });
   }
 }

@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  NotepadTextDashed,
   User,
   LogOut,
   Plus,
   MessageSquare,
 } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { handleGoogleSignIn } from "@/app/actions/auth-actions";
 import { useSession, signOut, signIn } from "next-auth/react";
@@ -64,7 +64,7 @@ export function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <NotepadTextDashed className="h-5 w-5 text-white drop-shadow-lg" />
+                <Logo size={20} className="text-white drop-shadow-lg" />
               </div>
               <span className="text-xl font-bold bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                 ResumeGPT
@@ -74,6 +74,12 @@ export function Header() {
 
           {/* Navigation Links - Center (Hidden on Mobile) */}
           <nav className="hidden md:flex items-center justify-center gap-8">
+            <Link
+              href="/voice-interview"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
+            >
+              AI Interview
+            </Link>
             <Link
               href="/ats-analyzer"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
@@ -85,24 +91,6 @@ export function Header() {
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
             >
               Cover Letter
-            </Link>
-            <Link
-              href="/interview"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
-            >
-              Interview Prep
-            </Link>
-            <Link
-              href="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Features
-            </Link>
-            <Link
-              href="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              About
             </Link>
           </nav>
 

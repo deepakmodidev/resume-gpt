@@ -1,5 +1,6 @@
 import type React from "react";
 import "@/app/globals.css";
+import "@livekit/components-styles";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/react";

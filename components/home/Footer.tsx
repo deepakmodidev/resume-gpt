@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  NotepadTextDashed,
   Twitter,
   Linkedin,
   Github,
   Mail,
 } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export function Footer() {
   const [currentYear, setCurrentYear] = useState(2024);
@@ -106,7 +106,7 @@ export function Footer() {
             </p>
             <nav className="flex gap-4">
               <Link
-                href="https://deepakmodi.tech"
+                href="https://deepakmodi.dev"
                 target="_blank"
                 className="text-base text-muted-foreground hover:text-blue-500 transition-colors duration-300 hover:font-medium"
               >
@@ -124,7 +124,7 @@ export function Footer() {
         {/* Bottom logo */}
         <div className="absolute hover:border-blue-400 duration-400 drop-shadow-[0_0px_20px_rgb(59,130,246)] bottom-24 md:bottom-20 backdrop-blur-xs z-30 rounded-3xl bg-background/60 left-1/2 border-2 border-blue-400/30 flex items-center justify-center p-3 -translate-x-1/2">
           <div className="w-12 sm:w-16 md:w-24 h-12 sm:h-16 md:h-24 bg-linear-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <NotepadTextDashed className="w-8 sm:w-10 md:w-14 h-8 sm:h-10 md:h-14 text-white drop-shadow-lg" />
+            <Logo className="w-8 sm:w-10 md:w-14 h-8 sm:h-10 md:h-14 text-white drop-shadow-lg" />
           </div>
         </div>
 

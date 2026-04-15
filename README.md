@@ -4,8 +4,9 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 
 ## Features
 
-- **AI-powered resume content suggestions** (Gemini)
+- **AI-powered resume content suggestions** (Groq)
 - **AI Cover Letter Generator** - Create tailored cover letters instantly
+- **AI Voice Interview** - Real-time technical mock interviews (LiveKit + Sarvam)
 - **Advanced ATS compatibility analysis** with RAG and NLP
 - **Smart skill extraction and matching** using semantic analysis
 - **Multiple professional resume templates** (10+ designs)
@@ -14,7 +15,6 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 - **Google OAuth authentication**
 - **Chat-based resume building**
 - **Real-time ATS scoring with optimization suggestions**
-- **AI Interview Prep** _[Experimental - WIP]_
 
 ## Tech Stack
 
@@ -22,7 +22,9 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 - **Tailwind CSS**
 - **Prisma ORM** (PostgreSQL)
 - **NextAuth.js** (Auth.js)
-- **Gemini AI API**
+- **Groq AI API** (using Llama 3.3)
+- **LiveKit Agents** (Real-time voice AI)
+- **Sarvam AI** (Sovereign Indic TTS/STT)
 - **Natural Language Processing** (NLP) for skill extraction
 - **TF-IDF** for keyword importance analysis
 - **Jaro-Winkler algorithm** for fuzzy string matching
@@ -40,7 +42,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/decodewithdeepak/resume-gpt.git
+   git clone https://github.com/deepakmodidev/resume-gpt.git
    cd resume-gpt
    ```
 2. Install dependencies:
@@ -54,7 +56,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
    NEXTAUTH_SECRET=your-nextauth-secret
    DATABASE_URL=your-postgres-url
    DIRECT_URL=your-postgres-direct-url
-   GEMINI_KEY=your-gemini-api-key
+   GROQ_API_KEY=your-groq-api-key
    ```
 4. Run database migrations:
    ```bash
@@ -64,6 +66,11 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 5. Start the development server:
    ```bash
    npm run dev
+   ```
+
+6. Start the AI Interview Agent:
+   ```bash
+   node agent/agent.ts dev
    ```
 
 ## ATS Analysis Features
@@ -110,4 +117,4 @@ Contributions are welcome! Please follow these steps:
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Prisma](https://www.prisma.io/)
 - [NextAuth.js](https://next-auth.js.org/)
-- [Gemini AI](https://ai.google.dev/gemini)
+- [Groq](https://groq.com/)

@@ -220,11 +220,10 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
       setIsGenerating(true);
 
       if (!hasInteracted) setHasInteracted(true);
-      if (!hasInteracted) setHasInteracted(true);
 
       try {
         // Get user's API key from localStorage
-        const userApiKey = localStorage.getItem(STORAGE_KEYS.GEMINI_API_KEY);
+        const userApiKey = localStorage.getItem(STORAGE_KEYS.GROQ_API_KEY);
 
         const data = await apiRequest<any>(API_ENDPOINTS.CHAT, {
           method: "POST",
@@ -301,7 +300,7 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
               role: "model",
               parts: [
                 {
-                  text: "⚠️ API limit reached or key is invalid. Please add your own Gemini API key in settings and try again.",
+                  text: "⚠️ API limit reached or key is invalid. Please add your own Groq API key in settings and try again.",
                 },
               ],
             },
@@ -321,7 +320,6 @@ export const useChat = ({ initialChatData, onApiKeyError }: UseChatProps) => {
       messages,
       resumeData,
       isGenerating,
-      hasInteracted,
       hasInteracted,
       cleanMessage,
     ],

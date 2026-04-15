@@ -1,72 +1,58 @@
 "use client";
 
-import { logger } from "@/lib/logger";
-import { useState, ChangeEvent } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import React, { useRef, useState, ChangeEvent } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Mic,
+  ArrowRight,
+  FileText,
+  Loader2,
+  Upload,
+  Lock
+} from 'lucide-react';
 import {
   Card,
+  CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Mic, ArrowRight, FileText, Loader2, Upload } from "lucide-react";
-import { toast } from "sonner";
-import { CartesiaApiKeyModal } from "@/components/CartesiaApiKeyModal";
+  CardDescription
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import { WelcomeViewProps } from '@/types/voice';
 
-interface InterviewSetupProps {
-  onStart: (resume: string, jd: string) => void;
-}
-
-export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
-  const [resumeText, setResumeText] = useState("");
-  const [jdText, setJdText] = useState("");
-  const [isUploadingFile, setIsUploadingFile] = useState(false);
+export function WelcomeView({
+  onStart,
+  onFileChange,
+  isConnecting,
+  isExtracting = false,
+  selectedFile,
+  isResumeReady,
+  resumeText,
+  setResumeText,
+  jdText,
+  setJdText,
+  isAuthenticated
+}: WelcomeViewProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [resumeTab, setResumeTab] = useState<"upload" | "paste">("upload");
-  const [fileName, setFileName] = useState("");
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    setIsUploadingFile(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      // Dynamically import the server action if needed, or just standard import
-      // Since this is a client component, we import the server action directly
-      const { parseResume } = await import("@/app/actions/parse-resume");
-
-      const result = await parseResume(formData);
-
-      if (result.error) {
-        toast.error(result.error);
-        setFileName("");
-      } else {
-        setResumeText(result.text || "");
-        setFileName(file.name);
-        toast.success("Resume parsed successfully!");
-      }
-    } catch (error) {
-      logger.error("File upload error:", error);
-      toast.error(`Failed to process file: ${(error as Error).message}`);
-      setFileName("");
-    } finally {
-      setIsUploadingFile(false);
-      e.target.value = ""; // Reset input
-    }
+    onFileChange(file);
+    e.target.value = ""; // Reset input
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-blue-50/50 dark:to-blue-950/20">
-      <div className="max-w-4xl w-full grid md:grid-cols-2 gap-8">
+    <div className="w-full flex items-center justify-center">
+      <div className="max-w-5xl w-full grid md:grid-cols-2 gap-12">
+
         {/* Left Side: Pitch */}
         <div className="space-y-6 flex flex-col justify-center">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">
               Ace Your Next <br />
               <span className="text-blue-600 dark:text-blue-400">
                 Interview
@@ -80,34 +66,26 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center gap-4 p-4 bg-card rounded-xl border shadow-xs">
-              <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
-                <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
+            {[
+              { icon: FileText, title: "Context-Aware", desc: "Tailored questions based on your resume", color: "text-green-600 dark:text-green-400", bg: "bg-green-100 dark:bg-green-900/30" },
+              { icon: Mic, title: "Voice Interaction", desc: "Speak naturally, no typing required", color: "text-red-600 dark:text-red-400", bg: "bg-red-100 dark:bg-red-900/30" }
+            ].map((feature, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl border">
+                <div className={cn(feature.bg, "p-3 rounded-full")}>
+                  <feature.icon className={cn("h-6 w-6", feature.color)} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">{feature.title}</h3>
+                  <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold">Context-Aware</h3>
-                <p className="text-sm text-muted-foreground">
-                  Tailored questions based on your resume
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 p-4 bg-card rounded-xl border shadow-xs">
-              <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full">
-                <Mic className="h-6 w-6 text-red-600 dark:text-red-400" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Voice Interaction</h3>
-                <p className="text-sm text-muted-foreground">
-                  Speak naturally, no typing required
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
         {/* Right Side: Form */}
-        <Card className="border-2 shadow-2xl relative overflow-hidden backdrop-blur-xs bg-card/95">
-          <div className="absolute top-0 inset-x-0 h-1 bg-linear-to-r from-blue-500 to-cyan-500" />
+        <Card className="border-2 relative overflow-hidden bg-card">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
           <CardHeader className="space-y-1 pb-2">
             <CardTitle className="text-2xl">Setup Interview Context</CardTitle>
             <CardDescription className="text-base">
@@ -124,21 +102,23 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
                 <div className="flex bg-muted/50 p-1 rounded-lg">
                   <button
                     onClick={() => setResumeTab("upload")}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                    className={cn(
+                      "px-3 py-1 text-xs font-medium rounded-md",
                       resumeTab === "upload"
-                        ? "bg-background shadow-xs text-foreground"
+                        ? "bg-background text-foreground"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                    )}
                   >
                     Upload
                   </button>
                   <button
                     onClick={() => setResumeTab("paste")}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                    className={cn(
+                      "px-3 py-1 text-xs font-medium rounded-md",
                       resumeTab === "paste"
-                        ? "bg-background shadow-xs text-foreground"
+                        ? "bg-background text-foreground"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                    )}
                   >
                     Paste Text
                   </button>
@@ -150,43 +130,45 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
                   <div className="relative group h-full">
                     <input
                       type="file"
-                      accept=".txt,.pdf,.rtf"
+                      accept=".pdf"
                       onChange={handleFileUpload}
                       className="hidden"
                       id="resume-upload"
-                      disabled={isUploadingFile}
+                      ref={fileInputRef}
+                      disabled={isConnecting}
                     />
                     <label
                       htmlFor="resume-upload"
-                      className={`flex flex-row items-center justify-start gap-4 px-4 h-full min-h-[80px] border-2 border-dashed rounded-xl transition-all duration-200 ${
-                        isUploadingFile
+                      className={cn(
+                        "flex flex-row items-center justify-start gap-4 px-4 h-full min-h-[80px] border-2 border-dashed rounded-xl",
+                        isConnecting
                           ? "cursor-not-allowed opacity-50 bg-muted/50 border-muted-foreground/25"
-                          : fileName
+                          : selectedFile
                             ? "border-green-500/50 bg-green-50/50 dark:bg-green-900/10 cursor-pointer hover:bg-green-100/50 dark:hover:bg-green-900/20"
-                            : "border-muted-foreground/25 cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/20 hover:border-blue-500/50 hover:shadow-inner"
-                      }`}
+                            : "border-muted-foreground/25 cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/20 hover:border-blue-500/50"
+                      )}
                     >
-                      {isUploadingFile ? (
+                      {isExtracting ? (
                         <>
                           <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                           <span className="text-sm font-medium text-muted-foreground">
-                            Processing...
+                            Processing Resume...
                           </span>
                         </>
-                      ) : fileName ? (
+                      ) : selectedFile ? (
                         <>
                           <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                             <FileText className="w-5 h-5 text-green-600 dark:text-green-400" />
                           </div>
                           <div className="text-left flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">
-                              {fileName}
+                              {selectedFile.name}
                             </p>
                             <p className="text-[10px] text-green-600 dark:text-green-400 font-medium">
                               Ready for interview
                             </p>
                           </div>
-                          <div className="bg-background/50 p-1.5 rounded-md text-xs text-muted-foreground shadow-xs border">
+                          <div className="bg-background/50 p-1.5 rounded-md text-xs text-muted-foreground border">
                             Replace
                           </div>
                         </>
@@ -200,7 +182,7 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
                               Click to Upload
                             </p>
                             <p className="text-[10px] text-muted-foreground">
-                              PDF, TXT, RTF
+                              PDF (Max 5MB)
                             </p>
                           </div>
                         </>
@@ -242,38 +224,25 @@ export const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
 
             <div className="space-y-3">
               <Button
-                className="w-full text-lg font-semibold gap-2 shadow-lg hover:shadow-blue-500/20 transition-all transform active:scale-[0.98]"
-                size="lg"
-                onClick={() => onStart(resumeText, jdText)}
-                disabled={!resumeText.trim()}
+                className="w-full text-lg font-semibold gap-2 transition-colors py-6"
+                onClick={onStart}
+                disabled={(!resumeText.trim() && !isResumeReady) || isConnecting}
               >
-                Start Interview <ArrowRight className="h-5 w-5" />
+                Start Interview
+                {isConnecting ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : isAuthenticated ? (
+                  <ArrowRight className="h-5 w-5" />
+                ) : (
+                  <Lock className="h-5 w-5 opacity-80" />
+                )}
               </Button>
-
-              {/* Cartesia Fast Voice Option */}
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  Want 10x faster voice?
-                </span>
-                <CartesiaApiKeyModal />
-              </div>
-            </div>
-
-            {/* Quick Tips */}
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
-              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                💡 Quick Tips:
-              </p>
-              <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1 ml-4 list-disc">
-                <li>Speak clearly and naturally</li>
-                <li>Click the mic button to stop speaking</li>
-                <li>The AI will respond automatically</li>
-                <li>Use a quiet environment for best results</li>
-              </ul>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
   );
-};
+}
+
+

@@ -18,19 +18,21 @@ import {
 } from "lucide-react";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ApiKeyNotification } from "@/components/ApiKeyNotification";
-import { GeminiApiKeyModal } from "@/components/GeminiApiKeyModal";
+import { ApiKeyModal } from "@/components/ApiKeyModal";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/useChat";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { ANIMATION_VARIANTS } from "@/lib/constants/templates";
 import { Sparkles, X } from "lucide-react";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 import type { Session } from "next-auth";
 import type { JsonValue } from "@prisma/client/runtime/library";
 import type { ResumeData } from "@/lib/types";
 
 export interface BuilderProps {
-  session: Session;
+  session: Session | null;
   params: { id: string };
   initialChatData: {
     id: string;
@@ -42,11 +44,8 @@ export interface BuilderProps {
 }
 
 export function Builder({ session, params, initialChatData }: BuilderProps) {
-  // Note: Auth is already handled in the server component (app/builder/[id]/page.tsx)
-  // This is a safety fallback - should never actually render null
-  if (!session) {
-    return null;
-  }
+  // We no longer return null here to support the "Teaser" pattern.
+  // Edits are allowed, but Chat and Save are protected.
 
   const { id: paramsId } = params;
   // Only generate fallback ID when actually needed (lazy initialization)
@@ -128,6 +127,12 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
 
   const handleSendMessage = useCallback(
     (message: string) => {
+      if (!session) {
+        toast.info("Please sign in to chat with AI.");
+        signIn("google", { callbackUrl: window.location.href });
+        return;
+      }
+
       // Generate ID if needed before sending message
       let chatId = id;
       if (!chatId) {
@@ -204,6 +209,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       <ChatSidebar
         session={session}
         currentChatId={id}
+        isNewChat={!paramsId}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={toggleSidebarCollapse}
       />
@@ -340,8 +346,8 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       {/* API Key Notification */}
       <ApiKeyNotification onManageKey={handleApiKeyModal} />
 
-      {/* Gemini API Key Modal */}
-      <GeminiApiKeyModal
+      {/* API Key Modal */}
+      <ApiKeyModal
         isOpen={showApiKeyModal}
         onClose={handleApiKeyModalClose}
       />
@@ -355,14 +361,14 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             className="fixed bottom-4 right-4 z-50 max-w-sm"
           >
-            <div className="bg-linear-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg shadow-lg border border-white/20">
+            <div className="bg-linear-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg">
               <div className="flex items-start gap-3">
                 <div className="p-1 bg-white/20 rounded-full">
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 fill-current" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-sm mb-1">
-                    🚀 New GenAI Features!
+                    New GenAI Features!
                   </h4>
                   <p className="text-xs opacity-90 mb-2">
                     Check out the new ATS Analysis tab for AI-powered resume
