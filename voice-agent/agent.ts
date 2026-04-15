@@ -9,7 +9,6 @@ import {
 import * as openai from '@livekit/agents-plugin-openai';
 import * as sarvam from '@livekit/agents-plugin-sarvam';
 import * as silero from '@livekit/agents-plugin-silero';
-import { fileURLToPath } from 'node:url';
 import 'dotenv/config';
 
 /**
@@ -136,7 +135,7 @@ export default defineAgent({
 // 🚀 CLI Runner (Fully Aligned with Official Docs)
 cli.runApp(
   new ServerOptions({
-    agent: fileURLToPath(import.meta.url),
+    agent: __filename,
     agentName: 'interview-gpt',
   }),
 );
