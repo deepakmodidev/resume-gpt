@@ -47,7 +47,6 @@ export default defineAgent({
     const llm = new openai.LLM({
       model: 'meta-llama/llama-4-scout-17b-16e-instruct',
       baseURL: 'https://api.groq.com/openai/v1',
-      apiKey: process.env.GROQ_API_KEY,
     });
 
     // 3. STT: Sarvam Saaras v3 (English/Hindi auto-detection)

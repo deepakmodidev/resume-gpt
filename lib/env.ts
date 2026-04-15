@@ -19,14 +19,12 @@ const envSchema = z.object({
     .min(32, "NEXTAUTH_SECRET must be at least 32 characters"),
   NEXTAUTH_URL: z.string().url("Invalid NEXTAUTH_URL format"),
 
-  // Optional - API Keys
-
   GROQ_API_KEY: z.string().min(1).optional(),
 
   // Required - LiveKit
-  LIVEKIT_API_KEY: z.string().min(1, "LIVEKIT_API_KEY is required"),
-  LIVEKIT_API_SECRET: z.string().min(1, "LIVEKIT_API_SECRET is required"),
-  LIVEKIT_URL: z.string().url("Invalid LIVEKIT_URL format"),
+  LIVEKIT_API_KEY: z.string().min(1).optional(),
+  LIVEKIT_API_SECRET: z.string().min(1).optional(),
+  LIVEKIT_URL: z.string().optional(),
 
   // Optional - Deployment Environment
   VERCEL: z.string().optional(),
