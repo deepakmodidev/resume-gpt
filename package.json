@@ -11,10 +11,6 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.8.0",
-    "@livekit/agents": "^1.2.3",
-    "@livekit/agents-plugin-openai": "^1.2.3",
-    "@livekit/agents-plugin-sarvam": "^1.2.3",
-    "@livekit/agents-plugin-silero": "^1.2.3",
     "@livekit/components-react": "^2.9.20",
     "@livekit/components-styles": "^1.2.0",
     "@prisma/client": "^6.12.0",

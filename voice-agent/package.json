@@ -1,0 +1,27 @@
+{
+  "name": "voice-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "node dist/agent.js",
+    "download-files": "echo \"No additional files to download\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "@livekit/agents": "^1.2.6",
+    "@livekit/agents-plugin-openai": "^1.2.6",
+    "@livekit/agents-plugin-sarvam": "^1.2.6",
+    "@livekit/agents-plugin-silero": "^1.2.6",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.2"
+  }
+}
