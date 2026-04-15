@@ -20,11 +20,15 @@ const envSchema = z.object({
   NEXTAUTH_URL: z.string().url("Invalid NEXTAUTH_URL format"),
 
   // Optional - API Keys
-  GEMINI_KEY: z.string().min(1).optional(),
-  CARTESIA_API_KEY: z.string().optional(),
+
+  GROQ_API_KEY: z.string().min(1).optional(),
+
+  // Required - LiveKit
+  LIVEKIT_API_KEY: z.string().min(1, "LIVEKIT_API_KEY is required"),
+  LIVEKIT_API_SECRET: z.string().min(1, "LIVEKIT_API_SECRET is required"),
+  LIVEKIT_URL: z.string().url("Invalid LIVEKIT_URL format"),
 
   // Optional - Deployment Environment
-  AWS_LAMBDA_FUNCTION_NAME: z.string().optional(),
   VERCEL: z.string().optional(),
   NODE_ENV: z
     .enum(["development", "production", "test"])
@@ -39,7 +43,7 @@ export type Env = z.infer<typeof envSchema>;
  *
  * @example
  * import { env } from "@/lib/env";
- * const apiKey = env.GEMINI_KEY;
+ * const apiKey = env.GROQ_API_KEY;
  */
 let env: Env;
 

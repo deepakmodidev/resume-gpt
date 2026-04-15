@@ -1,104 +1,92 @@
 import { NextResponse } from "next/server";
+import { OpenAI } from "openai";
 import db from "@/prisma/prisma";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { AI_MODELS } from "@/lib/constants";
 
-// Types
 interface HealthStatus {
-  status: "ok" | "error";
+  status: "up" | "down" | "degraded";
   message?: string;
+  latency?: number;
 }
 
-interface HealthCheck {
-  backend: HealthStatus;
+interface AppHealth {
+  status: "up" | "down" | "degraded";
+  timestamp: string;
   database: HealthStatus;
-  gemini: HealthStatus;
-  prisma: HealthStatus;
-  env: HealthStatus;
-  uptime: HealthStatus;
-  timestamp: HealthStatus;
-  status: HealthStatus;
+  groq: HealthStatus;
 }
 
-const createHealthStatus = (
-  status: "ok" | "error",
-  message?: string,
-): HealthStatus => ({
-  status,
-  ...(message && { message }),
-});
-
-const checkDatabase = async (): Promise<HealthStatus> => {
+async function checkDatabase(): Promise<HealthStatus> {
+  const start = Date.now();
   try {
-    await db.user.findFirst({ select: { id: true } });
-    return createHealthStatus("ok");
+    await db.$queryRaw`SELECT 1`;
+    return {
+      status: "up",
+      latency: Date.now() - start,
+    };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "DB connection failed";
-    return createHealthStatus("error", message);
+    logger.error("Database health check failed:", error);
+    return {
+      status: "down",
+      message: "Database connection failed",
+    };
   }
-};
+}
 
-const checkGemini = async (): Promise<HealthStatus> => {
+async function checkGroq(): Promise<HealthStatus> {
+  const start = Date.now();
   try {
-    const apiKey = process.env.GEMINI_KEY;
-    if (!apiKey?.startsWith("AIza")) {
-      throw new Error("Missing or invalid Gemini API key");
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return {
+        status: "degraded",
+        message: "GROQ_API_KEY environment variable is missing",
+      };
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
-    await model.generateContent("ping");
+    const client = new OpenAI({
+      apiKey,
+      baseURL: "https://api.groq.com/openai/v1",
+    });
 
-    return createHealthStatus("ok");
+    // Just list models as a lightweight check
+    await client.models.list();
+
+    return {
+      status: "up",
+      latency: Date.now() - start,
+    };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Gemini API failed";
-    return createHealthStatus("error", message);
+    logger.error("Groq health check failed:", error);
+    return {
+      status: "down",
+      message: error instanceof Error ? error.message : "Groq API unreachable",
+    };
   }
-};
-
-const checkEnvironment = (): HealthStatus => {
-  const requiredEnv = [
-    "DATABASE_URL",
-    "GEMINI_KEY",
-    "GOOGLE_CLIENT_ID",
-    "GOOGLE_CLIENT_SECRET",
-    "NEXTAUTH_SECRET",
-  ];
-
-  for (const key of requiredEnv) {
-    if (!process.env[key]) {
-      return createHealthStatus("error", `Missing env: ${key}`);
-    }
-  }
-
-  return createHealthStatus("ok");
-};
+}
 
 export async function GET() {
-  const [databaseHealth, geminiHealth] = await Promise.all([
+  const [databaseHealth, groqHealth] = await Promise.all([
     checkDatabase(),
-    checkGemini(),
+    checkGroq(),
   ]);
 
-  const health: HealthCheck = {
-    backend: createHealthStatus("ok"),
+  const overallStatus =
+    databaseHealth.status === "up" && groqHealth.status === "up"
+      ? "up"
+      : databaseHealth.status === "down" || groqHealth.status === "down"
+        ? "down"
+        : "degraded";
+
+  const health: AppHealth = {
+    status: overallStatus,
+    timestamp: new Date().toISOString(),
     database: databaseHealth,
-    gemini: geminiHealth,
-    prisma: databaseHealth, // Same as database check
-    env: checkEnvironment(),
-    uptime: createHealthStatus("ok", `${Math.floor(process.uptime?.() || 0)}s`),
-    timestamp: createHealthStatus("ok", new Date().toISOString()),
-    status: createHealthStatus("ok"), // Will be updated below
+    groq: groqHealth,
   };
 
-  // Determine overall status
-  const allOk = Object.entries(health)
-    .filter(([key]) => key !== "status") // Exclude status itself
-    .every(([, value]) => value.status === "ok");
-
-  health.status = createHealthStatus(allOk ? "ok" : "error");
-
-  return NextResponse.json(health, { status: allOk ? 200 : 500 });
+  return NextResponse.json(health, {
+    status: overallStatus === "down" ? 503 : 200,
+  });
 }

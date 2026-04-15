@@ -141,21 +141,6 @@ export const CoverLetterRequestSchema = z.object({
   userApiKey: z.string().optional().nullable(),
 });
 
-// Interview Chat validation
-export const InterviewChatRequestSchema = z.object({
-  messages: z
-    .array(
-      z.object({
-        role: z.enum(["user", "model"]),
-        content: z.string().min(1).max(10000),
-      }),
-    )
-    .min(1)
-    .max(100),
-  resumeText: z.string().max(50000).optional(),
-  jobDescription: z.string().max(50000).optional(),
-  userApiKey: z.string().optional().nullable(),
-});
 
 // Validate Gemini Key validation
 export const ValidateKeyRequestSchema = z.object({

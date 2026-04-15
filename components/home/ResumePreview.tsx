@@ -70,7 +70,7 @@ export function ResumePreview() {
                   </div>
                   <div className="hidden md:flex items-center gap-1 justify-end">
                     <Globe className="h-3 w-3" />
-                    <span>deepakmodi.tech</span>
+                    <span>deepakmodi.dev</span>
                   </div>
                 </div>
               </div>
@@ -257,7 +257,7 @@ export function ResumePreview() {
                         React
                       </span>
                       <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-                        Gemini API
+                        Groq API
                       </span>
                       <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
                         Node.js

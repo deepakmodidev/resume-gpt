@@ -31,7 +31,7 @@ const features = [
   {
     title: "AI Resume Assistant",
     description:
-      "Powered by Gemini AI for intelligent content suggestions and resume optimization",
+      "Powered by Groq Llama 4 AI for intelligent content suggestions and resume optimization",
     icon: MessageCircle,
     color: "text-blue-500",
     size: "single", // spans 1 column (position 4)

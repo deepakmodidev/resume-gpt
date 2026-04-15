@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 import db from "@/prisma/prisma";
 import { ATSAnalyzer } from "@/lib/rag/ats-analyzer";
 import { validateRequest, ATSRequestSchema } from "@/lib/validators";
@@ -18,7 +19,7 @@ interface ResumeData {
 
 export async function POST(req: NextRequest) {
   try {
-    // Make authentication optional - get session but don't require it
+    // Check authentication (no longer mandatory)
     const session = await auth();
     const isAuthenticated = !!session?.user?.id;
 

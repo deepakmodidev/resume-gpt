@@ -22,8 +22,7 @@ interface PDFOptions {
  * Get the appropriate browser instance for both local and serverless environments
  */
 async function getBrowser(): Promise<Browser> {
-  const isServerless =
-    !!process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL;
+  const isServerless = !!process.env.VERCEL;
 
   if (isServerless) {
     // Serverless (e.g., Vercel): use @sparticuz/chromium and puppeteer-core

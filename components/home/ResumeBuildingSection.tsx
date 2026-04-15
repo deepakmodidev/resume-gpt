@@ -1,4 +1,5 @@
-import { Bot, NotepadTextDashed } from "lucide-react";
+import { Bot } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export function ResumeBuildingSection() {
   return (
@@ -138,7 +139,7 @@ export function ResumeBuildingSection() {
             <div className="relative bg-card/80 backdrop-blur-xs border border-border rounded-2xl p-4 sm:p-6 h-full">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <NotepadTextDashed className="h-4 w-4 text-blue-400" />
+                  <Logo size={16} className="text-blue-400" />
                 </div>
                 <span className="font-semibold text-foreground">
                   Live Resume Preview

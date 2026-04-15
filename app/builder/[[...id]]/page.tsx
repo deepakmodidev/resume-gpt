@@ -40,10 +40,9 @@ export default async function page({
     redirect("/builder");
   }
 
-  // It's good practice to double-check auth even if layout does
-  if (!session?.user?.id) {
-    redirect("/?signin=true");
-  }
+  // We no longer hard-redirect here to allow the "Teaser" pattern.
+  // The Builder component and its sub-actions will handle auth prompts.
+  const userId = session?.user?.id;
 
   // Handle new chat (empty root) - don't try to fetch from database
   let chat = null;

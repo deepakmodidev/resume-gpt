@@ -31,10 +31,11 @@ export async function apiRequest<T>(
   );
 
   try {
-    const apiKey = localStorage.getItem("gemini-api-key");
+    const groqKey = localStorage.getItem("groq-api-key");
+
     const headers = {
       "Content-Type": "application/json",
-      ...(apiKey ? { "x-gemini-api-key": apiKey } : {}),
+      ...(groqKey ? { "x-groq-api-key": groqKey } : {}),
       ...options?.headers,
     };
 
