@@ -6,6 +6,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 
 - **AI-powered resume content suggestions** (Groq)
 - **AI Cover Letter Generator** - Create tailored cover letters instantly
+- **AI Voice Interview** - Real-time technical mock interviews (LiveKit + Sarvam)
 - **Advanced ATS compatibility analysis** with RAG and NLP
 - **Smart skill extraction and matching** using semantic analysis
 - **Multiple professional resume templates** (10+ designs)
@@ -22,6 +23,8 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 - **Prisma ORM** (PostgreSQL)
 - **NextAuth.js** (Auth.js)
 - **Groq AI API** (using Llama 3.3)
+- **LiveKit Agents** (Real-time voice AI)
+- **Sarvam AI** (Sovereign Indic TTS/STT)
 - **Natural Language Processing** (NLP) for skill extraction
 - **TF-IDF** for keyword importance analysis
 - **Jaro-Winkler algorithm** for fuzzy string matching
@@ -63,6 +66,11 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 5. Start the development server:
    ```bash
    npm run dev
+   ```
+
+6. Start the AI Interview Agent:
+   ```bash
+   node agent/agent.ts dev
    ```
 
 ## ATS Analysis Features

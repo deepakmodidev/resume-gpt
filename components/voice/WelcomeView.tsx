@@ -52,7 +52,7 @@ export function WelcomeView({
         {/* Left Side: Pitch */}
         <div className="space-y-6 flex flex-col justify-center">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">
               Ace Your Next <br />
               <span className="text-blue-600 dark:text-blue-400">
                 Interview

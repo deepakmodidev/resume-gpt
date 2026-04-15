@@ -61,7 +61,7 @@ export default function VoiceInterviewPage() {
       <Header />
       <main className="flex-1 pt-24 container mx-auto px-4 overflow-hidden">
         <SessionProvider session={session}>
-          <VoiceInterviewContent 
+          <VoiceInterviewContent
             session={session}
             isExtracting={isExtracting}
             selectedFile={selectedFile}
@@ -82,8 +82,8 @@ export default function VoiceInterviewPage() {
  * 🛰️ Internal component to handle transition from Welcome -> Session
  * Only switches when the AGENT is actually detected in the room.
  */
-function VoiceInterviewContent({ 
-  session, isExtracting, selectedFile, resumeText, setResumeText, jdText, setJdText, onFileChange, isAuthenticated 
+function VoiceInterviewContent({
+  session, isExtracting, selectedFile, resumeText, setResumeText, jdText, setJdText, onFileChange, isAuthenticated
 }: any) {
   const { isConnected: isInterviewerReady, state: agentState } = useAgent();
   const [isTimedOut, setIsTimedOut] = useState(false);
@@ -94,7 +94,7 @@ function VoiceInterviewContent({
       const timeout = setTimeout(() => {
         setIsTimedOut(true);
         toast.error("Interviewer process not detected. Check your terminal.");
-        session.disconnect();
+        session.leave();
       }, 15000);
       return () => clearTimeout(timeout);
     }
@@ -107,7 +107,7 @@ function VoiceInterviewContent({
   if (!isInterviewerReady) {
     return (
       <div key="welcome" className="opacity-100 transition-all duration-500 transform-gpu w-full max-w-7xl mx-auto px-4">
-        <WelcomeView 
+        <WelcomeView
           onStart={() => {
             if (!isAuthenticated) {
               toast.info("Please sign in to start the interview.");

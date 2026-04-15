@@ -209,6 +209,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       <ChatSidebar
         session={session}
         currentChatId={id}
+        isNewChat={!paramsId}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={toggleSidebarCollapse}
       />
@@ -360,14 +361,14 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             className="fixed bottom-4 right-4 z-50 max-w-sm"
           >
-            <div className="bg-linear-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg shadow-lg border border-white/20">
+            <div className="bg-linear-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg">
               <div className="flex items-start gap-3">
                 <div className="p-1 bg-white/20 rounded-full">
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 fill-current" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-sm mb-1">
-                    🚀 New GenAI Features!
+                    New GenAI Features!
                   </h4>
                   <p className="text-xs opacity-90 mb-2">
                     Check out the new ATS Analysis tab for AI-powered resume

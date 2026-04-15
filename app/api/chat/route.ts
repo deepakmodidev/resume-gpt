@@ -4,8 +4,51 @@ import { RESUME_BUILDER_PROMPT } from "@/lib/prompts";
 import { AI_MODELS } from "@/lib/constants";
 import { logger } from "@/lib/logger";
 import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
+import db from "@/prisma/prisma";
 
 export const dynamic = "force-dynamic";
+
+export async function GET(req: NextRequest) {
+  try {
+    // Authentication required
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
+
+    const userId = authResult.userId;
+    if (!userId) {
+      return NextResponse.json(
+        { error: "User ID not found" },
+        { status: 401 }
+      );
+    }
+
+    // Fetch chats for the authenticated user
+    const chats = await db.chat.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return NextResponse.json({ chats });
+  } catch (error: any) {
+    logger.error("Chat Fetch Error:", error);
+
+    const statusCode = error.status || 500;
+    const message = error.message || "An error occurred while fetching chats.";
+
+    return NextResponse.json(
+      { error: message },
+      { status: statusCode }
+    );
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,9 +65,9 @@ export async function POST(req: NextRequest) {
     // 1. x-groq-api-key header
     // 2. userApiKey from request body
     // 3. process.env.GROQ_API_KEY
-    const apiKey = 
-      req.headers.get("x-groq-api-key") || 
-      userApiKey || 
+    const apiKey =
+      req.headers.get("x-groq-api-key") ||
+      userApiKey ||
       process.env.GROQ_API_KEY;
 
     if (!apiKey) {
@@ -72,7 +115,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     logger.error("Groq Chat Error:", error);
-    
+
     const statusCode = error.status || 500;
     const message = error.message || "An error occurred during the chat request.";
 
@@ -80,5 +123,102 @@ export async function POST(req: NextRequest) {
       { error: message },
       { status: statusCode }
     );
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
+
+    const userId = authResult.userId;
+    const body = await req.json();
+    const { chatId, newName } = body ?? {};
+
+    if (!chatId || typeof chatId !== "string") {
+      return NextResponse.json({ error: "chatId is required" }, { status: 400 });
+    }
+
+    if (!newName || typeof newName !== "string" || !newName.trim()) {
+      return NextResponse.json(
+        { error: "newName is required" },
+        { status: 400 },
+      );
+    }
+
+    const existingChat = await db.chat.findFirst({
+      where: {
+        id: chatId,
+        userId,
+      },
+      select: { id: true },
+    });
+
+    if (!existingChat) {
+      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
+    }
+
+    const updatedChat = await db.chat.update({
+      where: { id: chatId },
+      data: { title: newName.trim() },
+      select: {
+        id: true,
+        title: true,
+        updatedAt: true,
+      },
+    });
+
+    return NextResponse.json({ chat: updatedChat });
+  } catch (error: any) {
+    logger.error("Chat Rename Error:", error);
+
+    const statusCode = error.status || 500;
+    const message = error.message || "An error occurred while renaming chat.";
+
+    return NextResponse.json({ error: message }, { status: statusCode });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const authResult = await requireAuth();
+    if (!isAuthorized(authResult)) {
+      return authResult.response;
+    }
+
+    const userId = authResult.userId;
+    const body = await req.json();
+    const { chatId } = body ?? {};
+
+    if (!chatId || typeof chatId !== "string") {
+      return NextResponse.json({ error: "chatId is required" }, { status: 400 });
+    }
+
+    const existingChat = await db.chat.findFirst({
+      where: {
+        id: chatId,
+        userId,
+      },
+      select: { id: true },
+    });
+
+    if (!existingChat) {
+      return NextResponse.json({ error: "Chat not found" }, { status: 404 });
+    }
+
+    await db.chat.delete({
+      where: { id: chatId },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    logger.error("Chat Delete Error:", error);
+
+    const statusCode = error.status || 500;
+    const message = error.message || "An error occurred while deleting chat.";
+
+    return NextResponse.json({ error: message }, { status: statusCode });
   }
 }

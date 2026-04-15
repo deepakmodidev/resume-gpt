@@ -21,8 +21,8 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  NotepadTextDashed,
 } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -44,6 +44,7 @@ import { cn } from "@/lib/utils";
 interface ChatSidebarProps {
   session: Session | null;
   currentChatId?: string;
+  isNewChat?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -275,11 +276,13 @@ const ChatListItem = ({
 const SidebarContent = ({
   session,
   currentChatId,
+  isNewChat = false,
   isCollapsed = false,
   onToggleCollapse,
 }: {
   session: Session | null;
   currentChatId?: string;
+  isNewChat?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }) => {
@@ -290,6 +293,8 @@ const SidebarContent = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [hasUserApiKey, setHasUserApiKey] = useState(false);
+  const normalizedCurrentChatId = currentChatId ?? "";
+  const shouldRetryForNewChat = Boolean(isNewChat);
 
   useEffect(() => {
     fetchChats();
@@ -298,14 +303,32 @@ const SidebarContent = ({
 
   // Refresh chat list when currentChatId changes (e.g., when a new chat is created)
   useEffect(() => {
-    if (currentChatId) {
+    if (normalizedCurrentChatId) {
       // Check if this chat exists in our list, if not, refresh
-      const chatExists = chats.some((chat) => chat.id === currentChatId);
+      const chatExists = chats.some(
+        (chat) => chat.id === normalizedCurrentChatId,
+      );
       if (!chatExists) {
         fetchChats();
+
+        // New chats are saved asynchronously; retry briefly so the sidebar updates quickly.
+        if (shouldRetryForNewChat) {
+          let attempts = 0;
+          const maxAttempts = 5;
+          const interval = setInterval(() => {
+            attempts += 1;
+            fetchChats();
+
+            if (attempts >= maxAttempts) {
+              clearInterval(interval);
+            }
+          }, 700);
+
+          return () => clearInterval(interval);
+        }
       }
     }
-  }, [currentChatId]);
+  }, [normalizedCurrentChatId, shouldRetryForNewChat, chats]);
 
   // Periodic refresh to catch updates from manual edits (every 30 seconds)
   useEffect(() => {
@@ -447,7 +470,7 @@ const SidebarContent = ({
           >
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <NotepadTextDashed className="h-5 w-5 text-white drop-shadow-lg" />
+                <Logo size={20} className="text-white drop-shadow-lg" />
               </div>
               <h1 className="font-bold text-xl tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent whitespace-nowrap">
                 ResumeGPT
@@ -754,6 +777,7 @@ const SidebarContent = ({
 export const ChatSidebar = ({
   session,
   currentChatId,
+  isNewChat = false,
   isCollapsed = false,
   onToggleCollapse,
 }: ChatSidebarProps) => {
@@ -785,6 +809,7 @@ export const ChatSidebar = ({
                 <SidebarContent
                   session={session}
                   currentChatId={currentChatId}
+                  isNewChat={isNewChat}
                   isCollapsed={false}
                   onToggleCollapse={undefined}
                 />
@@ -792,7 +817,7 @@ export const ChatSidebar = ({
             </Sheet>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <NotepadTextDashed className="h-5 w-5 text-white drop-shadow-lg" />
+                <Logo size={20} className="text-white drop-shadow-lg" />
               </div>
               <h1 className="font-bold text-lg tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                 ResumeGPT
@@ -822,6 +847,7 @@ export const ChatSidebar = ({
         <SidebarContent
           session={session}
           currentChatId={currentChatId}
+          isNewChat={isNewChat}
           isCollapsed={isCollapsed}
           onToggleCollapse={onToggleCollapse}
         />

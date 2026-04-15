@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  NotepadTextDashed,
   User,
   LogOut,
   Plus,
   MessageSquare,
 } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { handleGoogleSignIn } from "@/app/actions/auth-actions";
 import { useSession, signOut, signIn } from "next-auth/react";
@@ -64,7 +64,7 @@ export function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <NotepadTextDashed className="h-5 w-5 text-white drop-shadow-lg" />
+                <Logo size={20} className="text-white drop-shadow-lg" />
               </div>
               <span className="text-xl font-bold bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                 ResumeGPT
