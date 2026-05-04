@@ -13,6 +13,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   adapter: PrismaAdapter(db),
+  trustHost: true,
   debug: env.NODE_ENV !== "production",
   session: {
     strategy: "database",

@@ -30,8 +30,8 @@ export function Header() {
   const handleSignInClick = async () => {
     try {
       setIsSigningIn(true);
-      // Use client-side signIn for better redirect handling
-      await signIn("google", { callbackUrl: "/builder" });
+      // Use client-side signIn with redirectTo (v5 standard)
+      await signIn("google", { redirectTo: "/builder" });
     } catch (error) {
       logger.error("Sign in failed:", error);
       setIsSigningIn(false);
@@ -47,7 +47,7 @@ export function Header() {
         window.history.replaceState({}, "", "/");
         // Trigger sign-in with client-side redirect
         setIsSigningIn(true);
-        signIn("google", { callbackUrl: "/builder" });
+        signIn("google", { redirectTo: "/builder" });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,14 +145,11 @@ export function Header() {
                 <Button
                   variant="outline"
                   onClick={handleSignInClick}
-                  disabled={isSigningIn}
+                  disabled={isSigningIn || status === "loading"}
                   className="text-sm font-medium hover:bg-muted transition-all duration-200 flex items-center gap-2 shadow-xs hover:shadow-md w-full"
                 >
                   {isSigningIn ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      <span className="hidden sm:inline">Signing in...</span>
-                    </>
+                    <span className="hidden sm:inline">Signing in...</span>
                   ) : (
                     <>
                       <svg className="h-4 w-4" viewBox="0 0 24 24">
