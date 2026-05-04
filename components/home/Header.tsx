@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,17 +27,39 @@ import { logger } from "@/lib/logger";
 export function Header() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const { data: session, status } = useSession();
+  const router = useRouter();
 
   const handleSignInClick = async () => {
-    try {
-      setIsSigningIn(true);
-      // Use client-side signIn with redirectTo (v5 standard)
-      await signIn("google", { redirectTo: "/builder" });
-    } catch (error) {
-      logger.error("Sign in failed:", error);
-      setIsSigningIn(false);
-    }
+    setIsSigningIn(true);
+    
+    // Open a centered popup window for our custom Auth page
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    
+    const popup = window.open(
+      "/auth/signin",
+      "google-signin",
+      `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
+    );
+
+    // Check periodically if the user manually closed the popup
+    const checkPopup = setInterval(() => {
+      if (!popup || popup.closed || popup.closed === undefined) {
+        clearInterval(checkPopup);
+        setIsSigningIn(false);
+      }
+    }, 500);
   };
+
+  // Watch for session completion to redirect the main window
+  useEffect(() => {
+    if (status === "authenticated" && isSigningIn) {
+      setIsSigningIn(false);
+      router.push("/builder");
+    }
+  }, [status, isSigningIn, router]);
 
   // Auto-trigger sign-in if redirected from protected route
   useEffect(() => {
@@ -47,6 +70,7 @@ export function Header() {
         window.history.replaceState({}, "", "/");
         // Trigger sign-in with client-side redirect
         setIsSigningIn(true);
+        // Use standard redirect for programmatic sign-in to avoid popup blockers
         signIn("google", { redirectTo: "/builder" });
       }
     }
