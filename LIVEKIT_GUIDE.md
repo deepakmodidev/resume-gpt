@@ -8,7 +8,7 @@ This document summarizes the end-to-end architecture, development workflow, and 
 
 To avoid breaking your frontend build (Next.js) or hitting dependency conflicts, the AI Agent must live in its own isolated service.
 
-### Recommended Project Structure
+### Project Structure
 ```text
 resume-gpt/
 ├── app/             # Next.js (UI + API)
