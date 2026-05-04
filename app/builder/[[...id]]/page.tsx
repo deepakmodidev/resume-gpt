@@ -56,6 +56,12 @@ export default async function page({
     }
 
     // --- Fetch ONLY the specific chat data here using cached function ---
+    // Safety check: Ensure we have a session and user ID before fetching
+    if (!session?.user?.id) {
+      // If we have a chatId but no session, redirect to home with sign-in trigger
+      redirect("/?signin=true");
+    }
+
     chat = await getChatData(chatId, session.user.id);
 
     // If chat doesn't exist in DB, redirect to new chat

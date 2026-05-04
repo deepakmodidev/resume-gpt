@@ -99,6 +99,15 @@ The application includes advanced ATS (Applicant Tracking System) analysis power
 - **Industry-specific optimization suggestions**
 - **Experience relevance assessment**
 
+### Technical Implementation (Local RAG)
+
+The ATS engine uses a specialized "Local RAG" (Retrieval-Augmented Generation) architecture designed for privacy and speed:
+
+- **Statistical Retrieval**: Uses **TF-IDF** (via `natural`) to retrieve the most significant terms from job descriptions, automatically filtering out marketing "fluff."
+- **NLP Entity Extraction**: Leverages **Compromise.js** for machine-learning-based entity recognition to identify technical skills, frameworks, and tools without manual keyword lists.
+- **Bidirectional Mapping**: A built-in knowledge base handles skill variations (e.g., mapping `JS` to `JavaScript`) and semantic similarities.
+- **Weighted Analysis**: Matches are scored across three distinct pillars—**Technical**, **Business**, and **Management**—using a weighted importance algorithm (Jaro-Winkler distance).
+
 ## Usage
 
 - Sign in with Google to create and manage your resumes
