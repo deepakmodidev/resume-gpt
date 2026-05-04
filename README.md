@@ -68,10 +68,23 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
    npm run dev
    ```
 
-6. Start the AI Interview Agent:
+### 5. Start the AI Interview Agent (Optional)
+
+The AI Voice Interview agent runs as a separate service.
+
+1. Navigate to the agent directory:
    ```bash
-   node agent/agent.ts dev
+   cd voice-agent
    ```
+2. Install agent-specific dependencies (requires `pnpm`):
+   ```bash
+   pnpm install
+   ```
+3. Run the agent in dev mode:
+   ```bash
+   pnpm dev
+   ```
+   *Note: For production deployment, see [LIVEKIT_GUIDE.md](LIVEKIT_GUIDE.md)*
 
 ## ATS Analysis Features
 
