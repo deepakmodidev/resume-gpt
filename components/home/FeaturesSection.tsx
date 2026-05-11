@@ -8,33 +8,26 @@ import {
   Shield,
   Target,
   FileText,
+  Mic,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const features = [
   {
-    title: "ATS Score Analyzer",
+    title: "AI Resume Generator",
     description:
-      "Get instant ATS compatibility scores with GenAI analysis and optimization suggestions",
-    icon: Target,
-    color: "text-indigo-500",
-    size: "double", // spans 2 columns (positions 1-2)
+      "Generate a professional, high-impact resume in minutes using advanced AI tailored to your specific industry and experience",
+    icon: MessageCircle,
+    color: "text-blue-500",
+    size: "double", // Row 1: Big
   },
   {
     title: "AI Cover Letter Generator",
     description:
-      "Create tailored cover letters in seconds using advanced AI that matches your resume to job descriptions",
+      "Create tailored cover letters in seconds that match your resume to specific job descriptions",
     icon: FileText,
     color: "text-pink-500",
-    size: "single", // spans 1 column (position 3)
-  },
-  {
-    title: "AI Resume Assistant",
-    description:
-      "Powered by Groq Llama 4 AI for intelligent content suggestions and resume optimization",
-    icon: MessageCircle,
-    color: "text-blue-500",
-    size: "single", // spans 1 column (position 4)
+    size: "single", // Row 1: Small
   },
   {
     title: "Professional Templates",
@@ -42,7 +35,7 @@ const features = [
       "10+ ATS-friendly templates including Modern, Executive, and Creative designs",
     icon: Palette,
     color: "text-purple-500",
-    size: "single", // spans 1 column (position 4)
+    size: "single", // Row 2: Small
   },
   {
     title: "PDF Export",
@@ -50,21 +43,30 @@ const features = [
       "High-quality PDF generation with proper formatting and print optimization",
     icon: Download,
     color: "text-green-500",
-    size: "single", // spans 1 column (position 5)
+    size: "single", // Row 2: Small
   },
   {
     title: "Real-time Preview",
     description: "Live editing with instant preview of your resume changes",
     icon: Zap,
     color: "text-yellow-500",
-    size: "double", // spans 2 columns (positions 6-7)
+    size: "single", // Row 2: Small
   },
   {
-    title: "Secure & Private",
-    description: "Google OAuth authentication with secure session management",
-    icon: Shield,
-    color: "text-red-500",
-    size: "single", // spans 1 column (position 9)
+    title: "ATS Score Analyzer",
+    description:
+      "Get instant ATS compatibility scores with GenAI analysis and optimization suggestions",
+    icon: Target,
+    color: "text-indigo-500",
+    size: "single", // Row 3: Small
+  },
+  {
+    title: "AI Voice Mock Interviews",
+    description:
+      "Real-time interactive practice sessions powered by LiveKit and Sarvam AI to ace your dream job interviews.",
+    icon: Mic,
+    color: "text-orange-500",
+    size: "double", // Row 3: Big (at the end)
   },
 ];
 
@@ -81,31 +83,23 @@ interface FeatureCardProps {
 }
 
 const FeatureCard = ({ feature, index }: FeatureCardProps) => {
-  const getCardSize = (size: string, index: number) => {
-    // Bento grid pattern:
-    // | 1-2 | 3 |
-    // | 4   | 5-6 |
-    // | 7   | 8 | 9 |
-
-    if (index === 0 || index === 3) {
-      // positions 1-2 and 5-6
-      return "md:col-span-2";
-    } else {
-      return "md:col-span-1";
-    }
+  const getCardSize = (size: string) => {
+    return size === "double" ? "md:col-span-2" : "md:col-span-1";
   };
 
   const getGradientPosition = (index: number) => {
+    // Perfectly symmetric grid:
+    // Row 1: [Double, Single]
+    // Row 2: [Single, Single, Single]
+    // Row 3: [Single, Double]
     const positions = [
-      "left-[50%] translate-x-[-50%]", // 1-2 (double)
-      "right-[-20%] md:right-[-50%]", // 3 (single)
-      "left-[0%] translate-x-[-50%]", // 4 (single)
-      "left-[50%] translate-x-[-50%]", // 5-6 (double)
-      "left-[0%] translate-x-[-50%]", // 7 (single)
-      "right-[-20%] md:right-[-50%]", // 8 (single)
-      "left-[50%] translate-x-[-50%]", // 9 (single)
-      "right-[-20%] md:right-[-50%]", // 10 (single)
-      "left-[0%] translate-x-[-50%]", // 11 (single)
+      "left-[50%] translate-x-[-50%]", // 0 (Double) - Center
+      "right-[-20%] md:right-[-50%]", // 1 (Single) - Right
+      "left-[0%] translate-x-[-50%]",  // 2 (Single) - Left
+      "left-[50%] translate-x-[-50%]", // 3 (Single) - Center
+      "right-[-20%] md:right-[-50%]", // 4 (Single) - Right
+      "left-[0%] translate-x-[-50%]",  // 5 (Single) - Left
+      "left-[50%] translate-x-[-50%]", // 6 (Double) - Center
     ];
     return positions[index] || "left-[50%] translate-x-[-50%]";
   };
@@ -114,7 +108,7 @@ const FeatureCard = ({ feature, index }: FeatureCardProps) => {
     <div
       className={cn(
         "bg-muted/30 hover:bg-muted/50 transition-all duration-700 rounded-2xl p-2 min-h-80 group relative overflow-hidden border border-border/50",
-        getCardSize(feature.size, index),
+        getCardSize(feature.size),
       )}
     >
       <div className="rounded-2xl bg-card backdrop-blur-xs h-full transition-all duration-700 relative overflow-hidden w-full p-8 flex flex-col items-start justify-between">
