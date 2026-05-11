@@ -65,4 +65,11 @@ export const TEMPLATE_TYPES = {
   CLASSIC: "classic",
   MODERN: "modern",
   MINIMAL: "minimal",
+  PROFESSIONAL: "professional",
+  EXECUTIVE: "executive",
+  CORPORATE: "corporate",
+  TECHIE: "techie",
+  ELEGANT: "elegant",
+  CREATIVE: "creative",
+  ARTISTIC: "artistic",
 } as const;
