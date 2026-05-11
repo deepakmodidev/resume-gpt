@@ -76,6 +76,7 @@ export const ChatRequestSchema = z.object({
     skills: z.array(z.string()).optional().default([]),
     projects: z.array(ProjectSchema).optional().default([]),
     certifications: z.array(CertificationSchema).optional().default([]),
+    achievements: z.array(z.string()).optional().default([]),
   }),
   chatId: z.string().uuid(),
   userApiKey: z.string().optional().nullable(),
@@ -104,6 +105,7 @@ export const PDFRequestSchema = z.object({
         linkedin: z.string().max(200).optional().default(""),
         github: z.string().max(200).optional().default(""),
         website: z.string().max(200).optional().default(""),
+        blogs: z.string().max(200).optional().default(""),
       })
       .optional()
       .default({
@@ -113,6 +115,7 @@ export const PDFRequestSchema = z.object({
         linkedin: "",
         github: "",
         website: "",
+        blogs: "",
       }),
     summary: z.string().max(2000).optional().default(""),
     experience: z.array(ExperienceSchema).optional().default([]),
@@ -120,9 +123,21 @@ export const PDFRequestSchema = z.object({
     skills: z.array(z.string()).optional().default([]),
     projects: z.array(ProjectSchema).optional().default([]),
     certifications: z.array(CertificationSchema).optional().default([]),
+    achievements: z.array(z.string()).optional().default([]),
   }),
   template: z
-    .enum(["classic", "modern", "minimal"])
+    .enum([
+      "classic",
+      "modern",
+      "minimal",
+      "professional",
+      "executive",
+      "corporate",
+      "techie",
+      "elegant",
+      "creative",
+      "artistic",
+    ])
     .optional()
     .default("classic"),
 });
