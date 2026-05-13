@@ -1,13 +1,13 @@
 # ResumeGPT - AI-Powered Resume Builder
 
-ResumeGPT is a modern web application that helps you create, edit, and optimize professional resumes using AI-powered suggestions. It supports multiple templates, PDF export, seamless authentication, and advanced ATS compatibility analysis with RAG and NLP.
+ResumeGPT is a modern web application that helps you create, edit, and optimize professional resumes using AI-powered suggestions. It supports multiple templates, PDF export, seamless authentication, and advanced ATS compatibility analysis with Semantic Analysis (Local RAG) and NLP.
 
 ## Features
 
 - **AI-powered resume content suggestions** (Groq)
 - **AI Cover Letter Generator** - Create tailored cover letters instantly
 - **AI Voice Interview** - Real-time technical mock interviews (LiveKit + Sarvam)
-- **Advanced ATS compatibility analysis** with RAG and NLP
+- **Advanced ATS compatibility analysis** with Local RAG and NLP
 - **Smart skill extraction and matching** using semantic analysis
 - **Multiple professional resume templates** (10+ designs)
 - **Live editing and preview**
@@ -88,7 +88,7 @@ The AI Voice Interview agent runs as a separate service.
 
 ## ATS Analysis Features
 
-The application includes advanced ATS (Applicant Tracking System) analysis powered by RAG (Retrieval-Augmented Generation) and NLP:
+The application includes advanced ATS (Applicant Tracking System) analysis powered by Local RAG and NLP:
 
 - **Semantic skill matching** with bidirectional mapping
 - **Multi-modal analysis** (technical, business, management skills)
