@@ -2,28 +2,28 @@
  * Smart ATS Analyzer - Using NLP Libraries
  * Implements real ATS behavior with automatic skill extraction
  * No manual keyword lists - uses ML-based entity recognition
- * 🎯 RAG: Knowledge-Based Retrieval with NLP Enhancement
+ * Local RAG: Context-Augmented Analysis with NLP Enhancement
  */
 
 /* eslint-disable @typescript-eslint/no-require-imports */
-const nlp = require("compromise"); // 🎯 RAG: NLP Retrieval - Natural language processing for context extraction
-const natural = require("natural"); // 🎯 RAG: ML Enhancement - Machine learning for semantic analysis
+const nlp = require("compromise"); // Natural language processing for context extraction
+const natural = require("natural"); // Machine learning for semantic analysis
 
 // TF-IDF for automatic importance scoring
-const TfIdf = natural.TfIdf; // 🎯 RAG: Statistical Retrieval - Term frequency analysis for relevance scoring
+const TfIdf = natural.TfIdf; // Term frequency analysis for relevance scoring
 const tfidf = new TfIdf();
 
 // Smart skill categories for weighting (patterns, not manual lists)
 const SKILL_CATEGORIES = {
-  // 🎯 RAG: Pattern-Based Knowledge - Industry expertise encoded as patterns
+  // Industry expertise encoded as patterns
   TECHNICAL: {
-    weight: 0.35, // 🎯 RAG: Weighted Retrieval - Priority scoring for technical skills
+    weight: 0.35, // Priority scoring for technical skills
     patterns: [
-      // 🎯 RAG: Pattern Matching - Regex-based knowledge extraction
+      // Regex-based knowledge extraction
       // Programming languages
       /\b(javascript|js|typescript|ts|python|java|c\+\+|c#|php|ruby|go|rust|swift|kotlin|scala|r|matlab|sql|html|html5|css|css3|bash|powershell)\b/gi,
       // Frameworks with variations
-      /\b(react|reactjs|react\.js|angular|angularjs|angular\.js|vue|vuejs|vue\.js|svelte|node\.?js|nodejs|express|expressjs|express\.js|django|flask|spring|laravel|rails|next\.?js|nextjs|nuxt\.?js|nuxtjs)\b/gi, // 🎯 RAG: Skill Variation Mapping - Handles different naming conventions
+      /\b(react|reactjs|react\.js|angular|angularjs|angular\.js|vue|vuejs|vue\.js|svelte|node\.?js|nodejs|express|expressjs|express\.js|django|flask|spring|laravel|rails|next\.?js|nextjs|nuxt\.?js|nuxtjs)\b/gi, // Handles different naming conventions
       // Databases
       /\b(mysql|postgresql|postgres|mongodb|mongo|redis|elasticsearch|sqlite|oracle|cassandra|firebase|firestore)\b/gi,
       // Cloud & DevOps
@@ -208,8 +208,7 @@ export interface SmartATSAnalysis {
 
 export class SmartATSAnalyzer {
   /**
-   * Extract skills using NLP and pattern matching
-   * 🎯 RAG: NLP-Based Skill Retrieval - Uses ML to extract relevant skills from text
+   * Local RAG: NLP-Based Skill Retrieval - Uses ML to extract relevant skills from text
    */
   private extractSkillsWithNLP(
     text: string,
@@ -219,26 +218,26 @@ export class SmartATSAnalyzer {
       category: string;
       confidence: number;
     }> = [];
-    const doc = nlp(text); // 🎯 RAG: NLP Entity Extraction - Compromise.js identifies entities
+    const doc = nlp(text); // Compromise.js identifies entities
 
     // Extract entities that could be skills (for future enhancement)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const entities = doc
       .match("#Technology")
-      .out("array") // 🎯 RAG: Technology Recognition - Auto-identifies tech terms
+      .out("array") // Auto-identifies tech terms
       .concat(doc.match("#Organization").out("array"))
       .concat(doc.match("#Product").out("array"));
 
     // Extract using regex patterns for each category
     Object.entries(SKILL_CATEGORIES).forEach(([categoryName, category]) => {
       category.patterns.forEach((pattern) => {
-        const matches = text.match(pattern); // 🎯 RAG: Pattern-Based Retrieval - Matches industry knowledge patterns
+        const matches = text.match(pattern); // Matches industry knowledge patterns
         if (matches) {
           matches.forEach((match) => {
             skills.push({
               skill: match.toLowerCase().trim(),
               category: categoryName,
-              confidence: 0.8 + Math.random() * 0.2, // 🎯 RAG: Confidence Scoring - ML-style relevance scoring
+              confidence: 0.95, // High confidence for exact pattern matches
             });
           });
         }
@@ -289,8 +288,7 @@ export class SmartATSAnalyzer {
   }
 
   /**
-   * Smart skill matching using semantic similarity and variations
-   * 🎯 RAG: Semantic Skill Matching - Context-aware skill comparison
+   * Local RAG: Semantic Skill Matching - Context-aware skill comparison
    */
   private calculateSkillMatch(
     resumeSkills: SkillMatch[],
@@ -304,7 +302,7 @@ export class SmartATSAnalyzer {
 
     // Create skill variations map for better matching
     const skillVariations = {
-      // 🎯 RAG: Skill Knowledge Base - Maps different skill representations
+      // Maps different skill representations
       react: ["react", "reactjs", "react.js"],
       reactjs: ["react", "reactjs", "react.js"],
       javascript: ["javascript", "js", "ecmascript"],
@@ -335,7 +333,7 @@ export class SmartATSAnalyzer {
       if (resumeSkillNames.has(jobSkillLower)) {
         matched.push({
           ...jobSkill,
-          matchType: "exact", // 🎯 RAG: Exact Match Recognition
+          matchType: "exact", // Exact Match Recognition
         });
         isMatched = true;
         return;
@@ -347,7 +345,7 @@ export class SmartATSAnalyzer {
         if (resumeSkillNames.has(variation)) {
           matched.push({
             ...jobSkill,
-            matchType: "variation", // 🎯 RAG: Variation-Aware Matching - Handles React vs ReactJS
+            matchType: "variation", // Handles React vs ReactJS
           });
           isMatched = true;
           break;
@@ -363,7 +361,7 @@ export class SmartATSAnalyzer {
           ];
 
           if (resumeVariations.includes(jobSkillLower)) {
-            // 🎯 RAG: Bidirectional Skill Mapping
+            // Bidirectional Skill Mapping
             matched.push({
               ...jobSkill,
               matchType: "reverse_variation",
@@ -407,8 +405,7 @@ export class SmartATSAnalyzer {
   }
 
   /**
-   * Calculate skill importance based on category weight and frequency
-   * 🎯 RAG: Weighted Importance Scoring - Uses domain knowledge for skill prioritization
+   * Local RAG: Weighted Importance Scoring - Uses domain knowledge for skill prioritization
    */
   private calculateSkillImportance(skill: SkillMatch): number {
     const categoryWeight = SKILL_CATEGORIES[skill.category]?.weight || 0.1;
@@ -417,11 +414,11 @@ export class SmartATSAnalyzer {
 
   /**
    * Generate contextual suggestions for missing skills
-   * 🎯 RAG: Context-Aware Recommendations - Generates personalized advice
+   * Generates personalized advice
    */
   private generateSkillSuggestion(skill: SkillMatch): string {
     const suggestions = {
-      // 🎯 RAG: Suggestion Knowledge Base - Category-specific advice patterns
+      // Category-specific advice patterns
       TECHNICAL: `Add "${skill.skill}" to your technical skills section. Include specific projects or experience.`,
       BUSINESS: `Highlight "${skill.skill}" experience in your professional summary or achievements.`,
       MANAGEMENT: `Emphasize "${skill.skill}" in your leadership or management experience.`,
@@ -436,8 +433,7 @@ export class SmartATSAnalyzer {
   }
 
   /**
-   * Main analysis function using smart NLP
-   * 🎯 RAG: Multi-Modal Analysis Pipeline - Combines all retrieval techniques
+   * Local RAG: Multi-Modal Analysis Pipeline - Combines all retrieval techniques
    */
   analyze(resumeText: string, jobDescription: string): SmartATSAnalysis {
     // Check content length penalties first

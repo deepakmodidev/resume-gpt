@@ -17,32 +17,32 @@ export function DemoSection() {
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             <span className="bg-linear-to-b from-foreground to-muted-foreground bg-clip-text text-transparent">
               Experience{" "}
-              <span className="bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
-                RAG-Enhanced
-              </span>{" "}
-              AI Intelligence
-            </span>
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Watch our advanced GenAI system with RAG pipeline analyze resumes
-            against job descriptions in real-time.
-            <span className="text-foreground font-medium">
-              {" "}
-              Get instant ATS scores, semantic matching, and AI-powered
-              optimization suggestions.
-            </span>
-          </p>
+            <span className="bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
+              Context-Aware
+            </span>{" "}
+            AI Intelligence
+          </span>
+        </h2>
+        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          Watch our advanced GenAI system analyze resumes against job
+          descriptions using deep context-aware intelligence.
+          <span className="text-foreground font-medium">
+            {" "}
+            Get instant ATS scores, semantic matching, and AI-powered
+            optimization suggestions.
+          </span>
+        </p>
 
           {/* GenAI Feature Highlights */}
           <div className="flex flex-wrap justify-center gap-3 mt-8">
             <div className="bg-secondary/50 border border-border px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              RAG Pipeline Analysis
+              Full-Context AI Analysis
             </div>
             <div className="bg-secondary/50 border border-border px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              Vector Database Search
+              Semantic Pattern Matching
             </div>
             <div className="bg-secondary/50 border border-border px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              Semantic Similarity
+              Context-Aware Retrieval
             </div>
             <div className="bg-secondary/50 border border-border px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
               Groq AI Integration
