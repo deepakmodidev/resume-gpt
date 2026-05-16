@@ -116,6 +116,12 @@ export function Header() {
             >
               Cover Letter
             </Link>
+            <Link
+              href="/recruiter"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
+            >
+              Talent Search
+            </Link>
           </nav>
 
           {/* Auth & Theme Toggle - Right */}

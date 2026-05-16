@@ -5,6 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Normalize text before hashing for dedup.
+ * Both client (UploadZone) and server (talent action) must use this same function
+ * or hashes won't match across the boundary.
+ */
+export function normalizeForHash(text: string): string {
+  return text.normalize("NFC").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 export const deepMerge = (
   target: Record<string, unknown>,
   source: Record<string, unknown>,

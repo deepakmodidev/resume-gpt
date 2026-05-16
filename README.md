@@ -8,6 +8,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 - **AI Cover Letter Generator** - Create tailored cover letters instantly
 - **AI Voice Interview** - Real-time technical mock interviews (LiveKit + Sarvam)
 - **Advanced ATS compatibility analysis** with Local RAG and NLP
+- **Recruiter Matchmaker** - Semantic candidate search with client-side embeddings (BGE) + pgvector + Groq RAG insights
 - **Smart skill extraction and matching** using semantic analysis
 - **Multiple professional resume templates** (10+ designs)
 - **Live editing and preview**
@@ -28,6 +29,8 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 - **Natural Language Processing** (NLP) for skill extraction
 - **TF-IDF** for keyword importance analysis
 - **Jaro-Winkler algorithm** for fuzzy string matching
+- **@huggingface/transformers** - Client-side ONNX inference (BGE embeddings in Web Worker)
+- **pgvector** - Postgres vector extension with HNSW index for ANN cosine search
 - **Puppeteer & @sparticuz/chromium** (PDF generation)
 
 ## Getting Started
@@ -108,6 +111,46 @@ The ATS engine uses a specialized "Local RAG" (Retrieval-Augmented Generation) a
 - **Bidirectional Mapping**: A built-in knowledge base handles skill variations (e.g., mapping `JS` to `JavaScript`) and semantic similarities.
 - **Weighted Analysis**: Matches are scored across three distinct pillars—**Technical**, **Business**, and **Management**—using a weighted importance algorithm (Jaro-Winkler distance).
 
+## Recruiter Matchmaker
+
+A separate, isolated feature for recruiters at `/recruiter`. Build a private candidate pool, paste a job description, and rank candidates by semantic similarity — then have an LLM explain *why* each top candidate fits.
+
+- **Client-side embeddings** - Resumes and JDs are embedded in the browser via a Web Worker. The raw vector is sent to the server; the model never leaves the user's machine.
+- **Asymmetric encoding** - Uses `Xenova/bge-small-en-v1.5` (384-dim) with the canonical BGE query prefix for retrieval quality.
+- **pgvector + HNSW** - Embeddings stored in Postgres with an HNSW index over `vector_cosine_ops`. Search is `ORDER BY embedding <=> $jd LIMIT 10`.
+- **SHA-256 deduplication** - Resumes are hashed (normalized text) and inserted with `ON CONFLICT DO NOTHING` per user, so re-uploads are free.
+- **Per-user isolation** - Every query is scoped to the authenticated `userId`. One recruiter never sees another's pool.
+- **Calibrated 0-100 scoring** - Raw cosine distance is linearly mapped from the empirical `[0.50, 0.70]` range to `[0, 100]` so scores feel meaningful (strong match ≈ 80%+, low-confidence ≈ < 20%).
+- **RAG insights via Groq Llama 3.3** - One click generates per-candidate pitches, missing-skills tags, and concrete fit concerns over the top-K retrieved candidates. Strict JSON output, validated server-side.
+- **Pool management** - Browse, expand, delete candidates from the recruiter's pool. Refresh count updates live after each ingest/delete.
+
+### Technical Architecture
+
+```
+Browser (Web Worker)              Server                       Postgres
+┌────────────────────┐    vec    ┌─────────────────┐  raw SQL  ┌─────────────────┐
+│ BGE inference      │──────────▶│ Server Action   │──────────▶│ TalentProfile   │
+│ (transformers.js)  │   384-d   │ (Next.js)       │  vector   │ (pgvector+HNSW) │
+└────────────────────┘           └─────────────────┘           └─────────────────┘
+                                          │                              │
+                                          │  top-K candidates             │
+                                          ▼                              │
+                                 ┌─────────────────┐                     │
+                                 │ Groq Llama 3.3  │                     │
+                                 │ (RAG insights)  │                     │
+                                 └─────────────────┘                     │
+                                          ▲────────── pitch/skills ──────┘
+```
+
+- **Model**: `Xenova/bge-small-en-v1.5` (quantized ONNX, ~34 MB, cached in browser after first load)
+- **Vector dim**: 384, cosine distance
+- **Index**: HNSW with default `m=16, ef_construction=64`
+- **Worker contract**: postMessage RPC with `{ id, type: "embed" | "embedQuery", text }` and progress events
+
+### Eval Harness
+
+A small evaluation harness in `eval/` measures retrieval quality with **recall@10** and **MRR** against synthetic JD-resume fixtures. Useful for sanity checks when tuning the model or index parameters.
+
 ## Usage
 
 - Sign in with Google to create and manage your resumes
@@ -118,6 +161,7 @@ The ATS engine uses a specialized "Local RAG" (Retrieval-Augmented Generation) a
 - Get real-time optimization suggestions based on NLP analysis
 - Edit your resume content in real-time with live preview
 - Download your resume or cover letter as a PDF
+- **Recruiters**: Visit `/recruiter` (or "Talent Search" in the navbar) to build a candidate pool, run semantic JD search, and generate AI insights on the top matches
 
 ## License
 

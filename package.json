@@ -7,10 +7,12 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "eval": "tsx eval/run.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.8.0",
+    "@huggingface/transformers": "^4.2.0",
     "@livekit/components-react": "^2.9.20",
     "@livekit/components-styles": "^1.2.0",
     "@prisma/client": "^6.12.0",
@@ -87,6 +89,7 @@
     "prisma": "^6.12.0",
     "puppeteer": "^24.7.2",
     "tailwindcss": "^4.1.11",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   },
   "overrides": {
