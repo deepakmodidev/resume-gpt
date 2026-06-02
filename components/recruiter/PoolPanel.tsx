@@ -3,9 +3,19 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   deleteProfile,
+  listAllProfiles,
   listProfiles,
-  type PoolProfile,
 } from "@/app/actions/talent";
+
+type Mode = "mine" | "all";
+
+type Row = {
+  id: string;
+  snippet: string;
+  createdAt: string;
+  name?: string | null;
+  email?: string | null;
+};
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -27,7 +37,8 @@ export default function PoolPanel({
   refreshKey: number;
   onChange?: () => void;
 }) {
-  const [items, setItems] = useState<PoolProfile[]>([]);
+  const [mode, setMode] = useState<Mode>("mine");
+  const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -35,14 +46,15 @@ export default function PoolPanel({
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await listProfiles();
+      const data =
+        mode === "all" ? await listAllProfiles() : await listProfiles();
       setItems(data);
     } catch (err) {
-      console.error("listProfiles failed:", err);
+      console.error("loadProfiles failed:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     load();
@@ -80,23 +92,49 @@ export default function PoolPanel({
     <div className="border rounded-lg p-5 mt-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold">
-          Candidates in pool{" "}
+          {mode === "all" ? "All candidates" : "Your resumes in the pool"}{" "}
           <span className="text-muted-foreground font-normal">
             ({items.length})
           </span>
         </h2>
-        <button
-          onClick={load}
-          disabled={loading}
-          className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
-        >
-          {loading ? "loading…" : "↻ refresh"}
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="inline-flex rounded-md border overflow-hidden text-xs">
+            <button
+              onClick={() => setMode("mine")}
+              className={`px-2.5 py-1 cursor-pointer transition-colors ${
+                mode === "mine"
+                  ? "bg-blue-600 text-white"
+                  : "text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              My resumes
+            </button>
+            <button
+              onClick={() => setMode("all")}
+              className={`px-2.5 py-1 cursor-pointer transition-colors border-l ${
+                mode === "all"
+                  ? "bg-blue-600 text-white"
+                  : "text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              All candidates
+            </button>
+          </div>
+          <button
+            onClick={load}
+            disabled={loading}
+            className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-50 cursor-pointer"
+          >
+            {loading ? "loading…" : "↻ refresh"}
+          </button>
+        </div>
       </div>
 
       {!loading && items.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No candidates yet. Upload resumes above to build your pool.
+          {mode === "all"
+            ? "The shared pool is empty."
+            : "No candidates yet. Upload resumes above to build your pool."}
         </p>
       ) : (
         <ul className="space-y-3">
@@ -109,6 +147,19 @@ export default function PoolPanel({
                 className="flex items-start justify-between gap-3 border-b last:border-b-0 pb-3"
               >
                 <div className="flex-1 min-w-0">
+                  {mode === "all" && (p.name || p.email) && (
+                    <p className="text-sm font-medium mb-0.5">
+                      {p.name || "Unnamed candidate"}
+                      {p.email && (
+                        <a
+                          href={`mailto:${p.email}`}
+                          className="ml-2 text-xs font-normal text-blue-600 hover:underline"
+                        >
+                          {p.email}
+                        </a>
+                      )}
+                    </p>
+                  )}
                   <p
                     className={`text-sm whitespace-pre-wrap ${
                       isExpanded
@@ -124,19 +175,21 @@ export default function PoolPanel({
                     </span>
                     <button
                       onClick={() => toggleExpanded(p.id)}
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-blue-600 hover:underline cursor-pointer"
                     >
                       {isExpanded ? "less" : "more"}
                     </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(p.id)}
-                  disabled={isDeleting}
-                  className="text-xs px-3 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30 disabled:opacity-50 whitespace-nowrap"
-                >
-                  {isDeleting ? "…" : "Delete"}
-                </button>
+                {mode === "mine" && (
+                  <button
+                    onClick={() => handleDelete(p.id)}
+                    disabled={isDeleting}
+                    className="text-xs px-3 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30 disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                  >
+                    {isDeleting ? "…" : "Delete"}
+                  </button>
+                )}
               </li>
             );
           })}

@@ -165,10 +165,23 @@ export default function SearchPanel({
               return (
                 <li key={r.id} className="border rounded p-3">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-mono text-muted-foreground">
-                      #{i + 1}
-                    </span>
-                    <div className="flex items-center gap-2">
+                    <div className="min-w-0">
+                      <span className="text-xs font-mono text-muted-foreground mr-2">
+                        #{i + 1}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {r.name || "Unnamed candidate"}
+                      </span>
+                      {r.email && (
+                        <a
+                          href={`mailto:${r.email}`}
+                          className="ml-2 text-xs text-blue-600 hover:underline"
+                        >
+                          {r.email}
+                        </a>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
                       {weak && (
                         <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-800 text-muted-foreground">
                           low confidence

@@ -79,6 +79,8 @@ export type SearchResult = {
   id: string;
   snippet: string;
   score: number;
+  name: string | null;
+  email: string | null;
 };
 
 export type PoolProfile = {
@@ -101,25 +103,58 @@ export async function listProfiles(): Promise<PoolProfile[]> {
   }));
 }
 
+export type PoolProfileWithOwner = PoolProfile & {
+  name: string | null;
+  email: string | null;
+};
+
+export async function listAllProfiles(): Promise<PoolProfileWithOwner[]> {
+  await requireUserId();
+  const rows = await db.talentProfile.findMany({
+    select: {
+      id: true,
+      rawText: true,
+      createdAt: true,
+      user: { select: { name: true, email: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 500,
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    snippet: r.rawText,
+    createdAt: r.createdAt.toISOString(),
+    name: r.user?.name ?? null,
+    email: r.user?.email ?? null,
+  }));
+}
+
 export async function searchTalent(
   jdVector: number[],
 ): Promise<SearchResult[]> {
-  const userId = await requireUserId();
+  await requireUserId();
   if (jdVector.length !== EMBED_DIM)
     throw new Error(`Bad JD vector dim: ${jdVector.length}`);
 
   const vecLit = toVectorLiteral(jdVector);
 
   const rows = await db.$queryRawUnsafe<
-    Array<{ id: string; rawText: string; distance: number }>
+    Array<{
+      id: string;
+      rawText: string;
+      name: string | null;
+      email: string | null;
+      distance: number;
+    }>
   >(
-    `SELECT id, "rawText", (embedding <=> $1::vector) AS distance
-     FROM "TalentProfile"
-     WHERE "userId" = $2 AND embedding IS NOT NULL
-     ORDER BY embedding <=> $1::vector
+    `SELECT t.id, t."rawText", u.name AS name, u.email AS email,
+            (t.embedding <=> $1::vector) AS distance
+     FROM "TalentProfile" t
+     JOIN "User" u ON u.id = t."userId"
+     WHERE t.embedding IS NOT NULL
+     ORDER BY t.embedding <=> $1::vector
      LIMIT 10`,
     vecLit,
-    userId,
   );
 
   return rows.map((r) => {
@@ -128,6 +163,8 @@ export async function searchTalent(
       id: r.id,
       snippet: r.rawText.slice(0, 300),
       score: calibrateScore(distance),
+      name: r.name,
+      email: r.email,
     };
   });
 }
@@ -145,6 +182,21 @@ export async function deleteProfile(
   }
 }
 
+export async function removeFromPool(
+  textHash: string,
+): Promise<{ ok: boolean; deleted?: number; error?: string }> {
+  try {
+    const userId = await requireUserId();
+    const r = await db.talentProfile.deleteMany({
+      where: { userId, textHash },
+    });
+    return { ok: true, deleted: r.count };
+  } catch (err) {
+    logger.error("removeFromPool failed", err);
+    return { ok: false, error: "Remove failed" };
+  }
+}
+
 export async function clearPool(): Promise<{ ok: true; deleted: number }> {
   const userId = await requireUserId();
   const r = await db.talentProfile.deleteMany({ where: { userId } });
@@ -152,8 +204,8 @@ export async function clearPool(): Promise<{ ok: true; deleted: number }> {
 }
 
 export async function poolCount(): Promise<number> {
-  const userId = await requireUserId();
-  return db.talentProfile.count({ where: { userId } });
+  await requireUserId();
+  return db.talentProfile.count();
 }
 
 // ============================================================================
@@ -211,7 +263,7 @@ export async function generateInsights(
   error?: string;
 }> {
   try {
-    const userId = await requireUserId();
+    await requireUserId();
 
     if (!env.GROQ_API_KEY) {
       return { ok: false, error: "Groq API key not configured" };
@@ -224,7 +276,7 @@ export async function generateInsights(
     }
 
     const rows = await db.talentProfile.findMany({
-      where: { userId, id: { in: candidateIds } },
+      where: { id: { in: candidateIds } },
       select: { id: true, rawText: true },
     });
     if (rows.length === 0) {

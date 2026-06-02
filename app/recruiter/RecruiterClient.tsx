@@ -85,12 +85,13 @@ export default function RecruiterClient({
         <div>
           <h1 className="text-2xl font-bold">Recruiter Matchmaker</h1>
           <p className="text-sm text-muted-foreground">
-            Semantic candidate search powered by client-side embeddings (BGE) and
-            pgvector.
+            Search the shared talent pool with a job description. Candidates opt
+            in from the resume builder or by uploading below.
           </p>
         </div>
         <div className="text-sm text-muted-foreground">
-          Pool: <span className="font-semibold text-foreground">{count}</span>{" "}
+          Shared pool:{" "}
+          <span className="font-semibold text-foreground">{count}</span>{" "}
           candidates
         </div>
       </header>

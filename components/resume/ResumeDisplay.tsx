@@ -1,7 +1,14 @@
 import React, { useState } from "react";
+import { toast } from "sonner";
 import { ResumeData } from "@/lib/types";
 import { API_ENDPOINTS, STORAGE_KEYS } from "@/lib/constants";
 import { logger } from "@/lib/logger";
+import { normalizeForHash, resumeToText } from "@/lib/utils";
+import {
+  existingHashes,
+  ingestProfile,
+  removeFromPool,
+} from "@/app/actions/talent";
 import { TemplateModal } from "./TemplateModal";
 import { ResumeContent } from "./ResumeContent";
 import { ATSScore } from "@/components/ats/ATSScore";
@@ -11,7 +18,23 @@ import {
   FileText,
   LayoutTemplate,
   Download,
+  UserPlus,
+  Check,
+  ScanSearch,
+  Trash2,
 } from "lucide-react";
+
+const MIN_POOL_TEXT_LEN = 50;
+
+async function sha256Hex(s: string): Promise<string> {
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(s),
+  );
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +52,9 @@ export const ResumeDisplay = ({
   // Always start with 'modern' to match SSR, then update from localStorage after mount
   const [currentTemplate, setCurrentTemplate] = useState("modern");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [poolState, setPoolState] = useState<
+    "idle" | "working" | "added" | "exists" | "removing"
+  >("idle");
 
   // On mount, update template from localStorage if available
   React.useEffect(() => {
@@ -87,6 +113,93 @@ export const ResumeDisplay = ({
     }
   };
 
+  const handleAddToPool = async () => {
+    if (poolState === "working") return;
+    setPoolState("working");
+    const toastId = toast.loading("Adding to talent pool…");
+    try {
+      const text = resumeToText(data);
+      if (text.trim().length < MIN_POOL_TEXT_LEN) {
+        toast.error("Add more resume content before sharing to the pool.", {
+          id: toastId,
+        });
+        setPoolState("idle");
+        return;
+      }
+
+      const hash = await sha256Hex(normalizeForHash(text));
+      const existing = await existingHashes([hash]);
+      if (existing.includes(hash)) {
+        toast.success("This resume is already in the talent pool.", {
+          id: toastId,
+        });
+        setPoolState("exists");
+        return;
+      }
+
+      toast.loading("Preparing AI engine (one-time model load)…", {
+        id: toastId,
+      });
+      const { embedPassage } = await import("@/lib/ai/worker-client");
+      const vector = await embedPassage(text);
+
+      toast.loading("Saving to talent pool…", { id: toastId });
+      const res = await ingestProfile(text, vector);
+      if (res.ok) {
+        toast.success("Added to the talent pool — recruiters can find you now.", {
+          id: toastId,
+        });
+        setPoolState("added");
+      } else {
+        toast.error(res.error ?? "Could not add to talent pool.", {
+          id: toastId,
+        });
+        setPoolState("idle");
+      }
+    } catch (error) {
+      logger.error("Add to talent pool failed", error as Error);
+      toast.error(
+        error instanceof Error ? error.message : "Could not add to talent pool.",
+        { id: toastId },
+      );
+      setPoolState("idle");
+    }
+  };
+
+  const handleRemoveFromPool = async () => {
+    if (poolState === "removing") return;
+    setPoolState("removing");
+    const toastId = toast.loading("Removing from talent pool…");
+    try {
+      const text = resumeToText(data);
+      const hash = await sha256Hex(normalizeForHash(text));
+      const res = await removeFromPool(hash);
+      if (res.ok) {
+        if (res.deleted === 0) {
+          toast.warning(
+            "This version isn't in the pool — it may have changed since you added it.",
+            { id: toastId },
+          );
+        } else {
+          toast.success("Removed from the talent pool.", { id: toastId });
+        }
+        setPoolState("idle");
+      } else {
+        toast.error(res.error ?? "Could not remove from pool.", {
+          id: toastId,
+        });
+        setPoolState("exists");
+      }
+    } catch (error) {
+      logger.error("Remove from talent pool failed", error as Error);
+      toast.error(
+        error instanceof Error ? error.message : "Could not remove from pool.",
+        { id: toastId },
+      );
+      setPoolState("exists");
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       <Tabs defaultValue="resume" className="h-full flex flex-col">
@@ -96,41 +209,81 @@ export const ResumeDisplay = ({
             {/* Tab List */}
             <TabsList className="grid w-fit grid-cols-2">
               <TabsTrigger value="resume" className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
+                <FileText className="w-4 h-4 shrink-0" />
                 Resume
               </TabsTrigger>
               <TabsTrigger value="ats" className="flex items-center gap-2">
-                <Target className="w-4 h-4" />
+                <ScanSearch className="w-4 h-4 shrink-0" />
                 ATS Analysis
               </TabsTrigger>
             </TabsList>
 
             {/* Action buttons */}
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsTemplateModalOpen(true)}
-                className="text-white inline-flex items-center justify-center gap-2 bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 hover:scale-[1.02] transition-all shadow-xs hover:shadow-md font-medium"
-              >
-                <LayoutTemplate className="w-4 h-4 shrink-0" />
-                <span>Templates</span>
-              </button>
+              {poolState === "added" ||
+              poolState === "exists" ||
+              poolState === "removing" ? (
+                <Button
+                  variant="outline"
+                  onClick={handleRemoveFromPool}
+                  disabled={poolState === "removing"}
+                  title="Remove this resume from the talent pool"
+                  className="group gap-2 rounded-lg shadow-xs hover:shadow-md bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-950/30 dark:hover:text-red-300 dark:hover:border-red-800"
+                >
+                  {poolState === "removing" ? (
+                    <>
+                      <LoaderPinwheelIcon className="animate-spin" />
+                      <span>Removing…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="group-hover:hidden" />
+                      <Trash2 className="hidden group-hover:inline-block" />
+                      <span className="group-hover:hidden">In talent pool</span>
+                      <span className="hidden group-hover:inline-block">
+                        Remove from pool
+                      </span>
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleAddToPool}
+                  disabled={poolState === "working"}
+                  title="Make this resume searchable by recruiters in the talent pool"
+                  className="gap-2 rounded-lg shadow-xs hover:shadow-md text-white bg-linear-to-r from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 hover:scale-[1.02]"
+                >
+                  {poolState === "working" ? (
+                    <LoaderPinwheelIcon className="animate-spin" />
+                  ) : (
+                    <UserPlus />
+                  )}
+                  <span>
+                    {poolState === "working" ? "Adding…" : "Add to talent pool"}
+                  </span>
+                </Button>
+              )}
 
-              <button
+              <Button
+                onClick={() => setIsTemplateModalOpen(true)}
+                className="gap-2 rounded-lg shadow-xs hover:shadow-md text-white bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:scale-[1.02]"
+              >
+                <LayoutTemplate />
+                <span>Templates</span>
+              </Button>
+
+              <Button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
-                className={`inline-flex items-center justify-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${
-                  isDownloading
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
-                }`}
+                className="gap-2 rounded-lg shadow-xs hover:shadow-md text-white bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
               >
                 {isDownloading ? (
-                  <LoaderPinwheelIcon className="w-4 h-4 shrink-0 animate-spin" />
+                  <LoaderPinwheelIcon className="animate-spin" />
                 ) : (
-                  <Download className="w-4 h-4 shrink-0" />
+                  <Download />
                 )}
                 <span>{isDownloading ? "Downloading..." : "Download PDF"}</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
