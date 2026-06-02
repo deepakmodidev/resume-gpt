@@ -6,22 +6,25 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Client-side SHA-256 helper — used for dedup hashing before server round-trips.
+export async function sha256Hex(s: string): Promise<string> {
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(s),
+  );
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 // Flatten ResumeData into plain text for embedding into the talent pool.
+// Contact fields (email, phone, links) are excluded — they are mutable PII
+// that don't aid semantic matching and would change the hash on every update.
 export function resumeToText(data: ResumeData): string {
   const lines: string[] = [];
 
   if (data.name) lines.push(data.name);
   if (data.title) lines.push(data.title);
-
-  const contact = [
-    data.contact?.email,
-    data.contact?.phone,
-    data.contact?.location,
-    data.contact?.linkedin,
-    data.contact?.github,
-    data.contact?.blogs,
-  ].filter(Boolean);
-  if (contact.length) lines.push(contact.join(" | "));
 
   if (data.summary) lines.push("\nSummary\n" + data.summary);
 

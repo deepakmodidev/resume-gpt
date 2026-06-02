@@ -36,7 +36,7 @@ async function requireUserId(): Promise<string> {
 export async function ingestProfile(
   rawText: string,
   vector: number[],
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; inserted?: boolean; error?: string }> {
   try {
     const userId = await requireUserId();
     if (!rawText?.trim()) return { ok: false, error: "Empty text" };
@@ -47,7 +47,7 @@ export async function ingestProfile(
     const id = randomUUID();
     const vecLit = toVectorLiteral(vector);
 
-    await db.$executeRawUnsafe(
+    const count = await db.$executeRawUnsafe(
       `INSERT INTO "TalentProfile" (id, "userId", "rawText", "textHash", embedding, "createdAt")
        VALUES ($1, $2, $3, $4, $5::vector, NOW())
        ON CONFLICT ("userId", "textHash") DO NOTHING`,
@@ -58,7 +58,7 @@ export async function ingestProfile(
       vecLit,
     );
 
-    return { ok: true };
+    return { ok: true, inserted: count > 0 };
   } catch (err) {
     logger.error("ingestProfile failed", err);
     return { ok: false, error: "Ingest failed" };
@@ -98,7 +98,7 @@ export async function listProfiles(): Promise<PoolProfile[]> {
   });
   return rows.map((r) => ({
     id: r.id,
-    snippet: r.rawText,
+    snippet: r.rawText.slice(0, 300),
     createdAt: r.createdAt.toISOString(),
   }));
 }
@@ -122,7 +122,7 @@ export async function listAllProfiles(): Promise<PoolProfileWithOwner[]> {
   });
   return rows.map((r) => ({
     id: r.id,
-    snippet: r.rawText,
+    snippet: r.rawText.slice(0, 300),
     createdAt: r.createdAt.toISOString(),
     name: r.user?.name ?? null,
     email: r.user?.email ?? null,

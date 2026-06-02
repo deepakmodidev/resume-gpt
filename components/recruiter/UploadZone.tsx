@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { existingHashes, ingestProfile } from "@/app/actions/talent";
 import { parseResume } from "@/app/actions/parse-resume";
-import { normalizeForHash } from "@/lib/utils";
+import { normalizeForHash, sha256Hex } from "@/lib/utils";
 
 const MAX_FILES = 20;
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -11,16 +11,6 @@ const ALLOWED_MIME = new Set([
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
-
-async function sha256Hex(s: string): Promise<string> {
-  const buf = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(s),
-  );
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
 
 type RowState =
   | { state: "queued" }

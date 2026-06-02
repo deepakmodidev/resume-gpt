@@ -57,8 +57,13 @@ export default function PoolPanel({
   }, [mode]);
 
   useEffect(() => {
+    setExpanded(new Set());
     load();
   }, [load, refreshKey]);
+
+  useEffect(() => {
+    setExpanded(new Set());
+  }, [mode]);
 
   const handleDelete = useCallback(
     async (id: string) => {
