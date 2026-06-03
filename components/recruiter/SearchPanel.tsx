@@ -7,6 +7,7 @@ import {
   type CandidateInsight,
   type SearchResult,
 } from "@/app/actions/talent";
+import { Button } from "@/components/ui/button";
 
 const MIN_JD_LENGTH = 50;
 const STRONG_THRESHOLD = 70;
@@ -104,13 +105,13 @@ export default function SearchPanel({
         </p>
       )}
 
-      <button
+      <Button
         onClick={run}
         disabled={!canSearch}
-        className="mt-3 px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-3 bg-blue-600 hover:bg-blue-700 text-white"
       >
         {busy ? "Searching…" : "Find candidates"}
-      </button>
+      </Button>
 
       {error && (
         <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
@@ -131,17 +132,19 @@ export default function SearchPanel({
             </p>
           )}
           <div className="mt-3 mb-3 flex items-center gap-3">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={runInsights}
               disabled={insightsBusy || results.length === 0}
-              className="px-3 py-1.5 rounded border border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-medium hover:bg-purple-50 dark:hover:bg-purple-950/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/30"
             >
               {insightsBusy
                 ? "Generating AI insights…"
                 : hasInsights
                   ? "↻ Regenerate AI insights"
                   : `✨ Generate AI insights (top ${Math.min(results.length, INSIGHTS_TOP_K)})`}
-            </button>
+            </Button>
             {hasInsights && (
               <span className="text-[10px] text-muted-foreground">
                 via Groq Llama 3.3 — RAG over retrieved candidates

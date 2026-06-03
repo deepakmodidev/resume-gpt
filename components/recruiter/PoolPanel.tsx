@@ -6,6 +6,7 @@ import {
   listAllProfiles,
   listProfiles,
 } from "@/app/actions/talent";
+import { Button } from "@/components/ui/button";
 
 type Mode = "mine" | "all";
 
@@ -125,13 +126,15 @@ export default function PoolPanel({
               All candidates
             </button>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={load}
             disabled={loading}
-            className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-50 cursor-pointer"
+            className="text-xs text-muted-foreground"
           >
             {loading ? "loading…" : "↻ refresh"}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -178,22 +181,26 @@ export default function PoolPanel({
                     <span className="text-xs text-muted-foreground">
                       {formatWhen(p.createdAt)}
                     </span>
-                    <button
+                    <Button
+                      variant="link"
+                      size="sm"
                       onClick={() => toggleExpanded(p.id)}
-                      className="text-xs text-blue-600 hover:underline cursor-pointer"
+                      className="text-xs h-auto p-0 text-blue-600"
                     >
                       {isExpanded ? "less" : "more"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
                 {mode === "mine" && (
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleDelete(p.id)}
                     disabled={isDeleting}
-                    className="text-xs px-3 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30 disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                    className="text-xs border-red-300 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30 whitespace-nowrap"
                   >
                     {isDeleting ? "…" : "Delete"}
-                  </button>
+                  </Button>
                 )}
               </li>
             );
