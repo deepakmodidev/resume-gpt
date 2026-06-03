@@ -43,9 +43,8 @@ export const ResumeDisplay = ({
   // Always start with 'modern' to match SSR, then update from localStorage after mount
   const [currentTemplate, setCurrentTemplate] = useState("modern");
   const [isDownloading, setIsDownloading] = useState(false);
-  const [poolState, setPoolState] = useState<
-    "idle" | "loading" | "inPool"
-  >("idle");
+  const [poolState, setPoolState] = useState<"idle" | "loading" | "inPool">("idle");
+  const [poolBtnHovered, setPoolBtnHovered] = useState(false);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -233,15 +232,17 @@ export const ResumeDisplay = ({
                 <Button
                   variant="outline"
                   onClick={handleRemoveFromPool}
+                  onMouseEnter={() => setPoolBtnHovered(true)}
+                  onMouseLeave={() => setPoolBtnHovered(false)}
                   title="Remove this resume from the talent pool"
-                  className="group gap-2 rounded-lg shadow-xs hover:shadow-md bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800 hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-950/30 dark:hover:text-red-300 dark:hover:border-red-800"
+                  className={`gap-2 rounded-lg shadow-xs hover:shadow-md transition-colors ${
+                    poolBtnHovered
+                      ? "bg-red-50 text-red-700 border-red-300 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800"
+                      : "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800"
+                  }`}
                 >
-                  <Check className="group-hover:hidden" />
-                  <Trash2 className="hidden group-hover:inline-block" />
-                  <span className="group-hover:hidden">In talent pool</span>
-                  <span className="hidden group-hover:inline-block">
-                    Remove from pool
-                  </span>
+                  {poolBtnHovered ? <Trash2 /> : <Check />}
+                  <span>{poolBtnHovered ? "Remove from pool" : "In talent pool"}</span>
                 </Button>
               ) : (
                 <Button
