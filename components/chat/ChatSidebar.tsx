@@ -468,14 +468,14 @@ const SidebarContent = ({
               isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
             )}
           >
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
                 <Logo size={20} className="text-white drop-shadow-lg" />
               </div>
               <h1 className="font-bold text-xl tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent whitespace-nowrap">
                 ResumeGPT
               </h1>
-            </div>
+            </Link>
           </div>
           <div className="flex items-center gap-1">
             {onToggleCollapse && (
@@ -815,14 +815,14 @@ export const ChatSidebar = ({
                 />
               </SheetContent>
             </Sheet>
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
                 <Logo size={20} className="text-white drop-shadow-lg" />
               </div>
               <h1 className="font-bold text-lg tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                 ResumeGPT
               </h1>
-            </div>
+            </Link>
           </div>
 
           <ThemeToggle />
