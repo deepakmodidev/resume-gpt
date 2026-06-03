@@ -31,22 +31,26 @@ export function Header() {
 
   const handleSignInClick = async () => {
     setIsSigningIn(true);
-    
-    // Open a centered popup window for our custom Auth page
+
     const width = 500;
     const height = 600;
     const left = window.screenX + (window.outerWidth - width) / 2;
     const top = window.screenY + (window.outerHeight - height) / 2;
-    
+
     const popup = window.open(
       "/auth/signin",
       "google-signin",
       `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
     );
 
-    // Check periodically if the user manually closed the popup
+    // Popup blocked (extension or browser setting) — fall back to redirect.
+    if (!popup || popup.closed) {
+      signIn("google", { redirectTo: "/builder" });
+      return;
+    }
+
     const checkPopup = setInterval(() => {
-      if (!popup || popup.closed || popup.closed === undefined) {
+      if (!popup || popup.closed) {
         clearInterval(checkPopup);
         setIsSigningIn(false);
       }
