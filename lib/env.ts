@@ -20,6 +20,7 @@ const envSchema = z.object({
   NEXTAUTH_URL: z.string().url("Invalid NEXTAUTH_URL format"),
 
   GROQ_API_KEY: z.string().min(1).optional(),
+  GROQ_MODEL: z.string().default("llama-3.3-70b-versatile"),
 
   // Required - LiveKit
   LIVEKIT_API_KEY: z.string().min(1).optional(),

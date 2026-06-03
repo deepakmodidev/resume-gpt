@@ -48,3 +48,9 @@ __pycache__/
 *$py.class
 venv/
 .env
+
+# Claude Code session state
+.claude/
+
+# Local model / transformer cache (re-downloaded on demand)
+.cache/

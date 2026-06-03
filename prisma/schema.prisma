@@ -19,6 +19,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   chats         Chat[]
+  talentProfiles TalentProfile[]
 }
 
 model Account {
@@ -68,4 +69,17 @@ model Chat {
   updatedAt  DateTime  @updatedAt
 
   user       User      @relation(fields: [userId], references: [id])
+}
+
+model TalentProfile {
+  id        String   @id @default(cuid())
+  userId    String
+  rawText   String   @db.Text
+  textHash  String
+  embedding Unsupported("vector(384)")?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, textHash])
+  @@index([userId])
 }
