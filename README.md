@@ -10,7 +10,7 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
 - **Advanced ATS compatibility analysis** with Local RAG and NLP
 - **Recruiter Matchmaker** - Semantic candidate search with client-side embeddings (BGE) + pgvector + Groq RAG insights
 - **Smart skill extraction and matching** using semantic analysis
-- **Multiple professional resume templates** (10+ designs)
+- **Multiple professional resume templates** (10 designs)
 - **Live editing and preview**
 - **PDF export and download**
 - **Google OAuth authentication**
@@ -60,6 +60,17 @@ ResumeGPT is a modern web application that helps you create, edit, and optimize 
    DATABASE_URL=your-postgres-url
    DIRECT_URL=your-postgres-direct-url
    GROQ_API_KEY=your-groq-api-key
+   ```
+
+   For the AI Voice Interview feature, also create `voice-agent/.env`:
+   ```env
+   LIVEKIT_API_KEY=your-livekit-api-key
+   LIVEKIT_API_SECRET=your-livekit-api-secret
+   LIVEKIT_URL=wss://your-livekit-url
+   SARVAM_API_KEY=your-sarvam-api-key
+   OPENAI_API_KEY=your-groq-api-key   # Groq key, used via OpenAI-compatible endpoint
+   AGENT_NAME=interview-gpt
+   NEXT_PUBLIC_AGENT_NAME=interview-gpt
    ```
 4. Run database migrations:
    ```bash
@@ -156,7 +167,7 @@ A small evaluation harness in `eval/` measures retrieval quality with **recall@1
 - Sign in with Google to create and manage your resumes
 - Use AI chat to generate resume content
 - Generate tailored cover letters with AI
-- Choose from 10+ professional templates (Modern, Executive, Creative, Techie, etc.)
+- Choose from 10 professional templates (Modern, Executive, Creative, Techie, etc.)
 - Analyze resume compatibility with job descriptions using ATS scorer
 - Get real-time optimization suggestions based on NLP analysis
 - Edit your resume content in real-time with live preview
