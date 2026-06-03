@@ -87,7 +87,7 @@ export function Header() {
   return (
     <header className="relative z-50 border-b border-border backdrop-blur-xs">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:grid md:grid-cols-3">
+        <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo - Left */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
@@ -101,37 +101,22 @@ export function Header() {
           </div>
 
           {/* Navigation Links - Center (Hidden on Mobile) */}
-          <nav className="hidden md:flex items-center justify-center gap-8">
-            <Link
-              href="/builder"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
-            >
-              AI Resume
-            </Link>
-            <Link
-              href="/voice-interview"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
-            >
-              AI Interview
-            </Link>
-            <Link
-              href="/ats-analyzer"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
-            >
-              ATS Analyzer
-            </Link>
-            <Link
-              href="/cover-letter"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
-            >
-              Cover Letter
-            </Link>
-            <Link
-              href="/recruiter"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 whitespace-nowrap"
-            >
-              Talent Search
-            </Link>
+          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/builder">AI Resume</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/voice-interview">AI Interview</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/ats-analyzer">ATS Analyzer</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/cover-letter">Cover Letter</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/recruiter">Talent Search</Link>
+            </Button>
           </nav>
 
           {/* Auth & Theme Toggle - Right */}
