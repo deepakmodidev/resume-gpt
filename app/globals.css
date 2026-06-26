@@ -221,6 +221,12 @@
   p {
     text-wrap: pretty;
   }
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  label[for],
+  summary {
+    cursor: pointer;
+  }
   ::selection {
     background-color: hsl(var(--brand) / 0.22);
   }
@@ -265,4 +271,26 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/*
+  Browser autofill paints its own blue-gray background (and text color) that
+  ignores our bg tokens. This rule is intentionally UNLAYERED so it outranks
+  Tailwind's layered focus-ring box-shadow — otherwise the blue shows on focus.
+*/
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: hsl(var(--foreground));
+  caret-color: hsl(var(--foreground));
+  box-shadow: 0 0 0 1000px hsl(var(--background)) inset;
+}
+
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill:focus {
+  box-shadow:
+    0 0 0 1000px hsl(var(--background)) inset,
+    0 0 0 2px hsl(var(--ring));
 }

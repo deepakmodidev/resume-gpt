@@ -121,6 +121,7 @@ export const ApiKeyModal = ({
                 value={groqKey}
                 onChange={(e) => setGroqKey(e.target.value)}
                 placeholder="gsk_..."
+                autoComplete="off"
                 className="pr-10"
               />
               <button

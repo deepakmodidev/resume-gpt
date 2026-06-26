@@ -222,7 +222,7 @@ export const ResumeDisplay = ({
               </TabsTrigger>
               <TabsTrigger value="ats" className="flex items-center gap-2">
                 <ScanSearch className="w-4 h-4 shrink-0" />
-                ATS Analysis
+                ATS
               </TabsTrigger>
             </TabsList>
 
