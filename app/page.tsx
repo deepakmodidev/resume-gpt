@@ -2,7 +2,7 @@ import { HomeLayout } from "@/components/home/HomeLayout";
 import { Header } from "@/components/home/Header";
 import { HeroSection } from "@/components/home/HeroSection";
 import { ResumeBuildingSection } from "@/components/home/ResumeBuildingSection";
-import { DemoSection } from "@/components/home/DemoSection";
+// import { DemoSection } from "@/components/home/DemoSection";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
 import { FAQSection } from "@/components/home/FAQSection";
 import { FinalCTASection } from "@/components/home/FinalCTASection";
@@ -22,7 +22,7 @@ export default function HomePage() {
       <main className="flex-1">
         <HeroSection />
         <ResumeBuildingSection />
-        <DemoSection />
+        {/* <DemoSection /> */}
         <FeaturesSection />
         <FAQSection />
         <FinalCTASection />
