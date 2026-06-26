@@ -1,25 +1,14 @@
 import Image from "next/image";
 import { FileText, ScanLine, FileDown } from "lucide-react";
-import { ResumePreview } from "./ResumePreview";
-import { DotPattern } from "@/components/ui/dot-pattern";
 import { HeroButton } from "./HeroButton";
+import { ResumePreview } from "./ResumePreview";
 
 export function HeroSection() {
   return (
-    <section className="relative pb-20 pt-12 overflow-hidden min-h-dvh flex items-center">
-      {/* Subtle dot texture (no gradients) */}
-      <DotPattern
-        width={22}
-        height={22}
-        cx={1}
-        cy={1}
-        cr={1}
-        className="fill-foreground/6"
-      />
-
+    <section className="relative pb-20 overflow-hidden">
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Upper Section - Text Content */}
-        <div className="text-center flex flex-col items-center gap-8 mb-32 md:mb-44">
+        {/* Text Content — centered in the first screen */}
+        <div className="min-h-screen text-center flex flex-col items-center justify-center gap-8">
           {/* Launch badges — real, verifiable social proof */}
           <div className="flex flex-wrap justify-center items-center gap-6 py-2">
             <a
@@ -92,8 +81,10 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* Lower Section - Resume Preview */}
-        <ResumePreview />
+        {/* Resume Preview */}
+        <div className="mt-20 md:mt-28">
+          <ResumePreview />
+        </div>
       </div>
     </section>
   );

@@ -51,7 +51,10 @@ export function ResumePreview() {
 
   return (
     <div className="flex justify-center">
-      <motion.div className="relative max-w-5xl w-full" style={{ scale }}>
+      <motion.div
+        className="relative max-w-5xl w-full"
+        style={{ scale, transformOrigin: "top center" }}
+      >
         <div className="relative bg-card border border-border rounded-3xl p-6 md:p-12 shadow-[0_24px_70px_-30px_hsl(24_30%_12%/0.35)]">
           {/* Resume Header */}
           <div className="border-b border-border pb-6 md:pb-8 mb-6 md:mb-8">
@@ -258,7 +261,7 @@ export function ResumePreview() {
         </div>
 
         {/* Floating badges */}
-        <div className="absolute -top-4 -left-4 md:-top-5 md:-left-5 bg-brand text-brand-foreground px-3 py-1.5 md:px-4 md:py-2 rounded-xl font-semibold shadow-lg text-xs md:text-sm">
+        <div className="absolute -top-4 -left-4 md:-top-5 md:-left-5 bg-card border border-border text-foreground px-3 py-1.5 md:px-4 md:py-2 rounded-xl font-semibold shadow-lg text-xs md:text-sm">
           10+ templates
         </div>
 
