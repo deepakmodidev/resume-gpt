@@ -131,15 +131,15 @@ export function ResumeBuildingSection() {
             <div className="bg-background border border-border rounded-2xl p-4 sm:p-6 h-full">
               <div className="text-center mb-6">
                 <div className="w-12 h-12 bg-foreground text-background rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <span className="font-bold text-lg">MR</span>
+                  <span className="font-bold text-lg">DM</span>
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-1">
-                  Maya Rodriguez
+                  Deepak Modi
                 </h3>
                 <p className="text-muted-foreground">Senior Software Engineer</p>
                 <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-sm text-muted-foreground">
-                  <span>maya.rodriguez@email.com</span>
-                  <span>+1 (415) 318-2204</span>
+                  <span>deepak.modi@gmail.com</span>
+                  <span>+91 98765 43210</span>
                 </div>
               </div>
               <div className="space-y-4">
@@ -155,7 +155,7 @@ export function ResumeBuildingSection() {
                           Senior Software Engineer
                         </h5>
                         <p className="text-muted-foreground text-sm">
-                          Google Inc. • 2022 - Present
+                          Flipkart • 2022 - Present
                         </p>
                       </div>
                       <span className="text-muted-foreground text-xs">
