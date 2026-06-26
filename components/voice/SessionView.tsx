@@ -48,7 +48,7 @@ const CandidateVisualizer = ({ trackRef }: { trackRef: TrackReferenceOrPlacehold
         return (
           <div 
             key={i} 
-            className="w-[3px] bg-primary rounded-full transition-all duration-75 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+            className="w-[3px] bg-primary rounded-full transition-all duration-75 ease-out shadow-[0_0_10px_hsl(var(--brand)/0.45)]"
             style={{ height: `${Math.max(30, Math.min(100, band * multiplier))}%` }}
           />
         );
@@ -151,7 +151,7 @@ export function SessionView() {
             variant="ghost" 
             size="sm" 
             onClick={() => session.end()}
-            className="h-8 px-5 rounded-full text-xs font-medium text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all flex gap-2"
+            className="h-8 px-5 rounded-full text-xs font-medium text-destructive hover:bg-destructive/10 hover:text-destructive transition-all flex gap-2"
           >
             <LogOut className="w-3.5 h-3.5" />
             END SESSION

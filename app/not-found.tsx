@@ -6,7 +6,7 @@ export default function NotFound() {
       <div className="text-center max-w-2xl mx-auto">
         {/* Animated 404 Number */}
         <div className="relative mb-8">
-          <h1 className="text-[150px] md:text-[200px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-gray-100 to-primary leading-none">
+          <h1 className="text-[150px] md:text-[200px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-foreground to-primary leading-none">
             404
           </h1>
           <div className="absolute inset-0 text-[150px] md:text-[200px] font-bold text-primary/10 blur-xl leading-none">
@@ -35,18 +35,18 @@ export default function NotFound() {
 
         {/* Message */}
         <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-4">
-          Oops! Page Not Found
+          Page not found
         </h2>
         <p className="text-muted-foreground text-lg md:text-xl mb-8 max-w-md mx-auto">
-          The page you&apos;re looking for seems to have wandered off.
-          Let&apos;s get you back on track!
+          The page you&apos;re looking for doesn&apos;t exist or has moved.
+          Here are some ways back.
         </p>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 hover:scale-105"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 hover:scale-105"
           >
             <svg
               className="w-5 h-5"

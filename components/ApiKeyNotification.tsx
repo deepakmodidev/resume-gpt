@@ -49,21 +49,21 @@ export const ApiKeyNotification = ({
 
   return (
     <div className="fixed top-4 right-4 z-50 max-w-sm">
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 shadow-lg animate-in fade-in slide-in-from-top-4 duration-300">
+      <div className="bg-card border border-brand/20 rounded-lg p-4 shadow-lg animate-in fade-in slide-in-from-top-4 duration-300">
         <div className="flex items-start gap-3">
-          <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+          <Zap className="h-5 w-5 text-brand mt-0.5 shrink-0" />
           <div className="flex-1">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-200 text-sm">
+            <h3 className="font-semibold text-foreground text-sm">
               Using Shared Groq Key
             </h3>
-            <p className="text-blue-800 dark:text-blue-300 text-sm mt-1 leading-relaxed">
+            <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
               Add your own <strong>Groq API key</strong> for even faster responses and unlimited resume builds.
             </p>
             <div className="flex gap-2 mt-3">
               <Button
                 onClick={onManageKey}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white h-8"
+                className="h-8"
               >
                 <Key className="h-4 w-4 mr-1" />
                 Manage Key
@@ -72,7 +72,7 @@ export const ApiKeyNotification = ({
                 onClick={handleDismiss}
                 variant="outline"
                 size="sm"
-                className="bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-800"
+                className="h-8"
               >
                 Dismiss
               </Button>
@@ -80,7 +80,7 @@ export const ApiKeyNotification = ({
           </div>
           <button
             onClick={handleDismiss}
-            className="text-blue-400 hover:text-blue-600 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-4 w-4" />
           </button>

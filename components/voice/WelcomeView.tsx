@@ -54,9 +54,7 @@ export function WelcomeView({
           <div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">
               Ace Your Next <br />
-              <span className="text-blue-600 dark:text-blue-400">
-                Interview
-              </span>
+              <span className="text-brand">Interview</span>
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed">
               Practice with an AI recruiter that speaks, listens, and adapts to
@@ -67,8 +65,8 @@ export function WelcomeView({
 
           <div className="space-y-4">
             {[
-              { icon: FileText, title: "Context-Aware", desc: "Tailored questions based on your resume", color: "text-green-600 dark:text-green-400", bg: "bg-green-100 dark:bg-green-900/30" },
-              { icon: Mic, title: "Voice Interaction", desc: "Speak naturally, no typing required", color: "text-red-600 dark:text-red-400", bg: "bg-red-100 dark:bg-red-900/30" }
+              { icon: FileText, title: "Context-Aware", desc: "Tailored questions based on your resume", color: "text-brand", bg: "bg-brand/10" },
+              { icon: Mic, title: "Voice Interaction", desc: "Speak naturally, no typing required", color: "text-brand", bg: "bg-brand/10" }
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl border">
                 <div className={cn(feature.bg, "p-3 rounded-full")}>
@@ -85,7 +83,7 @@ export function WelcomeView({
 
         {/* Right Side: Form */}
         <Card className="border-2 relative overflow-hidden bg-card">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+          <div className="absolute top-0 inset-x-0 h-1 bg-brand" />
           <CardHeader className="space-y-1 pb-2">
             <CardTitle className="text-2xl">Setup Interview Context</CardTitle>
             <CardDescription className="text-base">
@@ -144,27 +142,27 @@ export function WelcomeView({
                         isConnecting
                           ? "cursor-not-allowed opacity-50 bg-muted/50 border-muted-foreground/25"
                           : selectedFile
-                            ? "border-green-500/50 bg-green-50/50 dark:bg-green-900/10 cursor-pointer hover:bg-green-100/50 dark:hover:bg-green-900/20"
-                            : "border-muted-foreground/25 cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/20 hover:border-blue-500/50"
+                            ? "border-success/50 bg-success/5 cursor-pointer hover:bg-success/10"
+                            : "border-muted-foreground/25 cursor-pointer hover:bg-brand/5 hover:border-brand/50"
                       )}
                     >
                       {isExtracting ? (
                         <>
-                          <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                          <Loader2 className="w-5 h-5 animate-spin text-brand" />
                           <span className="text-sm font-medium text-muted-foreground">
                             Processing Resume...
                           </span>
                         </>
                       ) : selectedFile ? (
                         <>
-                          <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                            <FileText className="w-5 h-5 text-green-600 dark:text-green-400" />
+                          <div className="p-2 bg-success/15 rounded-lg">
+                            <FileText className="w-5 h-5 text-success" />
                           </div>
                           <div className="text-left flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">
                               {selectedFile.name}
                             </p>
-                            <p className="text-[10px] text-green-600 dark:text-green-400 font-medium">
+                            <p className="text-[10px] text-success font-medium">
                               Ready for interview
                             </p>
                           </div>
@@ -174,8 +172,8 @@ export function WelcomeView({
                         </>
                       ) : (
                         <>
-                          <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <Upload className="w-5 h-5 text-blue-600" />
+                          <div className="p-2 bg-brand/10 rounded-lg">
+                            <Upload className="w-5 h-5 text-brand" />
                           </div>
                           <div className="text-left">
                             <p className="text-sm font-medium text-foreground">
