@@ -25,7 +25,7 @@ export function HomeLayout({ children }: LayoutProps) {
         }}
       />
 
-      <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-clip">
+      <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
         {/* Solid background — no gradient */}
         <div className="fixed inset-0 bg-background -z-20"></div>
 

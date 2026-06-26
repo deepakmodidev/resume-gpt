@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { poolCount } from "@/app/actions/talent";
-import { Header } from "@/components/home/Header";
+import { AppShell } from "@/components/AppShell";
 import RecruiterClient from "./RecruiterClient";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +13,8 @@ export default async function RecruiterPage() {
   const initialCount = await poolCount().catch(() => 0);
 
   return (
-    <div className="min-h-screen">
-      <Header />
+    <AppShell>
       <RecruiterClient initialCount={initialCount} />
-    </div>
+    </AppShell>
   );
 }

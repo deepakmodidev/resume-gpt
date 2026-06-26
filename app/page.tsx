@@ -19,15 +19,18 @@ export default function HomePage() {
   return (
     <HomeLayout>
       <Header />
-      <main className="flex-1">
-        <HeroSection />
-        <ResumeBuildingSection />
-        {/* <DemoSection /> */}
-        <FeaturesSection />
-        <FAQSection />
-        <FinalCTASection />
-      </main>
-      <Footer />
+      {/* Internal scroll area — keeps the scrollbar below the header, not beside it */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-clip">
+        <main className="flex-1">
+          <HeroSection />
+          <ResumeBuildingSection />
+          {/* <DemoSection /> */}
+          <FeaturesSection />
+          <FAQSection />
+          <FinalCTASection />
+        </main>
+        <Footer />
+      </div>
     </HomeLayout>
   );
 }

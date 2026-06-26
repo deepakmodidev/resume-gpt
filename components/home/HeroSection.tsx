@@ -19,14 +19,10 @@ export function HeroSection() {
 
       <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-7 py-12 text-center">
-          {/* Eyebrow badge — honest, no fabricated metrics */}
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-4 py-1.5 text-sm font-medium text-brand">
-            <Heart className="h-3.5 w-3.5 fill-brand" />
-            Free AI resume builder
-          </span>
+
 
           {/* Headline — one warm gradient accent word */}
-          <h1 className="max-w-4xl text-5xl font-extrabold leading-[0.95] tracking-tight md:text-6xl lg:text-7xl">
+          <h1 className="max-w-4xl md:text-6xl text-xl font-extrabold leading-[0.95] tracking-tight">
             Tailor your resume to every job{" "}
             <span className="bg-gradient-to-r from-brand to-warning bg-clip-text text-transparent">
               automatically
@@ -34,7 +30,7 @@ export function HeroSection() {
           </h1>
 
           {/* Subtitle */}
-          <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+          <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
             Describe your experience in plain words. ResumeGPT drafts,
             rewrites, and ATS-checks your resume in real time, then exports a
             clean PDF.

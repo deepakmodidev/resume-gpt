@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ATSResults } from "@/components/ats/ATSResults";
-import { Header } from "@/components/home/Header";
+import { AppShell } from "@/components/AppShell";
 import { useSession, signIn } from "next-auth/react";
 import { Footer } from "@/components/home/Footer";
 import { motion } from "framer-motion";
@@ -104,9 +104,7 @@ export default function ATSAnalysisPage() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen">
-        <Header />
-
+      <AppShell>
         <div className="relative z-10 pt-24 pb-20">
           <div className="container mx-auto px-4">
             {/* Hero Section */}
@@ -302,7 +300,7 @@ export default function ATSAnalysisPage() {
         </div>
 
         <Footer />
-      </div>
+      </AppShell>
     </ErrorBoundary>
   );
 }
