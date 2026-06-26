@@ -32,11 +32,8 @@ export function FAQSection() {
         <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-12 lg:gap-16">
           {/* Left: heading */}
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <p className="text-sm font-semibold uppercase tracking-wider text-brand mb-3">
-              FAQ
-            </p>
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Questions, answered
+               <span className="text-brand">Frequently</span> Asked Questions 
             </h2>
             <p className="text-muted-foreground leading-relaxed max-w-sm">
               The practical details before you start. Still unsure about
