@@ -126,15 +126,13 @@ export default function PoolPanel({
               All candidates
             </button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={load}
             disabled={loading}
-            className="text-xs text-muted-foreground"
+            className="px-2.5 py-1 rounded-md border text-xs text-muted-foreground cursor-pointer transition-colors hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "loading…" : "↻ refresh"}
-          </Button>
+          </button>
         </div>
       </div>
 
