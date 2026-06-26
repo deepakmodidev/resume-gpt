@@ -106,7 +106,7 @@ const LoadingMessage = memo(() => (
     <div className="shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
     </div>
-    <span className="text-muted-foreground">Generating response...</span>
+    <span className="text-muted-foreground">Thinking...</span>
   </motion.div>
 ));
 
