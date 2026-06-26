@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { RESUME_BUILDER_PROMPT } from "@/lib/prompts";
-import { AI_MODELS } from "@/lib/constants";
+import { createGroqCompletion } from "@/lib/ai/groq";
 import { logger } from "@/lib/logger";
 import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 import db from "@/prisma/prisma";
@@ -94,8 +94,7 @@ export async function POST(req: NextRequest) {
       content: `${RESUME_BUILDER_PROMPT}\n\nCURRENT RESUME DATA:\n${JSON.stringify(resumeData, null, 2)}`,
     };
 
-    const response = await client.chat.completions.create({
-      model: AI_MODELS.GROQ_PRIMARY,
+    const response = await createGroqCompletion(client, {
       messages: [systemMessage, ...messages],
       response_format: { type: "json_object" },
       temperature: 0.1, // Keep it precise for resume building

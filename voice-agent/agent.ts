@@ -44,8 +44,9 @@ export default defineAgent({
     }
 
     // 2. LLM: Groq (using OpenAI plugin for compatibility)
+    // Migrated off meta-llama/llama-4-scout-17b-16e-instruct (Groq decommission 2026-07-17)
     const llm = new openai.LLM({
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      model: 'openai/gpt-oss-120b',
       baseURL: 'https://api.groq.com/openai/v1',
     });
 

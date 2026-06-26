@@ -23,7 +23,10 @@ export const TIMEOUTS = {
 } as const;
 
 export const AI_MODELS = {
-  GROQ_PRIMARY: "meta-llama/llama-4-scout-17b-16e-instruct",
+  // Migrated off meta-llama/llama-4-scout-17b-16e-instruct (Groq decommission 2026-07-17)
+  GROQ_PRIMARY: "openai/gpt-oss-120b",
+  // Used automatically if the primary model errors out
+  GROQ_FALLBACK: "qwen/qwen3-32b",
 } as const;
 
 export const AI_GENERATION_CONFIGS = {
