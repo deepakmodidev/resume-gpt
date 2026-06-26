@@ -58,7 +58,6 @@ export const STORAGE_KEYS = {
 
   GROQ_API_KEY: "groq-api-key",
   SIDEBAR_COLLAPSED: "sidebar-collapsed",
-  GENAI_DISMISSED: "genai-notification-dismissed",
   RESUME_TEMPLATE: "resume-template",
   COVER_LETTER_TEMPLATE: "cover-letter-template",
   API_KEY_NOTIFICATION_DISMISSED: "api-key-notification-dismissed",

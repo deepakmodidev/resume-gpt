@@ -24,7 +24,6 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/useChat";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { ANIMATION_VARIANTS } from "@/lib/constants/templates";
-import { Sparkles, X } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import type { Session } from "next-auth";
@@ -62,12 +61,6 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   });
   const [inputValue, setInputValue] = useState("");
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
-  const [showGenAINotification, setShowGenAINotification] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !localStorage.getItem(STORAGE_KEYS.GENAI_DISMISSED);
-    }
-    return true;
-  });
 
   const {
     messages,
@@ -181,13 +174,6 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
 
   const handleApiKeyModalClose = useCallback(() => {
     setShowApiKeyModal(false);
-  }, []);
-
-  const dismissGenAINotification = useCallback(() => {
-    setShowGenAINotification(false);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.GENAI_DISMISSED, "true");
-    }
   }, []);
 
   // Add keyboard shortcut for toggling sidebar (Ctrl+\)
@@ -352,40 +338,6 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
         onClose={handleApiKeyModalClose}
       />
 
-      {/* GenAI Feature Notification */}
-      <AnimatePresence>
-        {showGenAINotification && hasInteracted && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-4 right-4 z-50 max-w-sm"
-          >
-            <div className="bg-brand text-brand-foreground p-4 rounded-lg shadow-lg">
-              <div className="flex items-start gap-3">
-                <div className="p-1 bg-brand-foreground/20 rounded-full">
-                  <Sparkles className="w-4 h-4 fill-current" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm mb-1">
-                    New GenAI Features!
-                  </h4>
-                  <p className="text-xs opacity-90 mb-2">
-                    Check out the new ATS Analysis tab for AI-powered resume
-                    optimization with RAG technology!
-                  </p>
-                </div>
-                <button
-                  onClick={dismissGenAINotification}
-                  className="p-1 hover:bg-brand-foreground/20 rounded-full transition-colors"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
