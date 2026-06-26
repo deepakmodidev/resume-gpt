@@ -149,7 +149,6 @@ export const ApiKeyModal = ({
               <li>Create a new API key</li>
               <li>Copy and paste it above</li>
             </ol>
-            <p className="mt-2 opacity-80">Groq provides high-speed inference for Llama models used in this app.</p>
           </div>
         </div>
       </DialogContent>
