@@ -237,8 +237,8 @@ export const ResumeDisplay = ({
                   title="Remove this resume from the talent pool"
                   className={`gap-2 rounded-lg shadow-xs hover:shadow-md transition-colors ${
                     poolBtnHovered
-                      ? "bg-red-50 text-red-700 border-red-300 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800"
-                      : "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800"
+                      ? "bg-destructive/10 text-destructive border-destructive/40"
+                      : "bg-success/10 text-success border-success/40"
                   }`}
                 >
                   {poolBtnHovered ? <Trash2 /> : <Check />}
@@ -246,10 +246,11 @@ export const ResumeDisplay = ({
                 </Button>
               ) : (
                 <Button
+                  variant="outline"
                   onClick={handleAddToPool}
                   disabled={poolState === "loading"}
                   title="Make this resume searchable by recruiters in the talent pool"
-                  className="gap-2 rounded-lg shadow-xs hover:shadow-md text-white bg-linear-to-r from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 hover:scale-[1.02]"
+                  className="gap-2 rounded-lg shadow-xs hover:shadow-md"
                 >
                   {poolState === "loading" ? (
                     <LoaderPinwheelIcon className="animate-spin" />
@@ -263,8 +264,9 @@ export const ResumeDisplay = ({
               )}
 
               <Button
+                variant="outline"
                 onClick={() => setIsTemplateModalOpen(true)}
-                className="gap-2 rounded-lg shadow-xs hover:shadow-md text-white bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:scale-[1.02]"
+                className="gap-2 rounded-lg shadow-xs hover:shadow-md"
               >
                 <LayoutTemplate />
                 <span>Templates</span>
@@ -273,7 +275,7 @@ export const ResumeDisplay = ({
               <Button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
-                className="gap-2 rounded-lg shadow-xs hover:shadow-md text-white bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
+                className="gap-2 rounded-lg shadow-xs hover:shadow-md"
               >
                 {isDownloading ? (
                   <LoaderPinwheelIcon className="animate-spin" />

@@ -248,10 +248,10 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                     {saveStatus !== "idle" && (
                       <div
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${saveStatus === "saved"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          ? "bg-success/15 text-success"
                           : saveStatus === "saving"
-                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                            : "bg-red-100 text-red-700"
+                            ? "bg-info/15 text-info"
+                            : "bg-destructive/15 text-destructive"
                           }`}
                       >
                         {saveStatus === "saving" && (
@@ -361,9 +361,9 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             className="fixed bottom-4 right-4 z-50 max-w-sm"
           >
-            <div className="bg-linear-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg">
+            <div className="bg-brand text-brand-foreground p-4 rounded-lg shadow-lg">
               <div className="flex items-start gap-3">
-                <div className="p-1 bg-white/20 rounded-full">
+                <div className="p-1 bg-brand-foreground/20 rounded-full">
                   <Sparkles className="w-4 h-4 fill-current" />
                 </div>
                 <div className="flex-1">
@@ -377,7 +377,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                 </div>
                 <button
                   onClick={dismissGenAINotification}
-                  className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                  className="p-1 hover:bg-brand-foreground/20 rounded-full transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>

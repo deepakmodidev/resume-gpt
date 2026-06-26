@@ -114,7 +114,7 @@ const NewChatButton = ({ isCollapsed }: { isCollapsed?: boolean }) => {
     <Button
       onClick={handleNewChat}
       className={cn(
-        "justify-start bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-xs hover:shadow-md transition-all duration-300 ease-in-out",
+        "justify-start font-medium shadow-xs hover:shadow-md",
         isCollapsed ? "w-auto px-2" : "w-full",
       )}
       size="sm"
@@ -469,10 +469,10 @@ const SidebarContent = ({
             )}
           >
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <Logo size={20} className="text-white drop-shadow-lg" />
+              <div className="w-8 h-8 bg-foreground rounded-md flex items-center justify-center">
+                <Logo size={18} className="text-background" />
               </div>
-              <h1 className="font-bold text-xl tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent whitespace-nowrap">
+              <h1 className="font-bold text-xl tracking-tight text-foreground whitespace-nowrap">
                 ResumeGPT
               </h1>
             </Link>
@@ -660,7 +660,7 @@ const SidebarContent = ({
               </span>
               {hasUserApiKey && (
                 <div
-                  className="ml-auto w-2 h-2 bg-green-500 rounded-full"
+                  className="ml-auto w-2 h-2 bg-success rounded-full"
                   title="API Key configured"
                 />
               )}
@@ -718,7 +718,7 @@ const SidebarContent = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleSignOut}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 p-2 h-9 w-9"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2 h-9 w-9"
                   title="Sign Out"
                 >
                   <LogOut className="h-4 w-4" />
@@ -728,7 +728,7 @@ const SidebarContent = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => signIn("google", { callbackUrl: window.location.href })}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 p-2 h-9 w-9"
+                  className="text-brand hover:text-brand hover:bg-brand/10 p-2 h-9 w-9"
                   title="Sign In"
                 >
                   <PanelLeftOpen className="h-4 w-4" />
@@ -816,10 +816,10 @@ export const ChatSidebar = ({
               </SheetContent>
             </Sheet>
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <Logo size={20} className="text-white drop-shadow-lg" />
+              <div className="w-8 h-8 bg-foreground rounded-md flex items-center justify-center">
+                <Logo size={18} className="text-background" />
               </div>
-              <h1 className="font-bold text-lg tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+              <h1 className="font-bold text-lg tracking-tight text-foreground">
                 ResumeGPT
               </h1>
             </Link>

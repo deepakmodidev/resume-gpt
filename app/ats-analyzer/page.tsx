@@ -115,7 +115,7 @@ export default function ATSAnalysisPage() {
           cx={1}
           cy={1}
           cr={1}
-          className="fill-blue-500/30 dark:fill-blue-400/30"
+          className="fill-foreground/6"
         />
 
         <div className="relative z-10 pt-24 pb-20">
@@ -127,24 +127,24 @@ export default function ATSAnalysisPage() {
               transition={{ duration: 0.6 }}
               className="text-center mb-12"
             >
-              <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-6">
-                <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              <div className="inline-flex items-center gap-2 bg-brand/10 border border-brand/20 rounded-full px-4 py-2 mb-6">
+                <Sparkles className="w-4 h-4 text-brand" />
+                <span className="text-sm font-medium text-brand">
                   Powered by GenAI & RAG Pipeline
                 </span>
               </div>
 
-              <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-800 dark:from-slate-100 dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent mb-6">
-                ATS Resume Analyzer
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+                ATS Resume <span className="text-brand">Analyzer</span>
               </h1>
 
-              <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto mb-8">
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
                 Get instant ATS compatibility scores and optimization
                 suggestions using advanced AI analysis. Upload your resume and
                 job description to discover how to beat the ATS systems.
               </p>
 
-              <div className="flex items-center justify-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4" />
                   Real-time Scoring
@@ -169,10 +169,10 @@ export default function ATSAnalysisPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                  <Card className="h-full backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 border-slate-200/60 dark:border-slate-700/60">
+                  <Card className="h-full backdrop-blur-sm bg-card/70 border-border">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-blue-500" />
+                        <FileText className="w-5 h-5 text-brand" />
                         Upload and Analyze
                       </CardTitle>
                       <CardDescription>
@@ -198,10 +198,10 @@ export default function ATSAnalysisPage() {
                             />
                             <label
                               htmlFor="resume-upload"
-                              className={`flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg transition-colors ${
+                              className={`flex items-center gap-2 px-4 py-2 border border-dashed border-border rounded-lg transition-colors ${
                                 isUploadingFile
                                   ? "cursor-not-allowed opacity-50"
-                                  : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
+                                  : "cursor-pointer hover:bg-muted"
                               }`}
                             >
                               {isUploadingFile ? (
@@ -217,7 +217,7 @@ export default function ATSAnalysisPage() {
                               )}
                             </label>
                           </div>
-                          <div className="text-center text-sm text-slate-500">
+                          <div className="text-center text-sm text-muted-foreground">
                             or
                           </div>
                           <Textarea
@@ -250,7 +250,7 @@ export default function ATSAnalysisPage() {
                           resumeContent.trim().length < 10 ||
                           jobDescription.trim().length < 10
                         }
-                        className="w-full bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white gap-2"
+                        className="w-full gap-2"
                         size="lg"
                       >
                         Analyze ATS Compatibility
@@ -273,32 +273,32 @@ export default function ATSAnalysisPage() {
                   {analysisResult ? (
                     <ATSResults analysis={analysisResult} className="h-full" />
                   ) : (
-                    <Card className="h-full backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 border-slate-200/60 dark:border-slate-700/60">
+                    <Card className="h-full backdrop-blur-sm bg-card/70 border-border">
                       <CardContent className="flex flex-col items-center justify-center h-full text-center p-8">
-                        <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
-                          <BarChart3 className="w-8 h-8 text-blue-500" />
+                        <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
+                          <BarChart3 className="w-8 h-8 text-brand" />
                         </div>
                         <h3 className="text-lg font-semibold mb-2">
                           Ready for Analysis
                         </h3>
-                        <p className="text-slate-600 dark:text-slate-400 mb-4">
+                        <p className="text-muted-foreground mb-4">
                           Upload your resume and job description to get started
                           with ATS analysis
                         </p>
                         <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="flex items-center gap-2 text-slate-500">
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <Target className="w-4 h-4" />
                             ATS Scoring
                           </div>
-                          <div className="flex items-center gap-2 text-slate-500">
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <FileText className="w-4 h-4" />
                             Keyword Analysis
                           </div>
-                          <div className="flex items-center gap-2 text-slate-500">
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <Sparkles className="w-4 h-4" />
                             AI Suggestions
                           </div>
-                          <div className="flex items-center gap-2 text-slate-500">
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <BarChart3 className="w-4 h-4" />
                             Industry Insights
                           </div>

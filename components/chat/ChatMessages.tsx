@@ -68,22 +68,22 @@ const MessageBubble = memo(
     >
       <div
         className={`flex items-center justify-center rounded-full w-8 h-8 shrink-0 ${message.role === "user"
-            ? "bg-blue-100 dark:bg-blue-900"
-            : "bg-blue-100 dark:bg-blue-900"
+            ? "bg-brand/15 text-brand"
+            : "bg-muted text-muted-foreground"
           }`}
       >
         {message.role === "user" ? (
-          <User className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+          <User className="h-4 w-4" />
         ) : (
-          <Bot className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+          <Bot className="h-4 w-4" />
         )}
       </div>
       <div>
         {message.parts.map((part, i) => (
           <div
             key={i}
-            className={`whitespace-pre-wrap text-sm backdrop-blur-md p-4 rounded-2xl shadow-xs ${message.role === "user"
-                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100"
+            className={`whitespace-pre-wrap text-sm p-4 rounded-2xl shadow-xs ${message.role === "user"
+                ? "bg-brand/10 text-foreground border border-brand/15"
                 : "bg-card text-card-foreground border border-border"
               }`}
           >
@@ -103,8 +103,8 @@ const LoadingMessage = memo(() => (
     animate={{ opacity: 1, y: 0 }}
     className="bg-card text-card-foreground border border-border shadow-xs p-4 rounded-2xl max-w-[80%] mr-auto flex items-center gap-3 text-sm"
   >
-    <div className="shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-      <Loader2 className="h-4 w-4 animate-spin text-blue-600 dark:text-blue-300" />
+    <div className="shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
     </div>
     <span className="text-muted-foreground">Generating response...</span>
   </motion.div>
