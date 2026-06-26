@@ -4,8 +4,6 @@ import {
   Download,
   Palette,
   Zap,
-  Users,
-  Shield,
   Target,
   FileText,
   Mic,
@@ -16,176 +14,111 @@ const features = [
   {
     title: "AI Resume Generator",
     description:
-      "Generate a professional, high-impact resume in minutes using advanced AI tailored to your specific industry and experience",
+      "Generate a professional, high-impact resume in minutes, tailored to your industry and experience.",
     icon: MessageCircle,
-    color: "text-blue-500",
-    size: "double", // Row 1: Big
+    size: "double",
   },
   {
     title: "AI Cover Letter Generator",
     description:
-      "Create tailored cover letters in seconds that match your resume to specific job descriptions",
+      "Create tailored cover letters in seconds that match your resume to a specific job description.",
     icon: FileText,
-    color: "text-pink-500",
-    size: "single", // Row 1: Small
+    size: "single",
   },
   {
     title: "Professional Templates",
     description:
-      "10+ ATS-friendly templates including Modern, Executive, and Creative designs",
+      "10+ ATS-friendly templates including Modern, Executive, and Creative designs.",
     icon: Palette,
-    color: "text-purple-500",
-    size: "single", // Row 2: Small
+    size: "single",
   },
   {
     title: "PDF Export",
     description:
-      "High-quality PDF generation with proper formatting and print optimization",
+      "High-quality PDF generation with proper formatting and print optimization.",
     icon: Download,
-    color: "text-green-500",
-    size: "single", // Row 2: Small
+    size: "single",
   },
   {
     title: "Real-time Preview",
-    description: "Live editing with instant preview of your resume changes",
+    description: "Live editing with an instant preview of every change.",
     icon: Zap,
-    color: "text-yellow-500",
-    size: "single", // Row 2: Small
+    size: "single",
   },
   {
     title: "ATS Score Analyzer",
     description:
-      "Get instant ATS compatibility scores with GenAI analysis and optimization suggestions",
+      "Get an instant ATS compatibility score with AI analysis and fixes.",
     icon: Target,
-    color: "text-indigo-500",
-    size: "single", // Row 3: Small
+    size: "single",
   },
   {
     title: "AI Voice Mock Interviews",
     description:
-      "Real-time interactive practice sessions powered by LiveKit and Sarvam AI to ace your dream job interviews.",
+      "Real-time practice sessions powered by LiveKit and Sarvam AI to prepare for your interviews.",
     icon: Mic,
-    color: "text-orange-500",
-    size: "double", // Row 3: Big (at the end)
+    size: "double",
   },
 ];
 
-// Feature Card Component
 interface FeatureCardProps {
   feature: {
     title: string;
     description: string;
     icon: React.ComponentType<{ className?: string }>;
-    color: string;
     size: string;
   };
-  index: number;
 }
 
-const FeatureCard = ({ feature, index }: FeatureCardProps) => {
-  const getCardSize = (size: string) => {
-    return size === "double" ? "md:col-span-2" : "md:col-span-1";
-  };
-
-  const getGradientPosition = (index: number) => {
-    // Perfectly symmetric grid:
-    // Row 1: [Double, Single]
-    // Row 2: [Single, Single, Single]
-    // Row 3: [Single, Double]
-    const positions = [
-      "left-[50%] translate-x-[-50%]", // 0 (Double) - Center
-      "right-[-20%] md:right-[-50%]", // 1 (Single) - Right
-      "left-[0%] translate-x-[-50%]",  // 2 (Single) - Left
-      "left-[50%] translate-x-[-50%]", // 3 (Single) - Center
-      "right-[-20%] md:right-[-50%]", // 4 (Single) - Right
-      "left-[0%] translate-x-[-50%]",  // 5 (Single) - Left
-      "left-[50%] translate-x-[-50%]", // 6 (Double) - Center
-    ];
-    return positions[index] || "left-[50%] translate-x-[-50%]";
-  };
-
+const FeatureCard = ({ feature }: FeatureCardProps) => {
   return (
     <div
       className={cn(
-        "bg-muted/30 hover:bg-muted/50 transition-all duration-700 rounded-2xl p-2 min-h-80 group relative overflow-hidden border border-border/50",
-        getCardSize(feature.size),
+        "group relative overflow-hidden rounded-2xl border border-border bg-card p-8 min-h-72 flex flex-col justify-between transition-colors duration-300 hover:border-brand/40",
+        feature.size === "double" ? "md:col-span-2" : "md:col-span-1",
       )}
     >
-      <div className="rounded-2xl bg-card backdrop-blur-xs h-full transition-all duration-700 relative overflow-hidden w-full p-8 flex flex-col items-start justify-between">
-        {/* Animated gradient background */}
-        <div
-          className={cn(
-            "-bottom-40 md:-bottom-116 group-hover:opacity-100 opacity-0 z-1 absolute bg-linear-to-t from-blue-500/10 to-blue-300/20 blur-[6em] rounded-xl transition-all duration-700 ease-out w-40 md:w-120 h-80 md:h-120 rotate-54",
-            getGradientPosition(index),
-          )}
-        />
+      {/* Subtle hover wash — single, brand-tinted, top-anchored */}
+      <div className="pointer-events-none absolute inset-x-0 -top-16 h-32 bg-brand/5 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-        {/* Feature icon with enhanced styling */}
-        <div className="flex items-start flex-col gap-4 drop-shadow-lg z-10 relative">
-          <div
-            className={cn(
-              "p-3 rounded-2xl backdrop-blur-xs border border-border/50",
-              feature.color === "text-blue-500" && "bg-blue-500/10",
-              feature.color === "text-purple-500" && "bg-purple-500/10",
-              feature.color === "text-green-500" && "bg-green-500/10",
-              feature.color === "text-yellow-500" && "bg-yellow-500/10",
-              feature.color === "text-red-500" && "bg-red-500/10",
-              feature.color === "text-orange-500" && "bg-orange-500/10",
-              feature.color === "text-pink-500" && "bg-pink-500/10",
-            )}
-          >
-            <feature.icon className={cn("size-8", feature.color)} />
-          </div>
-          <div>
-            <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">
-              {feature.title}
-            </h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              {feature.description}
-            </p>
-          </div>
+      <div className="relative z-10 flex flex-col gap-4">
+        <div className="w-12 h-12 rounded-xl bg-brand/10 border border-brand/15 flex items-center justify-center">
+          <feature.icon className="size-6 text-brand" />
         </div>
-
-        {/* Feature illustration placeholder */}
-        <div className="absolute bottom-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-          <feature.icon className="size-24 text-foreground" />
+        <div>
+          <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+            {feature.title}
+          </h3>
+          <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
+            {feature.description}
+          </p>
         </div>
       </div>
+
+      {/* Watermark icon */}
+      <feature.icon className="absolute bottom-5 right-5 size-20 text-foreground/[0.04] group-hover:text-foreground/[0.07] transition-colors duration-500" />
     </div>
   );
 };
 
 export function FeaturesSection() {
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section className="py-20 relative">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Background elements */}
-        <div className="absolute inset-0 bg-linear-to-br from-blue-50/30 via-transparent to-blue-50/30 dark:from-blue-950/10 dark:via-transparent dark:to-blue-950/10"></div>
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl"></div>
-
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            <span className="bg-linear-to-b from-foreground to-muted-foreground bg-clip-text text-transparent">
-              Why Choose{" "}
-              <span className="bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
-                ResumeGPT
-              </span>
-            </span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-5">
+            Why choose <span className="text-brand">ResumeGPT</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Everything you need to create{" "}
-            <span className="text-foreground font-medium">
-              professional resumes
-            </span>{" "}
-            that get noticed by employers and pass ATS screening.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Everything you need to build a resume that reads well to people and
+            passes ATS screening.
           </p>
         </div>
 
-        {/* Enhanced Features Grid - Bento Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[minmax(20rem,1fr)]">
+        {/* Bento grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 auto-rows-[minmax(18rem,1fr)]">
           {features.map((feature, index) => (
-            <FeatureCard key={index} feature={feature} index={index} />
+            <FeatureCard key={index} feature={feature} />
           ))}
         </div>
       </div>

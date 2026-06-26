@@ -4,7 +4,7 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { ResumeBuildingSection } from "@/components/home/ResumeBuildingSection";
 import { DemoSection } from "@/components/home/DemoSection";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
-import { TestimonialSection } from "@/components/home/TestimonialSection";
+import { FAQSection } from "@/components/home/FAQSection";
 import { FinalCTASection } from "@/components/home/FinalCTASection";
 import { Footer } from "@/components/home/Footer";
 import { Metadata } from "next";
@@ -24,7 +24,7 @@ export default function HomePage() {
         <ResumeBuildingSection />
         <DemoSection />
         <FeaturesSection />
-        <TestimonialSection />
+        <FAQSection />
         <FinalCTASection />
       </main>
       <Footer />
