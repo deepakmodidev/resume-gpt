@@ -527,6 +527,9 @@ const SidebarContent = ({
           <div className="relative">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
+              type="search"
+              name="chat-search"
+              autoComplete="off"
               placeholder="Search chats..."
               className="pl-10 h-10"
               value={searchQuery}
