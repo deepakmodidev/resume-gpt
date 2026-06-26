@@ -1,22 +1,51 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { useAuraVisualizer } from '@/hooks/useAuraVisualizer';
 import { type TrackReferenceOrPlaceholder } from '@livekit/components-react';
 import { ShaderToy } from './ShaderToy';
 
-const DEFAULT_COLOR = '#3B82F6';
+// Amber fallback that mirrors the --brand token; used for the first paint
+// before we can read the live CSS variable on the client.
+const BRAND_FALLBACK_RGB: [number, number, number] = [0.93, 0.49, 0.13];
+
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  if (s === 0) return [l, l, l];
+  const hue2rgb = (p: number, q: number, t: number) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  return [hue2rgb(p, q, h + 1 / 3), hue2rgb(p, q, h), hue2rgb(p, q, h - 1 / 3)];
+}
+
+// Reads an HSL design token like "22 82% 50%" and converts it to shader RGB (0–1).
+function brandTokenToRgb(): [number, number, number] | null {
+  if (typeof window === 'undefined') return null;
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue('--brand')
+    .trim();
+  const m = raw.match(/^([\d.]+)\s+([\d.]+)%\s+([\d.]+)%$/);
+  if (!m) return null;
+  return hslToRgb(
+    parseFloat(m[1]) / 360,
+    parseFloat(m[2]) / 100,
+    parseFloat(m[3]) / 100,
+  );
+}
 
 function parseColorToRgb(color: string): [number, number, number] {
-  if (color.startsWith('#')) {
-    const hex = color.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16) / 255;
-    const g = parseInt(hex.substring(2, 4), 16) / 255;
-    const b = parseInt(hex.substring(4, 6), 16) / 255;
-    return [r, g, b];
-  }
-  return [0.23, 0.51, 0.96]; // Default LiveKit Blue
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  return [r, g, b];
 }
 
 const auraShader = `
@@ -152,11 +181,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec3 baseColor = (-pp + bloom * bloomStrength * uBloom) * 1.25;
   
   if(uMode == 1.0) {
-    baseColor.r *= 0.05; // Kill red to prevent violet
-    baseColor.g *= 0.8;  // Bring back green for cyan shimmers
-    baseColor.b *= 2.2;  // High blue saturation
-    baseColor = pow(baseColor, vec3(1.7)); // Deepen the shadows for a "rich" feel
-    baseColor *= 1.4;     // Final intensity punch
+    // Hue-neutral light-mode adjustment: deepen shadows and punch intensity
+    // without biasing channels, so the visualizer honors uColor (the brand token).
+    baseColor = pow(max(baseColor, vec3(0.0)), vec3(1.5)); // Deepen the shadows for a "rich" feel
+    baseColor *= 1.5;     // Final intensity punch
   }
   
   baseColor += (randFibo(fragCoord).x - 0.5) / 255.0; // Dither
@@ -172,22 +200,34 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   fragColor = vec4(finalColor * uMix, alpha * mask);
 }`;
 
-export function AuraVisualizer({ 
-  state, 
-  audioTrack, 
-  className, 
-  color = DEFAULT_COLOR 
-}: { 
-  state?: string, 
-  audioTrack?: TrackReferenceOrPlaceholder | undefined, 
+export function AuraVisualizer({
+  state,
+  audioTrack,
+  className,
+  color
+}: {
+  state?: string,
+  audioTrack?: TrackReferenceOrPlaceholder | undefined,
   className?: string,
   color?: string
 }) {
   const { speed, scale, amplitude, frequency, brightness } = useAuraVisualizer(state, audioTrack);
   const { resolvedTheme } = useTheme();
-  
-  const rgbColor = useMemo(() => parseColorToRgb(color), [color]);
   const isLightMode = resolvedTheme === 'light';
+
+  // Default the visualizer to the --brand design token (theme-aware) so it
+  // matches the app palette; an explicit `color` prop still overrides it.
+  const [brandRgb, setBrandRgb] = useState<[number, number, number]>(BRAND_FALLBACK_RGB);
+  useEffect(() => {
+    if (color) return;
+    const rgb = brandTokenToRgb();
+    if (rgb) setBrandRgb(rgb);
+  }, [color, resolvedTheme]);
+
+  const rgbColor = useMemo(
+    () => (color ? parseColorToRgb(color) : brandRgb),
+    [color, brandRgb],
+  );
 
   const uniforms = useMemo(() => ({
     uSpeed: { type: '1f', value: speed },

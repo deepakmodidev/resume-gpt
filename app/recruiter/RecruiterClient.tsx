@@ -60,9 +60,9 @@ export default function RecruiterClient({
           One-time ~34 MB download of <code>bge-small-en-v1.5</code> (quantized
           ONNX). Cached in your browser after this.
         </p>
-        <div className="h-2 w-full bg-gray-200 dark:bg-gray-800 rounded overflow-hidden">
+        <div className="h-2 w-full bg-muted rounded overflow-hidden">
           <div
-            className="h-full bg-blue-600 transition-all duration-200"
+            className="h-full bg-brand transition-all duration-200"
             style={{ width: `${pct}%` }}
           />
         </div>

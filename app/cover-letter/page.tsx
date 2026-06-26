@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { CoverLetterGenerator } from "@/components/cover-letter/CoverLetterGenerator";
-import { Header } from "@/components/home/Header";
+import { AppShell } from "@/components/AppShell";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
@@ -18,12 +18,11 @@ export const metadata: Metadata = {
 export default function CoverLetterPage() {
   return (
     <ErrorBoundary>
-      <div className="h-screen flex flex-col bg-background">
-        <Header />
+      <AppShell scroll={false}>
         <main className="flex-1 min-h-0 h-full overflow-hidden">
           <CoverLetterGenerator />
         </main>
-      </div>
+      </AppShell>
     </ErrorBoundary>
   );
 }

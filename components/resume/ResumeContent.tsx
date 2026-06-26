@@ -30,7 +30,7 @@ export const ResumeContent = ({
 
   return (
     <div
-      className={`template-${template} ${styles.container} print:shadow-none`}
+      className={`resume-document template-${template} ${styles.container} print:shadow-none`}
     >
       {/* Header Section */}
       {(data.name || "") && (

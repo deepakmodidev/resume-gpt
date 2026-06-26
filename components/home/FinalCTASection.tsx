@@ -1,43 +1,23 @@
-import { ArrowRight, FileText, FileEditIcon } from "lucide-react";
 import { FinalCTAButton } from "./FinalCTAButton";
 
 export function FinalCTASection() {
   return (
     <section className="py-20 relative">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 text-center">
-        <div className="relative flex justify-center items-center">
-          {/* CTA Card with Feature Card Design */}
-          <div className="bg-muted/30 hover:bg-muted/50 transition-all duration-700 rounded-2xl p-2 group relative overflow-hidden border border-border/50 w-full max-w-5xl">
-            <div className="rounded-2xl bg-card backdrop-blur-xs h-full transition-all duration-700 relative overflow-hidden w-full p-6 md:p-12 flex flex-col items-center justify-center">
-              {/* Animated gradient background */}
-              <div className="absolute -bottom-40 left-[50%] translate-x-[-50%] group-hover:opacity-100 opacity-0 z-1 bg-linear-to-t from-blue-500/10 to-blue-300/20 blur-[6em] rounded-xl transition-all duration-700 ease-out w-40 md:w-120 h-80 md:h-120 rotate-12" />
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-card px-6 py-14 md:px-12 md:py-20 text-center">
+          {/* Single soft accent glow */}
+          <div className="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 w-[32rem] h-64 bg-brand/10 blur-[100px]" />
 
-              {/* Background Icon */}
-              <div className="absolute bottom-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-                <FileEditIcon className="size-24 text-foreground" />
-              </div>
-              <div className="absolute top-4 left-4 opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-                <FileText className="size-24 text-foreground" />
-              </div>
-
-              {/* Content */}
-              <div className="relative z-10 w-full">
-                <div className="flex flex-col items-center gap-4 mb-6">
-                  <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-2">
-                    <ArrowRight className="h-8 w-8 text-blue-500" />
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-bold">
-                    <span className="bg-linear-to-b from-foreground to-muted-foreground bg-clip-text text-transparent">
-                      Ready to build your perfect resume?
-                    </span>
-                  </h2>
-                </div>
-                <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  Join thousands of professionals who have landed their dream
-                  jobs with AI-optimized resumes.
-                </p>
-                <FinalCTAButton />
-              </div>
+          <div className="relative z-10 flex flex-col items-center gap-5">
+            <h2 className="text-3xl md:text-4xl font-bold max-w-2xl">
+              Ready to build a resume that gets read?
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-xl">
+              Describe your experience, let the AI do the heavy lifting, and
+              export a polished PDF in minutes.
+            </p>
+            <div className="pt-2">
+              <FinalCTAButton />
             </div>
           </div>
         </div>

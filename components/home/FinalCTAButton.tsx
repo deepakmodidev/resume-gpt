@@ -7,11 +7,11 @@ export function FinalCTAButton() {
     <Button
       asChild
       size="lg"
-      className="bg-linear-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 font-semibold text-lg px-8 py-4 h-auto rounded-xl shadow-lg"
+      className="h-12 px-8 text-base font-semibold rounded-xl shadow-sm hover:shadow-md"
     >
       <Link href="/builder">
-        Start Building Now
-        <ArrowRight className="ml-2 h-5 w-5" />
+        Start building now
+        <ArrowRight className="h-4 w-4" />
       </Link>
     </Button>
   );

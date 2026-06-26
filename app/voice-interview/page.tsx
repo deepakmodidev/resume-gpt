@@ -5,7 +5,7 @@ import { useSession as useAuthSession, signIn } from "next-auth/react";
 import { TokenSource } from "livekit-client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
-import { Header } from "@/components/home/Header";
+import { AppShell } from "@/components/AppShell";
 import { WelcomeView } from "@/components/voice/WelcomeView";
 import { SessionView } from "@/components/voice/SessionView";
 import { parseResume } from "@/app/actions/parse-resume";
@@ -57,9 +57,8 @@ export default function VoiceInterviewPage() {
   const isAuthenticated = status === "authenticated";
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 pt-24 container mx-auto px-4 overflow-hidden">
+    <AppShell>
+      <main className="flex-1 pt-24 container mx-auto px-4">
         <SessionProvider session={session}>
           <VoiceInterviewContent
             session={session}
@@ -74,7 +73,7 @@ export default function VoiceInterviewPage() {
           />
         </SessionProvider>
       </main>
-    </div>
+    </AppShell>
   );
 }
 

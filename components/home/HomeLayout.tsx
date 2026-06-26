@@ -21,18 +21,13 @@ export function HomeLayout({ children }: LayoutProps) {
             },
             description:
               "AI-powered resume builder that helps create professional resumes optimized for ATS systems.",
-            aggregateRating: {
-              "@type": "AggregateRating",
-              ratingValue: "4.8",
-              ratingCount: "1250",
-            },
           }),
         }}
       />
 
-      <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
-        {/* Background gradient */}
-        <div className="fixed inset-0 bg-linear-to-br from-background via-muted to-background -z-20"></div>
+      <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
+        {/* Solid background — no gradient */}
+        <div className="fixed inset-0 bg-background -z-20"></div>
 
         {/* Noise texture overlay */}
         <div

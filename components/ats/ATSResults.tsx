@@ -31,15 +31,15 @@ interface ATSResultsProps {
 
 export function ATSResults({ analysis, className }: ATSResultsProps) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600 dark:text-green-400";
-    if (score >= 60) return "text-yellow-600 dark:text-yellow-400";
-    return "text-red-600 dark:text-red-400";
+    if (score >= 80) return "text-success";
+    if (score >= 60) return "text-warning";
+    return "text-destructive";
   };
 
   const getScoreIcon = (score: number) => {
-    if (score >= 80) return <Award className="w-5 h-5 text-green-600" />;
-    if (score >= 60) return <Target className="w-5 h-5 text-yellow-600" />;
-    return <AlertCircle className="w-5 h-5 text-red-600" />;
+    if (score >= 80) return <Award className="w-5 h-5 text-success" />;
+    if (score >= 60) return <Target className="w-5 h-5 text-warning" />;
+    return <AlertCircle className="w-5 h-5 text-destructive" />;
   };
 
   const getScoreLabel = (score: number) => {
@@ -51,14 +51,11 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
 
   return (
     <Card
-      className={cn(
-        "backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 border-slate-200/60 dark:border-slate-700/60",
-        className,
-      )}
+      className={cn("backdrop-blur-sm bg-card/70 border-border", className)}
     >
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-blue-600" />
+          <BarChart3 className="w-5 h-5 text-brand" />
           ATS Analysis Results
         </CardTitle>
         <CardDescription>
@@ -94,7 +91,7 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
                     stroke="currentColor"
                     strokeWidth="8"
                     fill="transparent"
-                    className="text-slate-200 dark:text-slate-700"
+                    className="text-muted"
                   />
                   <circle
                     cx="60"
@@ -202,7 +199,7 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
             {/* Matched Keywords */}
             <div>
               <h4 className="font-semibold flex items-center gap-2 mb-3">
-                <CheckCircle className="w-4 h-4 text-green-600" />
+                <CheckCircle className="w-4 h-4 text-success" />
                 Matched Keywords ({analysis.matchedKeywords.length})
               </h4>
               <div className="flex flex-wrap gap-2">
@@ -210,7 +207,7 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
                   <Badge
                     key={index}
                     variant="default"
-                    className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                    className="bg-success/15 text-success"
                   >
                     {keyword}
                   </Badge>
@@ -226,7 +223,7 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
             {/* Missing Keywords */}
             <div>
               <h4 className="font-semibold flex items-center gap-2 mb-3">
-                <AlertCircle className="w-4 h-4 text-orange-600" />
+                <AlertCircle className="w-4 h-4 text-warning" />
                 Missing Keywords ({analysis.missingKeywords.length})
               </h4>
               <div className="flex flex-wrap gap-2">
@@ -234,7 +231,7 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                    className="bg-warning/15 text-warning"
                   >
                     {keyword}
                   </Badge>
@@ -251,7 +248,7 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
             {analysis.criticalMissingKeywords.length > 0 && (
               <div>
                 <h4 className="font-semibold flex items-center gap-2 mb-3">
-                  <AlertCircle className="w-4 h-4 text-red-600" />
+                  <AlertCircle className="w-4 h-4 text-destructive" />
                   Critical Missing Keywords
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -267,7 +264,7 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
 
           <TabsContent value="suggestions" className="space-y-4">
             <h4 className="font-semibold flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-yellow-600" />
+              <Lightbulb className="w-4 h-4 text-warning" />
               Optimization Suggestions
             </h4>
             <div className="space-y-3">
@@ -277,10 +274,10 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="flex gap-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800"
+                  className="flex gap-3 p-3 bg-brand/5 rounded-lg border border-brand/15"
                 >
-                  <Lightbulb className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <Lightbulb className="w-4 h-4 text-brand mt-0.5 shrink-0" />
+                  <p className="text-sm text-foreground">
                     {suggestion}
                   </p>
                 </motion.div>
@@ -290,13 +287,13 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
 
           <TabsContent value="insights" className="space-y-4">
             <h4 className="font-semibold flex items-center gap-2">
-              <Brain className="w-4 h-4 text-purple-600" />
+              <Brain className="w-4 h-4 text-brand" />
               Advanced Insights
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4 text-blue-600" />
+                  <Target className="w-4 h-4 text-muted-foreground" />
                   <span className="font-medium">Industry Fit</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -307,9 +304,9 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <BarChart3 className="w-4 h-4 text-green-600" />
+                  <BarChart3 className="w-4 h-4 text-muted-foreground" />
                   <span className="font-medium">Readability</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -323,9 +320,9 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-purple-600" />
+                  <TrendingUp className="w-4 h-4 text-muted-foreground" />
                   <span className="font-medium">Semantic Match</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -339,9 +336,9 @@ export function ATSResults({ analysis, className }: ATSResultsProps) {
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="w-4 h-4 text-orange-600" />
+                  <CheckCircle className="w-4 h-4 text-muted-foreground" />
                   <span className="font-medium">Keyword Density</span>
                 </div>
                 <div className="flex items-center gap-2">

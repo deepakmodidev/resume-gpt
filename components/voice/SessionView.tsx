@@ -10,12 +10,13 @@ import {
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
-import { 
-  Mic, 
-  LogOut, 
-  Ear, 
-  Brain, 
-  Volume2, 
+import {
+  Mic,
+  MicOff,
+  LogOut,
+  Ear,
+  Brain,
+  Volume2,
   Zap,
 } from "lucide-react";
 import { AuraVisualizer } from './AuraVisualizer';
@@ -48,7 +49,7 @@ const CandidateVisualizer = ({ trackRef }: { trackRef: TrackReferenceOrPlacehold
         return (
           <div 
             key={i} 
-            className="w-[3px] bg-primary rounded-full transition-all duration-75 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+            className="w-[3px] bg-primary rounded-full transition-all duration-75 ease-out shadow-[0_0_10px_hsl(var(--brand)/0.45)]"
             style={{ height: `${Math.max(30, Math.min(100, band * multiplier))}%` }}
           />
         );
@@ -83,7 +84,7 @@ export function SessionView() {
   const session = useSessionContext();
   const { messages } = useSessionMessages(session);
   const { state: agentState } = useAgent();
-  const { microphoneTrack, localParticipant } = useLocalParticipant();
+  const { microphoneTrack, localParticipant, isMicrophoneEnabled } = useLocalParticipant();
   const { devices, activeDeviceId, setActiveMediaDevice } = useMediaDeviceSelect({ kind: 'audioinput' });
 
   const activeMicLabel = devices.find(d => d.deviceId === activeDeviceId)?.label || "Microphone";
@@ -117,19 +118,42 @@ export function SessionView() {
       <div className="flex justify-center items-center py-6">
         <div className="flex items-center p-1.5 rounded-full bg-background/80 backdrop-blur-3xl border border-border shadow-lg">
           
-          {/* User Mic & Visualizer */}
-          <div className="flex items-center gap-3 pl-4 pr-1 h-8">
-            <div className="flex items-center gap-3 text-primary/80">
-              <Mic className="w-4 h-4" />
-              <CandidateVisualizer 
-                trackRef={microphoneTrack ? { 
-                  publication: microphoneTrack,
-                  participant: localParticipant,
-                  source: Track.Source.Microphone
-                } : undefined} 
-              />
-            </div>
-            
+          {/* User Mic toggle & Visualizer */}
+          <div className="flex items-center gap-2 pl-2 pr-1 h-8">
+            <button
+              type="button"
+              onClick={() => localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)}
+              aria-label={isMicrophoneEnabled ? "Mute microphone" : "Unmute microphone"}
+              aria-pressed={!isMicrophoneEnabled}
+              title={isMicrophoneEnabled ? "Mute microphone" : "Unmute microphone"}
+              className={cn(
+                "flex items-center gap-3 rounded-full px-2.5 py-1 transition-colors",
+                isMicrophoneEnabled
+                  ? "text-primary/80 hover:text-primary hover:bg-muted"
+                  : "text-destructive hover:bg-destructive/10",
+              )}
+            >
+              {isMicrophoneEnabled ? (
+                <>
+                  <Mic className="w-4 h-4" />
+                  <CandidateVisualizer
+                    trackRef={microphoneTrack ? {
+                      publication: microphoneTrack,
+                      participant: localParticipant,
+                      source: Track.Source.Microphone
+                    } : undefined}
+                  />
+                </>
+              ) : (
+                <>
+                  <MicOff className="w-4 h-4" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">
+                    Muted
+                  </span>
+                </>
+              )}
+            </button>
+
             <Select value={activeDeviceId} onValueChange={setActiveMediaDevice}>
               <SelectTrigger className="flex items-center gap-1.5 h-full bg-transparent border-none focus:ring-0 text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors px-2 shadow-none max-w-[160px]">
                 <span className="truncate max-w-[110px]">{activeMicLabel}</span>
@@ -151,7 +175,7 @@ export function SessionView() {
             variant="ghost" 
             size="sm" 
             onClick={() => session.end()}
-            className="h-8 px-5 rounded-full text-xs font-medium text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all flex gap-2"
+            className="h-8 px-5 rounded-full text-xs font-medium text-destructive hover:bg-destructive/10 hover:text-destructive transition-all flex gap-2"
           >
             <LogOut className="w-3.5 h-3.5" />
             END SESSION

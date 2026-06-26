@@ -1,11 +1,24 @@
 import type React from "react";
 import "@/app/globals.css";
 import "@livekit/components-styles";
+import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "sonner";
 import { Metadata } from "next";
+
+const display = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  display: "swap",
+});
+
+const sans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://tryresumegpt.vercel.app"),
@@ -70,7 +83,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+      className={`${display.variable} ${sans.variable}`}
+    >
       <body>
         <SessionProvider>
           <ThemeProvider

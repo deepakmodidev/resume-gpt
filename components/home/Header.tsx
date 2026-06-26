@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -28,6 +29,15 @@ export function Header() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const navLinks = [
+    { href: "/builder", label: "AI Resume" },
+    { href: "/voice-interview", label: "AI Interview" },
+    { href: "/ats-analyzer", label: "ATS Analyzer" },
+    { href: "/cover-letter", label: "Cover Letter" },
+    { href: "/recruiter", label: "Talent Search" },
+  ];
 
   const handleSignInClick = async () => {
     setIsSigningIn(true);
@@ -90,11 +100,11 @@ export function Header() {
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo - Left */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <Logo size={20} className="text-white drop-shadow-lg" />
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:-rotate-6">
+                <Logo size={18} className="text-background" />
               </div>
-              <span className="text-xl font-bold bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+              <span className="text-xl font-bold tracking-tight text-foreground">
                 ResumeGPT
               </span>
             </Link>
@@ -102,21 +112,25 @@ export function Header() {
 
           {/* Navigation Links - Center (Hidden on Mobile) */}
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/builder">AI Resume</Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/voice-interview">AI Interview</Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/ats-analyzer">ATS Analyzer</Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/cover-letter">Cover Letter</Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/recruiter">Talent Search</Link>
-            </Button>
+            {navLinks.map((link) => {
+              const isActive = pathname.startsWith(link.href);
+              return (
+                <Button
+                  key={link.href}
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className={cn(
+                    "text-muted-foreground hover:text-foreground",
+                    isActive && "text-foreground font-semibold bg-accent",
+                  )}
+                >
+                  <Link href={link.href} aria-current={isActive ? "page" : undefined}>
+                    {link.label}
+                  </Link>
+                </Button>
+              );
+            })}
           </nav>
 
           {/* Auth & Theme Toggle - Right */}

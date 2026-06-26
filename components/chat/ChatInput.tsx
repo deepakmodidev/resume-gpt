@@ -2,8 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-
-import { ArrowUpFromLine } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -82,12 +81,13 @@ export const ChatInput = ({
           />
           <div className="absolute bottom-6 right-3 flex items-center gap-2">
             <Button
-              className="p-2 h-auto rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+              size="icon"
+              className="h-9 w-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
               onClick={handleSendMessage}
               disabled={isInputDisabled}
               aria-label="Send message"
             >
-              <ArrowUpFromLine className="h-4 w-4 text-white" />
+              <ArrowUp className="h-4 w-4" />
             </Button>
           </div>
         </div>

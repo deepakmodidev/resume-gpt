@@ -4,7 +4,7 @@ import { validateRequest, CoverLetterRequestSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
 import { requireAuth, isAuthorized } from "@/lib/auth-middleware";
 import { COVER_LETTER_PROMPT } from "@/lib/prompts";
-import { AI_GENERATION_CONFIGS, AI_MODELS } from "@/lib/constants";
+import { createGroqCompletion } from "@/lib/ai/groq";
 
 export async function POST(req: NextRequest) {
   try {
@@ -118,7 +118,7 @@ NOTE: No specific job description was provided. Generate a generalized cover let
 4. Remains professional and compelling without referencing specific job requirements
 `;
 
-    const chatCompletion = await client.chat.completions.create({
+    const chatCompletion = await createGroqCompletion(client, {
       messages: [
         {
           role: "system",
@@ -129,7 +129,6 @@ NOTE: No specific job description was provided. Generate a generalized cover let
           content: userPrompt,
         },
       ],
-      model: AI_MODELS.GROQ_PRIMARY,
       temperature: 0.1, // Low temperature for consistent JSON
       response_format: { type: "json_object" },
     });

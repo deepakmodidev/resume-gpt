@@ -128,7 +128,7 @@ export default function UploadZone({
         className={`border-2 border-dashed rounded-lg p-6 block text-center cursor-pointer transition ${
           busy
             ? "opacity-50 pointer-events-none"
-            : "hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-950/20"
+            : "hover:border-brand/50 hover:bg-brand/5"
         }`}
       >
         <input
@@ -169,13 +169,13 @@ export default function UploadZone({
 
 function StateBadge({ state }: { state: RowState }) {
   const map: Record<RowState["state"], { label: string; cls: string }> = {
-    queued: { label: "queued", cls: "bg-gray-200 text-gray-700" },
-    extracting: { label: "extracting…", cls: "bg-blue-100 text-blue-800" },
-    embedding: { label: "embedding…", cls: "bg-indigo-100 text-indigo-800" },
-    ingesting: { label: "saving…", cls: "bg-purple-100 text-purple-800" },
-    ok: { label: "ingested", cls: "bg-green-100 text-green-800" },
-    duplicate: { label: "duplicate", cls: "bg-yellow-100 text-yellow-800" },
-    error: { label: "error", cls: "bg-red-100 text-red-800" },
+    queued: { label: "queued", cls: "bg-muted text-muted-foreground" },
+    extracting: { label: "extracting…", cls: "bg-info/15 text-info" },
+    embedding: { label: "embedding…", cls: "bg-info/15 text-info" },
+    ingesting: { label: "saving…", cls: "bg-brand/15 text-brand" },
+    ok: { label: "ingested", cls: "bg-success/15 text-success" },
+    duplicate: { label: "duplicate", cls: "bg-warning/15 text-warning" },
+    error: { label: "error", cls: "bg-destructive/15 text-destructive" },
   };
   const cfg = map[state.state];
   const title = state.state === "error" ? state.message : undefined;

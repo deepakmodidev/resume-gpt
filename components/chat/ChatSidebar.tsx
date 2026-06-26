@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import type { Session } from "next-auth";
 import { signOut, signIn } from "next-auth/react";
@@ -55,6 +55,11 @@ interface Chat {
   updatedAt: string;
 }
 
+// Module-level cache so the chat list survives sidebar remounts. The Builder is
+// remounted via `key={chatId}` on every chat navigation, which would otherwise
+// reset the list to empty and flash a loader each time you switch chats.
+let chatCache: Chat[] = [];
+
 // Helper function to group chats by timeframe
 const groupChatsByTimeframe = (chats: Chat[]) => {
   const now = new Date();
@@ -103,6 +108,20 @@ const truncateText = (text: string, maxLength: number) => {
   return text.slice(0, maxLength).trim() + "...";
 };
 
+// Shallow-compare two chat lists so a background refresh only updates state when
+// something actually changed — prevents re-rendering the whole list on every poll.
+const sameChats = (a: Chat[], b: Chat[]) => {
+  if (a.length !== b.length) return false;
+  return a.every((chat, i) => {
+    const other = b[i];
+    return (
+      chat.id === other.id &&
+      chat.title === other.title &&
+      chat.updatedAt === other.updatedAt
+    );
+  });
+};
+
 // New Chat button with forced refresh for clean state
 const NewChatButton = ({ isCollapsed }: { isCollapsed?: boolean }) => {
   const handleNewChat = () => {
@@ -114,7 +133,7 @@ const NewChatButton = ({ isCollapsed }: { isCollapsed?: boolean }) => {
     <Button
       onClick={handleNewChat}
       className={cn(
-        "justify-start bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-xs hover:shadow-md transition-all duration-300 ease-in-out",
+        "justify-start font-medium shadow-xs hover:shadow-md",
         isCollapsed ? "w-auto px-2" : "w-full",
       )}
       size="sm"
@@ -286,84 +305,80 @@ const SidebarContent = ({
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }) => {
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [chats, setChats] = useState<Chat[]>(() => chatCache);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(
+    () => chatCache.length === 0,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [hasUserApiKey, setHasUserApiKey] = useState(false);
+  const hasLoadedRef = useRef(chatCache.length > 0);
   const normalizedCurrentChatId = currentChatId ?? "";
   const shouldRetryForNewChat = Boolean(isNewChat);
 
+  const checkUserApiKey = useCallback(() => {
+    const userApiKey = localStorage.getItem(STORAGE_KEYS.GROQ_API_KEY);
+    setHasUserApiKey(!!userApiKey);
+  }, []);
+
+  // `silent` refreshes never toggle the loader or toast — they update the list
+  // in place only if the data actually changed.
+  const fetchChats = useCallback(async (silent = false) => {
+    if (!silent && !hasLoadedRef.current) setIsInitialLoading(true);
+    try {
+      const data = await apiRequest<{ chats: Chat[] }>(API_ENDPOINTS.CHAT);
+      const next = Array.isArray(data.chats)
+        ? data.chats.map((chat) => ({
+            ...chat,
+            updatedAt: chat.updatedAt || new Date().toISOString(),
+          }))
+        : [];
+      setChats((prev) => (sameChats(prev, next) ? prev : next));
+    } catch (error) {
+      logger.error("Error fetching chats", error as Error);
+      if (!silent) toast.error("Error fetching chats");
+    } finally {
+      hasLoadedRef.current = true;
+      setIsInitialLoading(false);
+    }
+  }, []);
+
+  // Initial load — the only time the loader is shown.
   useEffect(() => {
     fetchChats();
     checkUserApiKey();
-  }, []);
+  }, [fetchChats, checkUserApiKey]);
 
-  // Refresh chat list when currentChatId changes (e.g., when a new chat is created)
+  // When the active chat changes (e.g. a new chat was just created), refresh
+  // silently so the list updates granularly without a loader.
   useEffect(() => {
-    if (normalizedCurrentChatId) {
-      // Check if this chat exists in our list, if not, refresh
-      const chatExists = chats.some(
-        (chat) => chat.id === normalizedCurrentChatId,
-      );
-      if (!chatExists) {
-        fetchChats();
+    if (!normalizedCurrentChatId) return;
+    fetchChats(true);
 
-        // New chats are saved asynchronously; retry briefly so the sidebar updates quickly.
-        if (shouldRetryForNewChat) {
-          let attempts = 0;
-          const maxAttempts = 5;
-          const interval = setInterval(() => {
-            attempts += 1;
-            fetchChats();
-
-            if (attempts >= maxAttempts) {
-              clearInterval(interval);
-            }
-          }, 700);
-
-          return () => clearInterval(interval);
-        }
-      }
+    // New chats are saved asynchronously; retry briefly so the sidebar catches up.
+    if (shouldRetryForNewChat) {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts += 1;
+        fetchChats(true);
+        if (attempts >= 5) clearInterval(interval);
+      }, 700);
+      return () => clearInterval(interval);
     }
-  }, [normalizedCurrentChatId, shouldRetryForNewChat, chats]);
+  }, [normalizedCurrentChatId, shouldRetryForNewChat, fetchChats]);
 
-  // Periodic refresh to catch updates from manual edits (every 30 seconds)
+  // Periodic background refresh to catch edits from other tabs — silent.
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchChats();
-    }, 30000); // 30 seconds
-
+    const interval = setInterval(() => fetchChats(true), 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchChats]);
 
-  const checkUserApiKey = () => {
-    const userApiKey = localStorage.getItem(STORAGE_KEYS.GROQ_API_KEY);
-    setHasUserApiKey(!!userApiKey);
-  };
-
-  const fetchChats = async () => {
-    setIsLoading(true);
-    try {
-      const data = await apiRequest<{ chats: Chat[] }>(API_ENDPOINTS.CHAT);
-      if (Array.isArray(data.chats)) {
-        const chatsWithDates = data.chats.map((chat) => ({
-          ...chat,
-          updatedAt: chat.updatedAt || new Date().toISOString(),
-        }));
-        setChats(chatsWithDates);
-      } else {
-        setChats([]);
-      }
-    } catch (error) {
-      logger.error("Error fetching chats", error as Error);
-      toast.error("Error fetching chats");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Keep the module cache in sync so a remount renders the list instantly.
+  useEffect(() => {
+    chatCache = chats;
+  }, [chats]);
 
   const handleSignOut = () => {
     if (!session) {
@@ -469,10 +484,10 @@ const SidebarContent = ({
             )}
           >
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <Logo size={20} className="text-white drop-shadow-lg" />
+              <div className="w-8 h-8 bg-foreground rounded-md flex items-center justify-center">
+                <Logo size={18} className="text-background" />
               </div>
-              <h1 className="font-bold text-xl tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent whitespace-nowrap">
+              <h1 className="font-bold text-xl tracking-tight text-foreground whitespace-nowrap">
                 ResumeGPT
               </h1>
             </Link>
@@ -512,6 +527,9 @@ const SidebarContent = ({
           <div className="relative">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
+              type="search"
+              name="chat-search"
+              autoComplete="off"
               placeholder="Search chats..."
               className="pl-10 h-10"
               value={searchQuery}
@@ -547,7 +565,7 @@ const SidebarContent = ({
         ) : (
           // Expanded view - show full chat list
           <>
-            {isLoading && chats.length === 0 ? (
+            {isInitialLoading && chats.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
@@ -660,7 +678,7 @@ const SidebarContent = ({
               </span>
               {hasUserApiKey && (
                 <div
-                  className="ml-auto w-2 h-2 bg-green-500 rounded-full"
+                  className="ml-auto w-2 h-2 bg-success rounded-full"
                   title="API Key configured"
                 />
               )}
@@ -718,7 +736,7 @@ const SidebarContent = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleSignOut}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 p-2 h-9 w-9"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2 h-9 w-9"
                   title="Sign Out"
                 >
                   <LogOut className="h-4 w-4" />
@@ -728,7 +746,7 @@ const SidebarContent = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => signIn("google", { callbackUrl: window.location.href })}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 p-2 h-9 w-9"
+                  className="text-brand hover:text-brand hover:bg-brand/10 p-2 h-9 w-9"
                   title="Sign In"
                 >
                   <PanelLeftOpen className="h-4 w-4" />
@@ -816,10 +834,10 @@ export const ChatSidebar = ({
               </SheetContent>
             </Sheet>
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-lg shadow-blue-500/50">
-                <Logo size={20} className="text-white drop-shadow-lg" />
+              <div className="w-8 h-8 bg-foreground rounded-md flex items-center justify-center">
+                <Logo size={18} className="text-background" />
               </div>
-              <h1 className="font-bold text-lg tracking-tight bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+              <h1 className="font-bold text-lg tracking-tight text-foreground">
                 ResumeGPT
               </h1>
             </Link>

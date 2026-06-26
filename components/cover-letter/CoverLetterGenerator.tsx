@@ -278,9 +278,9 @@ export const CoverLetterGenerator = ({
 
                 {/* Resume content indicator */}
                 {resumeContent && (
-                  <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-                    <FileText className="w-4 h-4 text-green-600" />
-                    <span className="text-sm text-green-600">
+                  <div className="flex items-center gap-2 p-2 bg-success/10 border border-success/20 rounded-lg">
+                    <FileText className="w-4 h-4 text-success" />
+                    <span className="text-sm text-success">
                       Resume uploaded ({resumeContent.length} chars)
                     </span>
                   </div>
@@ -407,7 +407,7 @@ export const CoverLetterGenerator = ({
               <Button
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="w-full h-11 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold text-lg shadow-md shadow-blue-500/20 gap-2 transition-all"
+                className="w-full h-11 font-semibold text-lg gap-2 shadow-sm hover:shadow-md"
               >
                 Generate Cover Letter
                 {isGenerating ? (

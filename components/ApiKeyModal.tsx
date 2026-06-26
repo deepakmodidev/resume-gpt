@@ -112,7 +112,7 @@ export const ApiKeyModal = ({
             <div className="flex items-center justify-between">
               <label className="text-sm font-semibold">Groq API Key</label>
               {hasStoredKey && (
-                <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase">Active</span>
+                <span className="text-[10px] bg-success/15 text-success px-2 py-0.5 rounded-full font-bold uppercase">Active</span>
               )}
             </div>
             <div className="relative">
@@ -121,7 +121,8 @@ export const ApiKeyModal = ({
                 value={groqKey}
                 onChange={(e) => setGroqKey(e.target.value)}
                 placeholder="gsk_..."
-                className="pr-10 border-blue-200 focus:ring-blue-500"
+                autoComplete="off"
+                className="pr-10"
               />
               <button
                 type="button"
@@ -132,7 +133,7 @@ export const ApiKeyModal = ({
               </button>
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleSave} disabled={isValidating} className="flex-1 text-white bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSave} disabled={isValidating} className="flex-1">
                 {isValidating ? "Validating..." : (hasStoredKey ? "Update Key" : "Save Key")}
               </Button>
               {hasStoredKey && (
@@ -141,10 +142,10 @@ export const ApiKeyModal = ({
             </div>
           </div>
 
-          <div className="text-[11px] text-muted-foreground p-3 bg-muted rounded-md border border-blue-100 dark:border-blue-900/30">
+          <div className="text-[11px] text-muted-foreground p-3 bg-muted rounded-md border border-border">
             <p className="font-semibold mb-1">How to get your key:</p>
             <ol className="list-decimal list-inside space-y-1">
-              <li>Visit the <a href="https://console.groq.com/keys" target="_blank" className="text-blue-600 underline">Groq Cloud Console</a></li>
+              <li>Visit the <a href="https://console.groq.com/keys" target="_blank" className="text-brand underline">Groq Cloud Console</a></li>
               <li>Create a new API key</li>
               <li>Copy and paste it above</li>
             </ol>
