@@ -95,7 +95,7 @@ export const CoverLetterDisplay = ({ data }: CoverLetterDisplayProps) => {
         <div className="flex justify-end items-center gap-3 px-4 py-3">
           <button
             onClick={() => setIsTemplateModalOpen(true)}
-            className="text-white flex items-center gap-2 bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-lg hover:bg-primary/90 transition-all shadow-xs hover:shadow-md font-medium"
+            className="flex items-center gap-2 border border-input bg-background text-foreground hover:bg-accent px-4 py-2 rounded-lg transition-colors shadow-xs hover:shadow-md font-medium"
           >
             <svg
               className="w-4 h-4"
@@ -116,10 +116,10 @@ export const CoverLetterDisplay = ({ data }: CoverLetterDisplayProps) => {
           <button
             onClick={handleDownloadPDF}
             disabled={isDownloading}
-            className={`flex items-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-xs hover:shadow-md font-medium ${
+            className={`flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg transition-colors shadow-xs hover:shadow-md font-medium ${
               isDownloading
                 ? "opacity-50 cursor-not-allowed"
-                : "hover:from-green-600 hover:to-green-700 hover:scale-[1.02]"
+                : "hover:bg-primary/90"
             }`}
           >
             {isDownloading ? (

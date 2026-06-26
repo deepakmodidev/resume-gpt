@@ -109,7 +109,7 @@ export default function PoolPanel({
               onClick={() => setMode("mine")}
               className={`px-2.5 py-1 cursor-pointer transition-colors ${
                 mode === "mine"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted"
               }`}
             >
@@ -119,7 +119,7 @@ export default function PoolPanel({
               onClick={() => setMode("all")}
               className={`px-2.5 py-1 cursor-pointer transition-colors border-l ${
                 mode === "all"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted"
               }`}
             >
@@ -161,7 +161,7 @@ export default function PoolPanel({
                       {p.email && (
                         <a
                           href={`mailto:${p.email}`}
-                          className="ml-2 text-xs font-normal text-blue-600 hover:underline"
+                          className="ml-2 text-xs font-normal text-brand hover:underline"
                         >
                           {p.email}
                         </a>
@@ -185,7 +185,7 @@ export default function PoolPanel({
                       variant="link"
                       size="sm"
                       onClick={() => toggleExpanded(p.id)}
-                      className="text-xs h-auto p-0 text-blue-600"
+                      className="text-xs h-auto p-0 text-brand"
                     >
                       {isExpanded ? "less" : "more"}
                     </Button>
@@ -197,7 +197,7 @@ export default function PoolPanel({
                     size="sm"
                     onClick={() => handleDelete(p.id)}
                     disabled={isDeleting}
-                    className="text-xs border-red-300 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30 whitespace-nowrap"
+                    className="text-xs border-destructive/40 text-destructive hover:bg-destructive/10 whitespace-nowrap"
                   >
                     {isDeleting ? "…" : "Delete"}
                   </Button>

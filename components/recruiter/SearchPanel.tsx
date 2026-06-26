@@ -98,23 +98,19 @@ export default function SearchPanel({
       />
 
       {tooShort && (
-        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+        <p className="mt-2 text-xs text-warning">
           Add at least {MIN_JD_LENGTH - trimmedLen} more character
           {MIN_JD_LENGTH - trimmedLen === 1 ? "" : "s"} — semantic search needs
           a real sentence describing the role, not a fragment.
         </p>
       )}
 
-      <Button
-        onClick={run}
-        disabled={!canSearch}
-        className="mt-3 bg-blue-600 hover:bg-blue-700 text-white"
-      >
+      <Button onClick={run} disabled={!canSearch} className="mt-3">
         {busy ? "Searching…" : "Find candidates"}
       </Button>
 
       {error && (
-        <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="mt-3 text-sm text-destructive">{error}</p>
       )}
 
       {hasSearched && !busy && !error && results.length === 0 && (
@@ -126,7 +122,7 @@ export default function SearchPanel({
       {results.length > 0 && (
         <>
           {!hasAnyStrongMatch && (
-            <p className="mt-5 text-xs text-amber-600 dark:text-amber-400">
+            <p className="mt-5 text-xs text-warning">
               No strong matches in your pool for this JD. Showing the closest
               candidates below, but treat the rankings as low confidence.
             </p>
@@ -137,7 +133,7 @@ export default function SearchPanel({
               size="sm"
               onClick={runInsights}
               disabled={insightsBusy || results.length === 0}
-              className="border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/30"
+              className="border-brand/40 text-brand hover:bg-brand/10"
             >
               {insightsBusy
                 ? "Generating AI insights…"
@@ -153,7 +149,7 @@ export default function SearchPanel({
           </div>
 
           {insightsError && (
-            <p className="mb-3 text-xs text-red-600 dark:text-red-400">
+            <p className="mb-3 text-xs text-destructive">
               {insightsError}
             </p>
           )}
@@ -178,7 +174,7 @@ export default function SearchPanel({
                       {r.email && (
                         <a
                           href={`mailto:${r.email}`}
-                          className="ml-2 text-xs text-blue-600 hover:underline"
+                          className="ml-2 text-xs text-brand hover:underline"
                         >
                           {r.email}
                         </a>
@@ -186,16 +182,16 @@ export default function SearchPanel({
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {weak && (
-                        <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-800 text-muted-foreground">
+                        <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                           low confidence
                         </span>
                       )}
                       <span
                         className={`text-sm font-bold ${
                           strong
-                            ? "text-green-600 dark:text-green-400"
+                            ? "text-success"
                             : moderate
-                              ? "text-amber-600 dark:text-amber-400"
+                              ? "text-warning"
                               : "text-muted-foreground"
                         }`}
                       >
@@ -210,7 +206,7 @@ export default function SearchPanel({
                   {insight && (
                     <div className="mt-3 pt-3 border-t border-dashed">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold">
+                        <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-brand/15 text-brand font-semibold">
                           AI Pitch
                         </span>
                       </div>
@@ -227,7 +223,7 @@ export default function SearchPanel({
                             {insight.missingSkills.map((s, idx) => (
                               <span
                                 key={idx}
-                                className="text-[11px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300"
+                                className="text-[11px] px-1.5 py-0.5 rounded bg-warning/15 text-warning"
                               >
                                 {s}
                               </span>
