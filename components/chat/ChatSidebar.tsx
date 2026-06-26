@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import type { Session } from "next-auth";
 import { signOut, signIn } from "next-auth/react";
@@ -55,6 +55,11 @@ interface Chat {
   updatedAt: string;
 }
 
+// Module-level cache so the chat list survives sidebar remounts. The Builder is
+// remounted via `key={chatId}` on every chat navigation, which would otherwise
+// reset the list to empty and flash a loader each time you switch chats.
+let chatCache: Chat[] = [];
+
 // Helper function to group chats by timeframe
 const groupChatsByTimeframe = (chats: Chat[]) => {
   const now = new Date();
@@ -101,6 +106,20 @@ const formatDate = (dateString: string) => {
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).trim() + "...";
+};
+
+// Shallow-compare two chat lists so a background refresh only updates state when
+// something actually changed — prevents re-rendering the whole list on every poll.
+const sameChats = (a: Chat[], b: Chat[]) => {
+  if (a.length !== b.length) return false;
+  return a.every((chat, i) => {
+    const other = b[i];
+    return (
+      chat.id === other.id &&
+      chat.title === other.title &&
+      chat.updatedAt === other.updatedAt
+    );
+  });
 };
 
 // New Chat button with forced refresh for clean state
@@ -286,84 +305,80 @@ const SidebarContent = ({
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }) => {
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [chats, setChats] = useState<Chat[]>(() => chatCache);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(
+    () => chatCache.length === 0,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [hasUserApiKey, setHasUserApiKey] = useState(false);
+  const hasLoadedRef = useRef(chatCache.length > 0);
   const normalizedCurrentChatId = currentChatId ?? "";
   const shouldRetryForNewChat = Boolean(isNewChat);
 
+  const checkUserApiKey = useCallback(() => {
+    const userApiKey = localStorage.getItem(STORAGE_KEYS.GROQ_API_KEY);
+    setHasUserApiKey(!!userApiKey);
+  }, []);
+
+  // `silent` refreshes never toggle the loader or toast — they update the list
+  // in place only if the data actually changed.
+  const fetchChats = useCallback(async (silent = false) => {
+    if (!silent && !hasLoadedRef.current) setIsInitialLoading(true);
+    try {
+      const data = await apiRequest<{ chats: Chat[] }>(API_ENDPOINTS.CHAT);
+      const next = Array.isArray(data.chats)
+        ? data.chats.map((chat) => ({
+            ...chat,
+            updatedAt: chat.updatedAt || new Date().toISOString(),
+          }))
+        : [];
+      setChats((prev) => (sameChats(prev, next) ? prev : next));
+    } catch (error) {
+      logger.error("Error fetching chats", error as Error);
+      if (!silent) toast.error("Error fetching chats");
+    } finally {
+      hasLoadedRef.current = true;
+      setIsInitialLoading(false);
+    }
+  }, []);
+
+  // Initial load — the only time the loader is shown.
   useEffect(() => {
     fetchChats();
     checkUserApiKey();
-  }, []);
+  }, [fetchChats, checkUserApiKey]);
 
-  // Refresh chat list when currentChatId changes (e.g., when a new chat is created)
+  // When the active chat changes (e.g. a new chat was just created), refresh
+  // silently so the list updates granularly without a loader.
   useEffect(() => {
-    if (normalizedCurrentChatId) {
-      // Check if this chat exists in our list, if not, refresh
-      const chatExists = chats.some(
-        (chat) => chat.id === normalizedCurrentChatId,
-      );
-      if (!chatExists) {
-        fetchChats();
+    if (!normalizedCurrentChatId) return;
+    fetchChats(true);
 
-        // New chats are saved asynchronously; retry briefly so the sidebar updates quickly.
-        if (shouldRetryForNewChat) {
-          let attempts = 0;
-          const maxAttempts = 5;
-          const interval = setInterval(() => {
-            attempts += 1;
-            fetchChats();
-
-            if (attempts >= maxAttempts) {
-              clearInterval(interval);
-            }
-          }, 700);
-
-          return () => clearInterval(interval);
-        }
-      }
+    // New chats are saved asynchronously; retry briefly so the sidebar catches up.
+    if (shouldRetryForNewChat) {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts += 1;
+        fetchChats(true);
+        if (attempts >= 5) clearInterval(interval);
+      }, 700);
+      return () => clearInterval(interval);
     }
-  }, [normalizedCurrentChatId, shouldRetryForNewChat, chats]);
+  }, [normalizedCurrentChatId, shouldRetryForNewChat, fetchChats]);
 
-  // Periodic refresh to catch updates from manual edits (every 30 seconds)
+  // Periodic background refresh to catch edits from other tabs — silent.
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchChats();
-    }, 30000); // 30 seconds
-
+    const interval = setInterval(() => fetchChats(true), 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchChats]);
 
-  const checkUserApiKey = () => {
-    const userApiKey = localStorage.getItem(STORAGE_KEYS.GROQ_API_KEY);
-    setHasUserApiKey(!!userApiKey);
-  };
-
-  const fetchChats = async () => {
-    setIsLoading(true);
-    try {
-      const data = await apiRequest<{ chats: Chat[] }>(API_ENDPOINTS.CHAT);
-      if (Array.isArray(data.chats)) {
-        const chatsWithDates = data.chats.map((chat) => ({
-          ...chat,
-          updatedAt: chat.updatedAt || new Date().toISOString(),
-        }));
-        setChats(chatsWithDates);
-      } else {
-        setChats([]);
-      }
-    } catch (error) {
-      logger.error("Error fetching chats", error as Error);
-      toast.error("Error fetching chats");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Keep the module cache in sync so a remount renders the list instantly.
+  useEffect(() => {
+    chatCache = chats;
+  }, [chats]);
 
   const handleSignOut = () => {
     if (!session) {
@@ -547,7 +562,7 @@ const SidebarContent = ({
         ) : (
           // Expanded view - show full chat list
           <>
-            {isLoading && chats.length === 0 ? (
+            {isInitialLoading && chats.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
