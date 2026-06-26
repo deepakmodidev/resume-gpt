@@ -230,6 +230,23 @@
   ::selection {
     background-color: hsl(var(--brand) / 0.22);
   }
+
+  /*
+    The resume preview is a printed document, not app chrome — it must not
+    inherit the site's display/body fonts (Bricolage/Jakarta). Default its
+    subtree to a neutral document sans so the on-screen preview matches the
+    exported PDF (which renders with stock Tailwind defaults, no next/font).
+    Per-template `font-serif`/`font-mono` utilities live in the later
+    `utilities` layer, so they still win over these base-layer defaults.
+  */
+  .resume-document {
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  }
+  .resume-document :where(h1, h2, h3, h4) {
+    font-family: inherit;
+    letter-spacing: normal;
+  }
 }
 
 /* Custom scrollbar */
