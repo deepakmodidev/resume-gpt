@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ATSResults } from "@/components/ats/ATSResults";
-import { DotPattern } from "@/components/ui/dot-pattern";
 import { Header } from "@/components/home/Header";
 import { useSession, signIn } from "next-auth/react";
 import { Footer } from "@/components/home/Footer";
@@ -107,16 +106,6 @@ export default function ATSAnalysisPage() {
     <ErrorBoundary>
       <div className="min-h-screen">
         <Header />
-
-        {/* Background Pattern */}
-        <DotPattern
-          width={20}
-          height={20}
-          cx={1}
-          cy={1}
-          cr={1}
-          className="fill-foreground/6"
-        />
 
         <div className="relative z-10 pt-24 pb-20">
           <div className="container mx-auto px-4">
