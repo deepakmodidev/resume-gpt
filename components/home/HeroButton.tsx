@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Users } from "lucide-react";
 
 export function HeroButton() {
   return (
@@ -22,7 +22,10 @@ export function HeroButton() {
         size="lg"
         className="h-12 px-7 text-base font-semibold rounded-xl"
       >
-        <Link href="/ats-analyzer">Analyze ATS score</Link>
+        <Link href="/recruiter">
+          <Users className="h-4 w-4" />
+          Find Talent
+        </Link>
       </Button>
     </div>
   );

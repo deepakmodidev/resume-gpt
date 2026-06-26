@@ -1,16 +1,73 @@
 import Image from "next/image";
-import { FileText, ScanLine, FileDown } from "lucide-react";
+import { Heart, FileText, Mail, ScanLine, Mic } from "lucide-react";
 import { HeroButton } from "./HeroButton";
-import { ResumePreview } from "./ResumePreview";
+import { ResumeFan } from "./ResumeFan";
+
+const capabilities = [
+  { icon: FileText, label: "AI Resume" },
+  { icon: Mail, label: "Cover Letters" },
+  { icon: ScanLine, label: "ATS Check" },
+  { icon: Mic, label: "Voice Mock Interviews" },
+];
 
 export function HeroSection() {
   return (
-    <section className="relative pb-20 overflow-hidden">
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Text Content — centered in the first screen */}
-        <div className="min-h-screen text-center flex flex-col items-center justify-center gap-8">
-          {/* Launch badges — real, verifiable social proof */}
-          <div className="flex flex-wrap justify-center items-center gap-6 py-2">
+    <section className="relative overflow-x-clip pb-24 pt-10">
+      {/* Warm gradient blobs — brand-toned, behind everything */}
+      <div className="pointer-events-none absolute left-1/2 top-[-18rem] -z-10 size-[28rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-brand to-warning opacity-20 blur-[8em] md:size-[44rem]" />
+      <div className="pointer-events-none absolute right-[-10rem] top-[14rem] -z-10 size-[18rem] rounded-full bg-gradient-to-tr from-brand to-warning opacity-15 blur-[7em] md:size-[34rem]" />
+
+      <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-7 py-12 text-center">
+          {/* Eyebrow badge — honest, no fabricated metrics */}
+          <span className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-4 py-1.5 text-sm font-medium text-brand">
+            <Heart className="h-3.5 w-3.5 fill-brand" />
+            Free AI resume builder
+          </span>
+
+          {/* Headline — one warm gradient accent word */}
+          <h1 className="max-w-4xl text-5xl font-extrabold leading-[0.95] tracking-tight md:text-6xl lg:text-7xl">
+            Tailor your resume to every job{" "}
+            <span className="bg-gradient-to-r from-brand to-warning bg-clip-text text-transparent">
+              automatically
+            </span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+            Describe your experience in plain words. ResumeGPT drafts,
+            rewrites, and ATS-checks your resume in real time, then exports a
+            clean PDF.
+          </p>
+
+          {/* CTAs */}
+          <HeroButton />
+
+          {/* Capability pills — signals the full job-seeker toolkit */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
+            {capabilities.map(({ icon: Icon, label }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3.5 py-1.5 text-sm font-medium text-foreground"
+              >
+                <Icon className="h-4 w-4 text-brand" />
+                {label}
+              </span>
+            ))}
+          </div>
+
+          {/* Fanned resume-template stack — hover to spread the deck */}
+          <div className="flex justify-center pt-6 md:pt-10">
+            <ResumeFan />
+          </div>
+        </div>
+
+        {/* Honest social proof — real launch badges */}
+        <div className="flex flex-col items-center gap-5 pb-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Launched on
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-6">
             <a
               href="https://www.producthunt.com/products/resumegpt?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-resumegpt-2"
               target="_blank"
@@ -48,42 +105,6 @@ export function HeroSection() {
               />
             </a>
           </div>
-
-          {/* Headline — solid ink, one accent word */}
-          <h1 className="max-w-4xl text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[0.95]">
-            Tailor your resume to every job,{" "}
-            <span className="text-brand">automatically</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Describe your experience in plain words. ResumeGPT drafts, rewrites,
-            and ATS-checks your resume in real time — then exports a clean PDF.
-          </p>
-
-          {/* CTAs */}
-          <HeroButton />
-
-          {/* Honest, feature-based trust line — no fabricated logos */}
-          <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-3 pt-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-2">
-              <FileText className="h-4 w-4 text-brand" />
-              10+ ATS-friendly templates
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <ScanLine className="h-4 w-4 text-brand" />
-              Built-in ATS score check
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <FileDown className="h-4 w-4 text-brand" />
-              Free PDF export
-            </span>
-          </div>
-        </div>
-
-        {/* Resume Preview */}
-        <div className="mt-20 md:mt-28">
-          <ResumePreview />
         </div>
       </div>
     </section>
