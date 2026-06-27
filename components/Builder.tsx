@@ -15,6 +15,7 @@ import {
   Loader2,
   Check,
   CircleCheckBig,
+  Eye,
 } from "lucide-react";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ApiKeyNotification } from "@/components/ApiKeyNotification";
@@ -86,7 +87,9 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
     // Show "saved" on load if there's existing data
     return initialChatData ? "saved" : "idle";
   });
-  const [activeTab, setActiveTab] = useState<"chat" | "edit">("chat");
+  const [activeTab, setActiveTab] = useState<"chat" | "edit" | "preview">(
+    "chat",
+  );
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
 
   // Auto-save when user interacts and data changes
@@ -190,7 +193,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
   }, [toggleSidebarCollapse]);
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
+    <div className="flex flex-col md:flex-row h-screen bg-background text-foreground">
       {/* Sidebar - handles both mobile and desktop internally */}
       <ChatSidebar
         session={session}
@@ -201,7 +204,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 md:h-full">
         {/* Chat and Resume Layout */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           <div
@@ -210,30 +213,41 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
             <div className="flex flex-col h-full">
               {showResumeLayout && (
                 <div className="px-4 py-2 border-b flex items-center justify-between gap-4">
-                  <div className="grid flex-1 grid-cols-2 h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
+                  <div className="grid flex-1 grid-cols-3 md:grid-cols-2 h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
                     <button
                       onClick={() => setActiveTab("chat")}
-                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "chat"
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-2 md:px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "chat"
                         ? "bg-background text-foreground shadow-sm"
                         : ""
                         }`}
                     >
-                      <MessageSquare className="w-4 h-4 mr-2" /> Chat
+                      <MessageSquare className="w-4 h-4 mr-1.5 shrink-0" /> Chat
                     </button>
                     <button
                       onClick={() => setActiveTab("edit")}
-                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "edit"
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-2 md:px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "edit"
                         ? "bg-background text-foreground shadow-sm"
                         : ""
                         }`}
                     >
-                      <Edit className="w-4 h-4 mr-2" /> Edit
+                      <Edit className="w-4 h-4 mr-1.5 shrink-0" /> Edit
+                    </button>
+                    {/* Preview tab — mobile only; desktop shows the resume in the
+                        side pane so it doesn't need its own tab */}
+                    <button
+                      onClick={() => setActiveTab("preview")}
+                      className={`md:hidden inline-flex items-center justify-center whitespace-nowrap rounded-md px-2 md:px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${activeTab === "preview"
+                        ? "bg-background text-foreground shadow-sm"
+                        : ""
+                        }`}
+                    >
+                      <Eye className="w-4 h-4 mr-1.5 shrink-0" /> Preview
                     </button>
                   </div>
-                  <div className="flex items-center gap-1 w-[110px] justify-end shrink-0">
+                  <div className="flex items-center gap-1 w-auto md:w-[110px] justify-end shrink-0">
                     {saveStatus !== "idle" && (
                       <div
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${saveStatus === "saved"
+                        className={`flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${saveStatus === "saved"
                           ? "bg-success/15 text-success"
                           : saveStatus === "saving"
                             ? "bg-info/15 text-info"
@@ -242,13 +256,14 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                       >
                         {saveStatus === "saving" && (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin" />{" "}
-                            Saving...
+                            <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                            <span className="hidden sm:inline">Saving...</span>
                           </>
                         )}
                         {saveStatus === "saved" && (
                           <>
-                            <CircleCheckBig className="w-4 h-4" /> Saved
+                            <CircleCheckBig className="w-4 h-4 shrink-0" />
+                            <span className="hidden sm:inline">Saved</span>
                           </>
                         )}
                         {saveStatus === "error" && "Error"}
@@ -276,7 +291,7 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
               ) : (
                 <>
                   <div
-                    className={`flex-1 flex-col min-h-0 mt-0 overflow-hidden ${activeTab === "chat" ? "flex" : "hidden"}`}
+                    className={`flex-1 flex-col min-h-0 mt-0 overflow-hidden ${activeTab === "chat" ? "flex" : "hidden"} ${activeTab === "edit" ? "md:hidden" : "md:flex"}`}
                   >
                     <ChatMessages
                       messages={messages}
@@ -299,6 +314,25 @@ export function Builder({ session, params, initialChatData }: BuilderProps) {
                       data={resumeData}
                       handleDataChange={handleResumeDataChange}
                     />
+                  </div>
+
+                  {/* Mobile-only resume preview. Desktop renders the resume in
+                      the side pane below, so this stays hidden on md+. */}
+                  <div
+                    className={`flex-1 min-h-0 mt-0 overflow-hidden flex-col bg-card md:hidden ${activeTab === "preview" ? "flex" : "hidden"}`}
+                  >
+                    <ScrollArea className="flex-1 min-h-0">
+                      {messages.length > 0 ? (
+                        <ResumeDisplay
+                          data={resumeData}
+                          handleDataChange={handleResumeDataChange}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-center p-10 text-muted-foreground">
+                          <p>Your resume will appear here once generated</p>
+                        </div>
+                      )}
+                    </ScrollArea>
                   </div>
                 </>
               )}

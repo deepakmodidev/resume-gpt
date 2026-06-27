@@ -131,17 +131,17 @@ export default function ATSAnalysisPage() {
                 job description to discover how to beat the ATS systems.
               </p>
 
-              <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4" />
+                  <Target className="w-4 h-4 shrink-0" />
                   Real-time Scoring
                 </div>
                 <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4" />
+                  <BarChart3 className="w-4 h-4 shrink-0" />
                   Keyword Analysis
                 </div>
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 shrink-0" />
                   AI Suggestions
                 </div>
               </div>

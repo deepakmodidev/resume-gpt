@@ -81,7 +81,7 @@ export default function RecruiterClient({
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Recruiter Matchmaker</h1>
           <p className="text-sm text-muted-foreground">
@@ -89,7 +89,7 @@ export default function RecruiterClient({
             in from the resume builder or by uploading below.
           </p>
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground shrink-0">
           Shared pool:{" "}
           <span className="font-semibold text-foreground">{count}</span>{" "}
           candidates

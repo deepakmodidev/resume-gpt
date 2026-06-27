@@ -213,7 +213,7 @@ export const ResumeDisplay = ({
       <Tabs defaultValue="resume" className="h-full flex flex-col">
         {/* Tab Navigation Header */}
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border/40 w-full">
-          <div className="flex justify-between items-center gap-4 px-4 py-3 max-w-5xl mx-auto">
+          <div className="flex flex-wrap justify-between items-center gap-2 sm:gap-4 px-4 py-3 max-w-5xl mx-auto">
             {/* Tab List */}
             <TabsList className="grid w-fit grid-cols-2">
               <TabsTrigger value="resume" className="flex items-center gap-2">
@@ -227,7 +227,7 @@ export const ResumeDisplay = ({
             </TabsList>
 
             {/* Action buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {poolState === "inPool" ? (
                 <Button
                   variant="outline"
@@ -242,7 +242,9 @@ export const ResumeDisplay = ({
                   }`}
                 >
                   {poolBtnHovered ? <Trash2 /> : <Check />}
-                  <span>{poolBtnHovered ? "Remove from pool" : "In talent pool"}</span>
+                  <span className="hidden sm:inline">
+                    {poolBtnHovered ? "Remove from pool" : "In talent pool"}
+                  </span>
                 </Button>
               ) : (
                 <Button
@@ -257,7 +259,7 @@ export const ResumeDisplay = ({
                   ) : (
                     <UserPlus />
                   )}
-                  <span>
+                  <span className="hidden sm:inline">
                     {poolState === "loading" ? "Adding…" : "Add to talent pool"}
                   </span>
                 </Button>
@@ -269,7 +271,7 @@ export const ResumeDisplay = ({
                 className="gap-2 rounded-lg shadow-xs hover:shadow-md"
               >
                 <LayoutTemplate />
-                <span>Templates</span>
+                <span className="hidden sm:inline">Templates</span>
               </Button>
 
               <Button
@@ -282,7 +284,9 @@ export const ResumeDisplay = ({
                 ) : (
                   <Download />
                 )}
-                <span>{isDownloading ? "Downloading..." : "Download PDF"}</span>
+                <span className="hidden sm:inline">
+                  {isDownloading ? "Downloading..." : "Download PDF"}
+                </span>
               </Button>
             </div>
           </div>

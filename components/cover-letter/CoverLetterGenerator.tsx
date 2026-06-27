@@ -17,6 +17,7 @@ import {
   Mic,
   Lock,
   ArrowRight,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -73,6 +74,9 @@ export const CoverLetterGenerator = ({
   const [coverLetterData, setCoverLetterData] =
     useState<CoverLetterData | null>(null);
   const [hasGenerated, setHasGenerated] = useState(false);
+  // On mobile the form and preview can't sit side-by-side, so we toggle between
+  // them. Desktop ignores this and shows both panels.
+  const [mobileView, setMobileView] = useState<"form" | "preview">("form");
   const { status } = useSession();
 
   const handleFileUpload = async (
@@ -204,6 +208,7 @@ export const CoverLetterGenerator = ({
 
       setCoverLetterData(data.coverLetterData);
       setHasGenerated(true);
+      setMobileView("preview"); // reveal the result on mobile
       toast.success("Cover letter generated!");
     } catch (err) {
       logger.error("Cover letter generation error", err as Error);
@@ -215,9 +220,42 @@ export const CoverLetterGenerator = ({
   };
 
   return (
-    <div className="flex h-full min-h-0 overflow-hidden">
-      {/* Left Panel - Form (2/5 width) */}
-      <div className="flex flex-col h-full min-h-0 w-full md:w-2/5 overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+      {/* Mobile-only view toggle — appears once a letter has been generated so
+          the result (hidden in the side panel on desktop) is reachable on small
+          screens. Hidden on md+ where both panels are visible at once. */}
+      {coverLetterData && (
+        <div className="md:hidden grid grid-cols-2 gap-1 m-3 mb-0 p-1 rounded-lg bg-muted text-muted-foreground">
+          <button
+            onClick={() => setMobileView("form")}
+            className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              mobileView === "form"
+                ? "bg-background text-foreground shadow-sm"
+                : ""
+            }`}
+          >
+            <FileText className="w-4 h-4" /> Form
+          </button>
+          <button
+            onClick={() => setMobileView("preview")}
+            className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              mobileView === "preview"
+                ? "bg-background text-foreground shadow-sm"
+                : ""
+            }`}
+          >
+            <Eye className="w-4 h-4" /> Preview
+          </button>
+        </div>
+      )}
+
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Left Panel - Form (2/5 width on desktop) */}
+        <div
+          className={`${
+            mobileView === "form" ? "flex" : "hidden"
+          } md:flex flex-col h-full min-h-0 w-full md:w-2/5 overflow-hidden`}
+        >
         <ScrollArea className="flex-1">
           <div className="p-6 space-y-5">
             {/* Header */}
@@ -423,23 +461,28 @@ export const CoverLetterGenerator = ({
         </ScrollArea>
       </div>
 
-      {/* Right Panel - Preview (3/5 width, always visible) */}
-      <div className="hidden md:flex flex-col h-full min-h-0 overflow-hidden bg-card border-l border-border w-3/5">
-        <ScrollArea className="flex-1 min-h-0">
-          {coverLetterData ? (
-            <CoverLetterDisplay data={coverLetterData} />
-          ) : (
-            <div className="flex items-center justify-center h-full min-h-125 text-center p-10">
-              <div className="text-muted-foreground">
-                <FileText className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">Preview</p>
-                <p className="text-sm mt-1">
-                  Your cover letter will appear here
-                </p>
+        {/* Right Panel - Preview (3/5 width on desktop) */}
+        <div
+          className={`${
+            mobileView === "preview" ? "flex" : "hidden"
+          } md:flex flex-col h-full min-h-0 overflow-hidden bg-card border-l border-border w-full md:w-3/5`}
+        >
+          <ScrollArea className="flex-1 min-h-0">
+            {coverLetterData ? (
+              <CoverLetterDisplay data={coverLetterData} />
+            ) : (
+              <div className="flex items-center justify-center h-full min-h-125 text-center p-10">
+                <div className="text-muted-foreground">
+                  <FileText className="w-16 h-16 mx-auto mb-4 opacity-30" />
+                  <p className="text-lg font-medium">Preview</p>
+                  <p className="text-sm mt-1">
+                    Your cover letter will appear here
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-        </ScrollArea>
+            )}
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );
