@@ -4,11 +4,11 @@ import { ArrowRight, Users } from "lucide-react";
 
 export function HeroButton() {
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+    <div className="flex flex-row flex-nowrap gap-2 sm:gap-3 items-center justify-center">
       <Button
         asChild
         size="lg"
-        className="h-12 px-7 text-base font-semibold rounded-xl shadow-sm hover:shadow-md"
+        className="h-12 px-4 sm:px-7 text-sm sm:text-base font-semibold rounded-xl shadow-sm hover:shadow-md whitespace-nowrap"
       >
         <Link href="/builder">
           Build my resume
@@ -20,7 +20,7 @@ export function HeroButton() {
         asChild
         variant="outline"
         size="lg"
-        className="h-12 px-7 text-base font-semibold rounded-xl"
+        className="h-12 px-4 sm:px-7 text-sm sm:text-base font-semibold rounded-xl whitespace-nowrap"
       >
         <Link href="/recruiter">
           <Users className="h-4 w-4" />

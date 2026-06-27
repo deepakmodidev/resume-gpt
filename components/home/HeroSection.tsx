@@ -22,7 +22,7 @@ export function HeroSection() {
 
 
           {/* Headline — one warm gradient accent word */}
-          <h1 className="max-w-4xl md:text-6xl text-xl font-extrabold leading-[0.95] tracking-tight">
+          <h1 className="max-w-4xl md:text-6xl text-4xl font-extrabold leading-[0.95] tracking-tight">
             Tailor your resume to every job{" "}
             <span className="bg-gradient-to-r from-brand to-warning bg-clip-text text-transparent">
               automatically
